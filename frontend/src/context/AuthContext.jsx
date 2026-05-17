@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
+import { signInWithGoogle } from '../firebase/config';
 
 const AuthContext = createContext();
 
@@ -22,6 +23,25 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     const res = await axios.post('/api/auth/login', { email, password });
+    const { token, user: userData } = res.data.data;
+    localStorage.setItem('token', token);
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    setUser(userData);
+    return userData;
+  };
+
+  const googleLogin = async () => {
+    const result = await signInWithGoogle();
+    const idToken = await result.user.getIdToken();
+    
+    const res = await axios.post('/api/auth/google', {
+      googleId: result.user.uid,
+      email: result.user.email,
+      name: result.user.displayName,
+      photoUrl: result.user.photoURL,
+      idToken
+    });
+    
     const { token, user: userData } = res.data.data;
     localStorage.setItem('token', token);
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -56,7 +76,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, verifyOTP, logout, updateProfile }}>
+    <AuthContext.Provider value={{ user, loading, login, googleLogin, register, verifyOTP, logout, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );

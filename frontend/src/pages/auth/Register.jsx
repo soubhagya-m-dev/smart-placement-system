@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
+import { FaGoogle } from 'react-icons/fa';
 
 export default function Register() {
-  const { register, verifyOTP } = useAuth();
+  const { register, verifyOTP, googleLogin } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '', role: 'student', phone: '', rollNumber: '', department: '' });
@@ -42,6 +43,19 @@ export default function Register() {
     }
   };
 
+  const handleGoogleRegister = async () => {
+    setLoading(true);
+    try {
+      const user = await googleLogin();
+      toast.success(`Welcome, ${user.name}!`);
+      navigate('/');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Google registration failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
@@ -50,27 +64,47 @@ export default function Register() {
           <p className="text-gray-500 mt-2">{step === 1 ? 'Create your account' : 'Verify your email'}</p>
         </div>
         {step === 1 ? (
-          <form onSubmit={handleRegister} className="space-y-4">
-            <input type="text" className="input" placeholder="Full Name" required value={form.name} onChange={e => setForm({...form, name: e.target.value})} />
-            <input type="email" className="input" placeholder="Email" required value={form.email} onChange={e => setForm({...form, email: e.target.value})} />
-            <input type="tel" className="input" placeholder="Phone Number" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} />
-            {form.role === 'student' && (
-              <>
-                <input type="text" className="input" placeholder="Roll Number" value={form.rollNumber} onChange={e => setForm({...form, rollNumber: e.target.value})} />
-                <select className="input" value={form.department} onChange={e => setForm({...form, department: e.target.value})}>
-                  <option value="">Select Department</option>
-                  <option value="Computer Science">Computer Science</option>
-                  <option value="Information Technology">Information Technology</option>
-                  <option value="Electronics">Electronics</option>
-                  <option value="Mechanical">Mechanical</option>
-                  <option value="Civil">Civil</option>
-                </select>
-              </>
-            )}
-            <input type="password" className="input" placeholder="Password" required value={form.password} onChange={e => setForm({...form, password: e.target.value})} />
-            <input type="password" className="input" placeholder="Confirm Password" required value={form.confirmPassword} onChange={e => setForm({...form, confirmPassword: e.target.value})} />
-            <button type="submit" disabled={loading} className="btn-primary w-full py-3">{loading ? 'Creating...' : 'Create Account'}</button>
-          </form>
+          <>
+            <form onSubmit={handleRegister} className="space-y-4">
+              <input type="text" className="input" placeholder="Full Name" required value={form.name} onChange={e => setForm({...form, name: e.target.value})} />
+              <input type="email" className="input" placeholder="Email" required value={form.email} onChange={e => setForm({...form, email: e.target.value})} />
+              <input type="tel" className="input" placeholder="Phone Number" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} />
+              {form.role === 'student' && (
+                <>
+                  <input type="text" className="input" placeholder="Roll Number" value={form.rollNumber} onChange={e => setForm({...form, rollNumber: e.target.value})} />
+                  <select className="input" value={form.department} onChange={e => setForm({...form, department: e.target.value})}>
+                    <option value="">Select Department</option>
+                    <option value="Computer Science">Computer Science</option>
+                    <option value="Information Technology">Information Technology</option>
+                    <option value="Electronics">Electronics</option>
+                    <option value="Mechanical">Mechanical</option>
+                    <option value="Civil">Civil</option>
+                  </select>
+                </>
+              )}
+              <input type="password" className="input" placeholder="Password" required value={form.password} onChange={e => setForm({...form, password: e.target.value})} />
+              <input type="password" className="input" placeholder="Confirm Password" required value={form.confirmPassword} onChange={e => setForm({...form, confirmPassword: e.target.value})} />
+              <button type="submit" disabled={loading} className="btn-primary w-full py-3">{loading ? 'Creating...' : 'Create Account'}</button>
+            </form>
+            
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">Or continue with</span>
+              </div>
+            </div>
+            
+            <button 
+              onClick={handleGoogleRegister} 
+              disabled={loading}
+              className="w-full py-3 px-4 bg-white border border-gray-300 rounded-lg shadow-sm text-gray-700 font-medium hover:bg-gray-50 flex items-center justify-center gap-2 transition-colors"
+            >
+              <FaGoogle className="text-red-500" />
+              Sign up with Google
+            </button>
+          </>
         ) : (
           <form onSubmit={handleVerify} className="space-y-4">
             <p className="text-center text-gray-600">Enter the OTP sent to <strong>{email}</strong></p>

@@ -73,6 +73,36 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// Google Auth
+router.post('/google', async (req, res) => {
+  try {
+    const { googleId, email, name, photoUrl } = req.body;
+    
+    let user = await User.findOne({ email });
+    
+    if (!user) {
+      // Create new user
+      user = await User.create({
+        name,
+        email,
+        googleId,
+        isGoogleAuth: true,
+        isVerified: true, // Google already verified
+        role: 'student'
+      });
+    } else if (!user.isGoogleAuth) {
+      // Existing user with email but not Google auth
+      return res.status(400).json({ success: false, message: 'Email already registered. Please login with password.' });
+    }
+    
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'secret', { expiresIn: '7d' });
+    
+    res.json({ success: true, data: { token, user } });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 // Get current user
 router.get('/me', async (req, res) => {
   try {
