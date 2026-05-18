@@ -12,6 +12,7 @@ import OfficerDashboard from './pages/officer/Dashboard';
 import ManageJobs from './pages/officer/ManageJobs';
 import VerifyStudents from './pages/officer/VerifyStudents';
 import Stats from './pages/officer/Stats';
+import AdminDashboard from './pages/admin/Dashboard';
 
 function ProtectedRoute({ children, roles }) {
   const { user, loading } = useAuth();
@@ -27,7 +28,11 @@ function AppRoutes() {
     <Routes>
       <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />
       <Route path="/register" element={user ? <Navigate to="/" /> : <Register />} />
-      <Route path="/" element={<ProtectedRoute>{user?.role === 'officer' ? <OfficerDashboard /> : <StudentDashboard />}</ProtectedRoute>} />
+      <Route path="/" element={<ProtectedRoute>{
+        user?.role === 'admin' ? <AdminDashboard /> : 
+        user?.role === 'officer' ? <OfficerDashboard /> : 
+        <StudentDashboard />
+      }</ProtectedRoute>} />
       <Route path="/jobs" element={<ProtectedRoute><Jobs /></ProtectedRoute>} />
       <Route path="/jobs/:id" element={<ProtectedRoute><JobDetails /></ProtectedRoute>} />
       <Route path="/applications" element={<ProtectedRoute><Applications /></ProtectedRoute>} />

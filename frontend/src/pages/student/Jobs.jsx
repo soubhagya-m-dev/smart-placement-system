@@ -67,13 +67,13 @@ export default function Jobs() {
                     <p className="text-gray-600 mt-1">{job.companyName}</p>
                     <div className="flex items-center gap-4 mt-3 text-gray-500 text-sm">
                       <span className="flex items-center gap-1"><MapPin className="w-4 h-4" />{job.location || 'Not specified'}</span>
-                      <span className="flex items-center gap-1"><DollarSign className="w-4 h-4" />{(job.salary?.min / 100000).toFixed(1)} - {(job.salary?.max / 100000).toFixed(1)} LPA</span>
+                      <span className="flex items-center gap-1"><DollarSign className="w-4 h-4" />{job.salary?.min?.toFixed(2) || '0.00'} - {job.salary?.max?.toFixed(2) || '0.00'} LPA</span>
                     </div>
                     <div className="flex gap-2 mt-3">{job.requiredSkills?.slice(0, 4).map((skill, i) => <span key={i} className="badge badge-blue">{skill}</span>)}</div>
                   </div>
                   <div className="text-right">
                     <span className="badge badge-green">{job.jobType}</span>
-                    <p className="text-sm text-gray-500 mt-2">{new Date(job.applicationDeadline).toLocaleDateString()} deadline</p>
+                    <p className="text-sm text-gray-500 mt-2">{job.applicationDeadline ? new Date(job.applicationDeadline).toLocaleDateString('en-GB') : 'Application deadline'}</p>
                   </div>
                 </div>
               </Link>

@@ -15,7 +15,8 @@ const auth = async (req, res, next) => {
 
 router.get('/my-jobs', auth, async (req, res) => {
   try {
-    const jobs = await Job.find({ postedBy: req.user.id }).sort({ createdAt: -1 });
+    // Return all jobs (posted by any officer) - officers can view and edit all jobs
+    const jobs = await Job.find({ postedBy: { $exists: true } }).sort({ createdAt: -1 });
     res.json({ success: true, data: { jobs } });
   } catch (error) { res.status(500).json({ success: false, message: error.message }); }
 });

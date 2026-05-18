@@ -59,7 +59,7 @@ export default function StudentDashboard() {
                 <Link key={job._id} to={`/jobs/${job._id}`} className="block p-4 border rounded-lg hover:bg-gray-50 transition">
                   <div className="flex items-center justify-between">
                     <div><h3 className="font-semibold text-gray-900">{job.title}</h3><p className="text-gray-500 text-sm">{job.companyName} • {job.location}</p></div>
-                    <div className="text-right"><p className="font-semibold text-green-600">₹{(job.salary?.max / 100000).toFixed(1)} LPA</p><span className="badge badge-blue">{job.jobType}</span></div>
+                    <div className="text-right"><p className="font-semibold text-green-600">₹{job.salary?.max?.toFixed(2) || '0.00'} LPA</p><span className="badge badge-blue">{job.jobType}</span></div>
                   </div>
                 </Link>
               ))}

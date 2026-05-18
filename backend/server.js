@@ -29,6 +29,7 @@ app.use('/api/students', require('./routes/students'));
 app.use('/api/officer', require('./routes/officer'));
 app.use('/api/stats', require('./routes/stats'));
 app.use('/api/notifications', require('./routes/notifications'));
+app.use('/api/admin', require('./routes/admin'));
 
 // Socket handlers
 io.on('connection', (socket) => {
