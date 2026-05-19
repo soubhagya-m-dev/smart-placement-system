@@ -15,6 +15,7 @@ const userSchema = new mongoose.Schema({
     resume: String, verified: { type: Boolean, default: false }
   },
   status: { type: String, enum: ['active', 'rejected', 'suspended'], default: 'active' },
-  rejectionReason: String
+  rejectionReason: String,
+  savedJobs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Job' }]
 }, { timestamps: true });
 module.exports = mongoose.model('User', userSchema);

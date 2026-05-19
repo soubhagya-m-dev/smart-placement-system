@@ -3,6 +3,7 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const Job = require('../models/Job');
 const Application = require('../models/Application');
+const User = require('../models/User');
 
 const auth = async (req, res, next) => {
   try {
@@ -78,6 +79,35 @@ router.put('/:id', auth, async (req, res) => {
     // Any officer can edit any job
     const updatedJob = await Job.findByIdAndUpdate(req.params.id, req.body, { new: true });
     res.json({ success: true, data: { job: updatedJob } });
+  } catch (error) { res.status(500).json({ success: false, message: error.message }); }
+});
+
+// Get user's saved jobs
+router.get('/saved', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).populate('savedJobs');
+    res.json({ success: true, data: { jobs: user.savedJobs } });
+  } catch (error) { res.status(500).json({ success: false, message: error.message }); }
+});
+
+// Toggle save/unsave a job
+router.post('/saved/:jobId', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    const jobId = req.params.jobId;
+    
+    // Convert both to string for comparison (handles ObjectId vs string type mismatch)
+    const savedJobIds = user.savedJobs.map(id => id.toString());
+    const isSaved = savedJobIds.includes(jobId.toString());
+    
+    if (isSaved) {
+      user.savedJobs.pull(jobId);
+    } else {
+      user.savedJobs.push(jobId);
+    }
+    await user.save();
+    
+    res.json({ success: true, data: { saved: !isSaved } });
   } catch (error) { res.status(500).json({ success: false, message: error.message }); }
 });
 

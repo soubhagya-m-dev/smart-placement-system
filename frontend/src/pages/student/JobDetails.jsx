@@ -9,6 +9,8 @@ export default function JobDetails() {
   const [job, setJob] = useState(null);
   const [applying, setApplying] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isSaved, setIsSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => { fetchJob(); }, [id]);
 
@@ -40,6 +42,49 @@ export default function JobDetails() {
     finally { setApplying(false); }
   };
 
+  const handleToggleSave = async () => {
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/jobs/saved/${id}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setIsSaved(data.data.saved);
+        
+        // Fetch fresh saved jobs list and dispatch event
+        const savedRes = await fetch('/api/jobs/saved', { 
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } 
+        });
+        const savedData = await savedRes.json();
+        if (savedData.success) {
+          window.dispatchEvent(new CustomEvent('savedJobsUpdated', { detail: savedData.data.jobs }));
+        }
+        
+        toast.success(data.data.saved ? 'Job saved!' : 'Job removed from saved');
+      } else {
+        toast.error('Failed to update saved status');
+      }
+    } catch (error) { toast.error('Failed to update saved status'); }
+    finally { setSaving(false); }
+  };
+
+  // Check if job is saved on mount
+  useEffect(() => {
+    if (id) {
+      fetch(`/api/jobs/saved`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
+        .then(r => r.json())
+        .then(data => {
+          if (data.success) {
+            const savedIds = data.data.jobs.map(j => j._id);
+            setIsSaved(savedIds.includes(id));
+          }
+        })
+        .catch(() => {});
+    }
+  }, [id]);
+
   if (loading) return <div className="flex items-center justify-center min-h-screen"><div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div></div>;
 
   if (!job) return <div className="text-center py-16"><h2 className="text-xl font-semibold">Job not found</h2><Link to="/jobs" className="btn-primary mt-4">Back to Jobs</Link></div>;
@@ -65,7 +110,9 @@ export default function JobDetails() {
               </div>
             </div>
             <div className="flex gap-2">
-              <button className="p-3 border rounded-lg hover:bg-gray-50"><Bookmark className="w-5 h-5 text-gray-600" /></button>
+              <button onClick={handleToggleSave} disabled={saving} className={`p-3 border rounded-lg transition ${isSaved ? 'bg-blue-50 border-blue-300' : 'hover:bg-gray-50'}`}>
+                <Bookmark className={`w-5 h-5 ${isSaved ? 'text-blue-600 fill-blue-600' : 'text-gray-600'}`} />
+              </button>
               <button className="p-3 border rounded-lg hover:bg-gray-50"><Share2 className="w-5 h-5 text-gray-600" /></button>
             </div>
           </div>

@@ -1,9 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Briefcase, MapPin, DollarSign, Filter, Search, X } from 'lucide-react';
+import { Briefcase, MapPin, DollarSign, Filter, Search, X, Bookmark, Trash2, ChevronDown } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function Jobs() {
   const [jobs, setJobs] = useState([]);
+  const [savedJobs, setSavedJobs] = useState(() => {
+    const stored = localStorage.getItem('savedJobs');
+    return stored ? JSON.parse(stored) : [];
+  });
   const [filters, setFilters] = useState({ 
     jobTitle: '', 
     companyName: '', 
@@ -14,8 +19,16 @@ export default function Jobs() {
   });
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
+  const [showSaved, setShowSaved] = useState(false);
 
   useEffect(() => { fetchJobs(); }, []);
+  
+  useEffect(() => {
+    const stored = localStorage.getItem('savedJobs');
+    if (!stored) {
+      fetchSavedJobs();
+    }
+  }, []);
 
   const fetchJobs = async () => {
     try {
@@ -36,6 +49,19 @@ export default function Jobs() {
     finally { setLoading(false); }
   };
 
+  const fetchSavedJobs = async () => {
+    try {
+      const res = await fetch('/api/jobs/saved', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      const data = await res.json();
+      if (data.success) { 
+        setSavedJobs(data.data.jobs);
+        localStorage.setItem('savedJobs', JSON.stringify(data.data.jobs));
+      }
+    } catch (error) { console.error('Failed to fetch saved jobs'); }
+  };
+
   const handleSearch = (e) => {
     e.preventDefault();
     fetchJobs();
@@ -44,57 +70,134 @@ export default function Jobs() {
   const clearFilters = () => {
     const cleared = { jobTitle: '', companyName: '', location: '', skills: '', jobType: '', salaryMin: '' };
     setFilters(cleared);
-    // Fetch with cleared filters immediately
-    const params = new URLSearchParams();
-    const res = fetch(`/api/jobs?${params}`, {
+    fetch(`/api/jobs`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     }).then(r => r.json()).then(data => {
       if (data.success) setJobs(data.data.jobs);
     });
   };
 
+  const toggleSaveJob = async (jobId) => {
+    try {
+      const res = await fetch(`/api/jobs/saved/${jobId}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        let newSavedJobs;
+        if (data.data.saved) {
+          const jobToSave = jobs.find(j => j._id === jobId);
+          if (jobToSave && !savedJobs.find(j => j._id === jobId)) {
+            newSavedJobs = [...savedJobs, jobToSave];
+          } else {
+            fetchSavedJobs();
+            return;
+          }
+        } else {
+          newSavedJobs = savedJobs.filter(j => j._id !== jobId);
+        }
+        setSavedJobs(newSavedJobs);
+        localStorage.setItem('savedJobs', JSON.stringify(newSavedJobs));
+        toast.success(data.data.saved ? 'Job saved!' : 'Removed from saved jobs');
+      }
+    } catch (error) { toast.error('Failed to update'); }
+  };
+
+  const isJobSaved = (jobId) => savedJobs.some(j => j._id === jobId);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm border-b sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
           
-          {/* Filter Toggle Button */}
-          <button 
-            onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2 text-gray-700 hover:text-gray-900 transition"
-          >
-            <Filter className="w-5 h-5" />
-            <span className="font-medium">Filters</span>
-          </button>
+          {/* Header with Filter and Saved Jobs Toggles - Side by Side */}
+          <div className="flex items-center justify-between">
+            <button 
+              onClick={() => setShowFilters(!showFilters)}
+              className="flex items-center gap-2 text-gray-700 hover:text-gray-900 transition"
+            >
+              <Filter className="w-5 h-5" />
+              <span className="font-medium">Filters</span>
+            </button>
+            
+            <button 
+              onClick={() => setShowSaved(!showSaved)}
+              className="flex items-center gap-2 text-gray-700 hover:text-gray-900 transition"
+            >
+              <Bookmark className="w-5 h-5" />
+              <span className="font-medium">Saved Jobs ({savedJobs.length})</span>
+              <ChevronDown className={`w-4 h-4 transition-transform ${showSaved ? 'rotate-180' : ''}`} />
+            </button>
+          </div>
 
-          {/* Collapsible Filter Section */}
-          {showFilters && (
-            <form onSubmit={handleSearch} className="mt-4 space-y-3">
-              {/* Row 1: Job Title, Company Name, Location, Skills */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-                <input type="text" className="input" placeholder="Job Title" value={filters.jobTitle} onChange={e => setFilters({...filters, jobTitle: e.target.value})} />
-                <input type="text" className="input" placeholder="Company Name" value={filters.companyName} onChange={e => setFilters({...filters, companyName: e.target.value})} />
-                <input type="text" className="input" placeholder="Location" value={filters.location} onChange={e => setFilters({...filters, location: e.target.value})} />
-                <input type="text" className="input" placeholder="Skills" value={filters.skills} onChange={e => setFilters({...filters, skills: e.target.value})} />
-              </div>
+          {/* Expanded Sections */}
+          {(showFilters || showSaved) && (
+            <div className="mt-4 space-y-4">
               
-              {/* Row 2: Min Salary, Job Type, Search & Clear */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-                <input type="number" className="input" placeholder="Min Salary (LPA)" value={filters.salaryMin} onChange={e => setFilters({...filters, salaryMin: e.target.value})} />
-                <select className="input" value={filters.jobType} onChange={e => setFilters({...filters, jobType: e.target.value})}>
-                  <option value="">Job Type</option>
-                  <option value="full-time">Full Time</option>
-                  <option value="internship">Internship</option>
-                  <option value="part-time">Part Time</option>
-                </select>
-                <button type="submit" className="btn-primary flex items-center justify-center gap-2">
-                  <Search className="w-4 h-4" /> Search
-                </button>
-                <button type="button" onClick={clearFilters} className="btn-secondary flex items-center justify-center gap-2">
-                  <X className="w-4 h-4" /> Clear
-                </button>
-              </div>
-            </form>
+              {/* Filters Section - Full Width */}
+              {showFilters && (
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <h3 className="font-medium text-gray-700 mb-3 flex items-center gap-2">
+                    <Filter className="w-4 h-4" /> Job Filters
+                  </h3>
+                  <form onSubmit={handleSearch} className="space-y-3">
+<div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
+                      <input type="text" className="input" placeholder="Job Title" value={filters.jobTitle} onChange={e => setFilters({...filters, jobTitle: e.target.value})} />
+                      <input type="text" className="input" placeholder="Company Name" value={filters.companyName} onChange={e => setFilters({...filters, companyName: e.target.value})} />
+                      <input type="text" className="input" placeholder="Location" value={filters.location} onChange={e => setFilters({...filters, location: e.target.value})} />
+                      <input type="text" className="input" placeholder="Skills" value={filters.skills} onChange={e => setFilters({...filters, skills: e.target.value})} />
+                    </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
+                      <input type="number" className="input" placeholder="Min Salary (LPA)" value={filters.salaryMin} onChange={e => setFilters({...filters, salaryMin: e.target.value})} />
+                      <select className="input" value={filters.jobType} onChange={e => setFilters({...filters, jobType: e.target.value})}>
+                        <option value="">Job Type</option>
+                        <option value="full-time">Full Time</option>
+                        <option value="internship">Internship</option>
+                        <option value="part-time">Part Time</option>
+                      </select>
+                      <button type="submit" className="btn-primary flex items-center justify-center gap-2 flex-1">
+                        <Search className="w-4 h-4" /> Search
+                      </button>
+                      <button type="button" onClick={clearFilters} className="btn-secondary flex items-center justify-center gap-2 px-4">
+                        <X className="w-4 h-4" /> Clear
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
+
+              {/* Right: Saved Jobs Section */}
+              {showSaved && (
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <h3 className="font-medium text-gray-700 mb-3 flex items-center gap-2">
+                    <Bookmark className="w-4 h-4" /> Saved Jobs ({savedJobs.length})
+                  </h3>
+                  {savedJobs.length === 0 ? (
+                    <p className="text-gray-500 text-sm">No saved jobs yet. Click the bookmark icon on any job to save it.</p>
+                  ) : (
+                    <div className="space-y-2 max-h-20 overflow-y-auto">
+                      {savedJobs.map(job => (
+                        <div key={job._id} className="flex items-center justify-between p-2 bg-white rounded-lg">
+                          <Link to={`/jobs/${job._id}`} className="flex-1 min-w-0 hover:text-blue-600" onClick={() => setShowSaved(false)}>
+                            <p className="font-medium text-gray-900 text-sm truncate">{job.title}</p>
+                            <p className="text-xs text-gray-500 truncate">{job.companyName}</p>
+                          </Link>
+                          <button 
+                            onClick={() => toggleSaveJob(job._id)}
+                            className="p-1 text-gray-400 hover:text-red-500 transition ml-2"
+                            title="Remove from saved"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+            </div>
           )}
         </div>
       </header>
@@ -107,24 +210,40 @@ export default function Jobs() {
           <div className="card text-center py-16"><Briefcase className="w-16 h-16 text-gray-300 mx-auto mb-4" /><h3 className="text-lg font-semibold">No jobs found</h3><p className="text-gray-500">Try adjusting your search filters</p></div>
         ) : (
           <div className="grid gap-4">
-            {jobs.map(job => (
-              <Link key={job._id} to={`/jobs/${job._id}`} className="card hover:shadow-lg transition">
+            {jobs
+              .sort((a, b) => {
+                const aSaved = isJobSaved(a._id);
+                const bSaved = isJobSaved(b._id);
+                if (aSaved && !bSaved) return -1;
+                if (!aSaved && bSaved) return 1;
+                return 0;
+              })
+              .map(job => (
+              <div key={job._id} className={`card transition ${isJobSaved(job._id) ? 'ring-2 ring-blue-500 bg-blue-50' : 'hover:shadow-lg'}`}>
                 <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="text-xl font-semibold text-gray-900">{job.title}</h3>
+                  <Link to={`/jobs/${job._id}`} className="flex-1">
+                    <div className="flex items-center gap-3">
+                      <h3 className="text-xl font-semibold text-gray-900">{job.title}</h3>
+                      <button 
+                        onClick={(e) => { e.preventDefault(); toggleSaveJob(job._id); }}
+                        className="p-1.5 rounded hover:bg-gray-100 transition"
+                      >
+                        <Bookmark className={`w-5 h-5 ${isJobSaved(job._id) ? 'text-blue-600 fill-blue-600' : 'text-gray-400'}`} />
+                      </button>
+                    </div>
                     <p className="text-gray-600 mt-1">{job.companyName}</p>
                     <div className="flex items-center gap-4 mt-3 text-gray-500 text-sm">
                       <span className="flex items-center gap-1"><MapPin className="w-4 h-4" />{job.location || 'Not specified'}</span>
                       <span className="flex items-center gap-1"><DollarSign className="w-4 h-4" />{job.salary?.min?.toFixed(2) || '0.00'} - {job.salary?.max?.toFixed(2) || '0.00'} LPA</span>
                     </div>
                     <div className="flex gap-2 mt-3">{job.requiredSkills?.slice(0, 4).map((skill, i) => <span key={i} className="badge badge-blue">{skill}</span>)}</div>
-                  </div>
-                  <div className="text-right">
+                  </Link>
+                  <div className="text-right ml-4">
                     <span className="badge badge-green">{job.jobType}</span>
-                    <p className="text-sm text-gray-500 mt-2">{job.applicationDeadline ? new Date(job.applicationDeadline).toLocaleDateString('en-GB') : 'Application deadline'}</p>
+                    <p className="text-sm text-gray-500 mt-2">{job.applicationDeadline ? new Date(job.applicationDeadline).toLocaleDateString('en-GB') : 'No deadline'}</p>
                   </div>
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
         )}
