@@ -15,11 +15,28 @@ const auth = async (req, res, next) => {
 
 router.get('/', auth, async (req, res) => {
   try {
-    const { search, jobType, location, salaryMin, salaryMax, page = 1, limit = 20 } = req.query;
+    const { jobTitle, companyName, location, skills, jobType, salaryMin, page = 1, limit = 20 } = req.query;
     let query = { status: 'active' };
-    if (search) query.$or = [{ title: { $regex: search, $options: 'i' } }, { companyName: { $regex: search, $options: 'i' } }];
-    if (jobType) query.jobType = jobType;
+    
+    // Specific field searches
+    if (jobTitle) query.title = { $regex: jobTitle, $options: 'i' };
+    if (companyName) query.companyName = { $regex: companyName, $options: 'i' };
     if (location) query.location = { $regex: location, $options: 'i' };
+    if (jobType) query.jobType = jobType;
+    
+    // Skills filter (matches any of the provided skills)
+    if (skills) {
+      const skillsArray = skills.split(',').map(s => s.trim()).filter(s => s);
+      if (skillsArray.length > 0) {
+        query.requiredSkills = { $elemMatch: { $regex: skillsArray.join('|'), $options: 'i' } };
+      }
+    }
+    
+    // Salary filter (find jobs with salary >= min salary)
+    if (salaryMin) {
+      query['salary.min'] = { $gte: parseFloat(salaryMin) };
+    }
+    
     const jobs = await Job.find(query).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(parseInt(limit));
     const total = await Job.countDocuments(query);
     res.json({ success: true, data: { jobs, total, page: parseInt(page), pages: Math.ceil(total / limit) } });

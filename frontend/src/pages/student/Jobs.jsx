@@ -1,11 +1,17 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Filter, Briefcase, MapPin, DollarSign } from 'lucide-react';
+import { Briefcase, MapPin, DollarSign } from 'lucide-react';
 
 export default function Jobs() {
   const [jobs, setJobs] = useState([]);
-  const [search, setSearch] = useState('');
-  const [filters, setFilters] = useState({ jobType: '', location: '' });
+  const [filters, setFilters] = useState({ 
+    jobTitle: '', 
+    companyName: '', 
+    location: '', 
+    skills: '',
+    jobType: '', 
+    salaryMin: '' 
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => { fetchJobs(); }, []);
@@ -13,9 +19,12 @@ export default function Jobs() {
   const fetchJobs = async () => {
     try {
       const params = new URLSearchParams();
-      if (search) params.append('search', search);
-      if (filters.jobType) params.append('jobType', filters.jobType);
+      if (filters.jobTitle) params.append('jobTitle', filters.jobTitle);
+      if (filters.companyName) params.append('companyName', filters.companyName);
       if (filters.location) params.append('location', filters.location);
+      if (filters.skills) params.append('skills', filters.skills);
+      if (filters.jobType) params.append('jobType', filters.jobType);
+      if (filters.salaryMin) params.append('salaryMin', filters.salaryMin);
       
       const res = await fetch(`/api/jobs?${params}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
@@ -31,23 +40,40 @@ export default function Jobs() {
     fetchJobs();
   };
 
+  const clearFilters = () => {
+    setFilters({ jobTitle: '', companyName: '', location: '', skills: '', jobType: '', salaryMin: '' });
+    fetchJobs();
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm border-b sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <form onSubmit={handleSearch} className="flex gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input type="text" className="input pl-10" placeholder="Search jobs, companies, skills..." value={search} onChange={e => setSearch(e.target.value)} />
+          <form onSubmit={handleSearch} className="space-y-4">
+            {/* Advanced Filters */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <input type="text" className="input" placeholder="Job Title" value={filters.jobTitle} onChange={e => setFilters({...filters, jobTitle: e.target.value})} />
+              <input type="text" className="input" placeholder="Company Name" value={filters.companyName} onChange={e => setFilters({...filters, companyName: e.target.value})} />
+              <input type="text" className="input" placeholder="Location" value={filters.location} onChange={e => setFilters({...filters, location: e.target.value})} />
+              <input type="text" className="input" placeholder="Skills (comma separated)" value={filters.skills} onChange={e => setFilters({...filters, skills: e.target.value})} />
             </div>
-            <select className="input w-48" value={filters.jobType} onChange={e => setFilters({...filters, jobType: e.target.value})}>
-              <option value="">Job Type</option>
-              <option value="full-time">Full Time</option>
-              <option value="internship">Internship</option>
-              <option value="part-time">Part Time</option>
-            </select>
-            <input type="text" className="input w-48" placeholder="Location" value={filters.location} onChange={e => setFilters({...filters, location: e.target.value})} />
-            <button type="submit" className="btn-primary px-6">Search</button>
+            
+            {/* Salary Range and Job Type */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="relative">
+                <input type="number" className="input pl-8" placeholder="Min Salary (LPA)" value={filters.salaryMin} onChange={e => setFilters({...filters, salaryMin: e.target.value})} />
+              </div>
+              <select className="input" value={filters.jobType} onChange={e => setFilters({...filters, jobType: e.target.value})}>
+                <option value="">Job Type</option>
+                <option value="full-time">Full Time</option>
+                <option value="internship">Internship</option>
+                <option value="part-time">Part Time</option>
+              </select>
+              <div className="flex gap-2 col-span-2">
+                <button type="submit" className="btn-primary flex-1">Search</button>
+                <button type="button" onClick={clearFilters} className="btn-secondary px-4">Clear</button>
+              </div>
+            </div>
           </form>
         </div>
       </header>
