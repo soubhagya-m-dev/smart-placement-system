@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Briefcase, MapPin, DollarSign } from 'lucide-react';
+import { Briefcase, MapPin, DollarSign, Filter, Search, X } from 'lucide-react';
 
 export default function Jobs() {
   const [jobs, setJobs] = useState([]);
@@ -8,11 +8,12 @@ export default function Jobs() {
     jobTitle: '', 
     companyName: '', 
     location: '', 
-    skills: '',
+    skills: '', 
     jobType: '', 
-    salaryMin: '' 
+    salaryMin: ''
   });
   const [loading, setLoading] = useState(true);
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => { fetchJobs(); }, []);
 
@@ -41,42 +42,63 @@ export default function Jobs() {
   };
 
   const clearFilters = () => {
-    setFilters({ jobTitle: '', companyName: '', location: '', skills: '', jobType: '', salaryMin: '' });
-    fetchJobs();
+    const cleared = { jobTitle: '', companyName: '', location: '', skills: '', jobType: '', salaryMin: '' };
+    setFilters(cleared);
+    // Fetch with cleared filters immediately
+    const params = new URLSearchParams();
+    const res = fetch(`/api/jobs?${params}`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    }).then(r => r.json()).then(data => {
+      if (data.success) setJobs(data.data.jobs);
+    });
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm border-b sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <form onSubmit={handleSearch} className="space-y-4">
-            {/* Advanced Filters */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <input type="text" className="input" placeholder="Job Title" value={filters.jobTitle} onChange={e => setFilters({...filters, jobTitle: e.target.value})} />
-              <input type="text" className="input" placeholder="Company Name" value={filters.companyName} onChange={e => setFilters({...filters, companyName: e.target.value})} />
-              <input type="text" className="input" placeholder="Location" value={filters.location} onChange={e => setFilters({...filters, location: e.target.value})} />
-              <input type="text" className="input" placeholder="Skills (comma separated)" value={filters.skills} onChange={e => setFilters({...filters, skills: e.target.value})} />
-            </div>
-            
-            {/* Salary Range and Job Type */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="relative">
-                <input type="number" className="input pl-8" placeholder="Min Salary (LPA)" value={filters.salaryMin} onChange={e => setFilters({...filters, salaryMin: e.target.value})} />
+          
+          {/* Filter Toggle Button */}
+          <button 
+            onClick={() => setShowFilters(!showFilters)}
+            className="flex items-center gap-2 text-gray-700 hover:text-gray-900 transition"
+          >
+            <Filter className="w-5 h-5" />
+            <span className="font-medium">Filters</span>
+          </button>
+
+          {/* Collapsible Filter Section */}
+          {showFilters && (
+            <form onSubmit={handleSearch} className="mt-4 space-y-3">
+              {/* Row 1: Job Title, Company Name, Location, Skills */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                <input type="text" className="input" placeholder="Job Title" value={filters.jobTitle} onChange={e => setFilters({...filters, jobTitle: e.target.value})} />
+                <input type="text" className="input" placeholder="Company Name" value={filters.companyName} onChange={e => setFilters({...filters, companyName: e.target.value})} />
+                <input type="text" className="input" placeholder="Location" value={filters.location} onChange={e => setFilters({...filters, location: e.target.value})} />
+                <input type="text" className="input" placeholder="Skills" value={filters.skills} onChange={e => setFilters({...filters, skills: e.target.value})} />
               </div>
-              <select className="input" value={filters.jobType} onChange={e => setFilters({...filters, jobType: e.target.value})}>
-                <option value="">Job Type</option>
-                <option value="full-time">Full Time</option>
-                <option value="internship">Internship</option>
-                <option value="part-time">Part Time</option>
-              </select>
-              <div className="flex gap-2 col-span-2">
-                <button type="submit" className="btn-primary flex-1">Search</button>
-                <button type="button" onClick={clearFilters} className="btn-secondary px-4">Clear</button>
+              
+              {/* Row 2: Min Salary, Job Type, Search & Clear */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                <input type="number" className="input" placeholder="Min Salary (LPA)" value={filters.salaryMin} onChange={e => setFilters({...filters, salaryMin: e.target.value})} />
+                <select className="input" value={filters.jobType} onChange={e => setFilters({...filters, jobType: e.target.value})}>
+                  <option value="">Job Type</option>
+                  <option value="full-time">Full Time</option>
+                  <option value="internship">Internship</option>
+                  <option value="part-time">Part Time</option>
+                </select>
+                <button type="submit" className="btn-primary flex items-center justify-center gap-2">
+                  <Search className="w-4 h-4" /> Search
+                </button>
+                <button type="button" onClick={clearFilters} className="btn-secondary flex items-center justify-center gap-2">
+                  <X className="w-4 h-4" /> Clear
+                </button>
               </div>
-            </div>
-          </form>
+            </form>
+          )}
         </div>
       </header>
+
       <main className="max-w-7xl mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold mb-6">Available Jobs</h1>
         {loading ? (
