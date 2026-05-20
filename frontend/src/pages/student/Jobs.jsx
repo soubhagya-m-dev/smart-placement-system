@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Briefcase, MapPin, DollarSign, Filter, Search, X, Bookmark, Trash2, ChevronDown } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useAuth } from '../../context/AuthContext';
 
 export default function Jobs() {
+  const { user } = useAuth();
   const [jobs, setJobs] = useState([]);
   const [savedJobs, setSavedJobs] = useState(() => {
     const stored = localStorage.getItem('savedJobs');
@@ -79,32 +81,32 @@ export default function Jobs() {
 
   const toggleSaveJob = async (jobId) => {
     try {
+      const token = localStorage.getItem('token');
       const res = await fetch(`/api/jobs/saved/${jobId}`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
       if (data.success) {
-        let newSavedJobs;
         if (data.data.saved) {
           const jobToSave = jobs.find(j => j._id === jobId);
-          if (jobToSave && !savedJobs.find(j => j._id === jobId)) {
-            newSavedJobs = [...savedJobs, jobToSave];
-          } else {
-            fetchSavedJobs();
-            return;
+          if (jobToSave) {
+            const updated = [...savedJobs, jobToSave];
+            setSavedJobs(updated);
+            localStorage.setItem('savedJobs', JSON.stringify(updated));
           }
         } else {
-          newSavedJobs = savedJobs.filter(j => j._id !== jobId);
+          const updated = savedJobs.filter(j => j._id !== jobId);
+          setSavedJobs(updated);
+          localStorage.setItem('savedJobs', JSON.stringify(updated));
         }
-        setSavedJobs(newSavedJobs);
-        localStorage.setItem('savedJobs', JSON.stringify(newSavedJobs));
         toast.success(data.data.saved ? 'Job saved!' : 'Removed from saved jobs');
       }
     } catch (error) { toast.error('Failed to update'); }
   };
 
   const isJobSaved = (jobId) => savedJobs.some(j => j._id === jobId);
+  const isJobExpired = (job) => job.applicationDeadline && new Date(job.applicationDeadline) < new Date();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -210,22 +212,39 @@ export default function Jobs() {
           <div className="card text-center py-16"><Briefcase className="w-16 h-16 text-gray-300 mx-auto mb-4" /><h3 className="text-lg font-semibold">No jobs found</h3><p className="text-gray-500">Try adjusting your search filters</p></div>
         ) : (
           <div className="grid gap-4">
-            {jobs
-              .sort((a, b) => {
-                const aSaved = isJobSaved(a._id);
-                const bSaved = isJobSaved(b._id);
-                if (aSaved && !bSaved) return -1;
-                if (!aSaved && bSaved) return 1;
-                return 0;
-              })
+            {(() => {
+              const userSkills = (user?.studentProfile?.skills || []).map(s => s.toLowerCase());
+              const nonExpired = jobs
+                .filter(j => !isJobExpired(j))
+                .sort((a, b) => {
+                  const aSaved = isJobSaved(a._id);
+                  const bSaved = isJobSaved(b._id);
+                  const aMatch = a.requiredSkills?.filter(s => userSkills.includes(s.toLowerCase())).length || 0;
+                  const bMatch = b.requiredSkills?.filter(s => userSkills.includes(s.toLowerCase())).length || 0;
+                  if (aSaved && !bSaved) return -1;
+                  if (!aSaved && bSaved) return 1;
+                  if (bMatch !== aMatch) return bMatch - aMatch;
+                  return 0;
+                });
+              const expired = jobs
+                .filter(j => isJobExpired(j))
+                .sort((a, b) => {
+                  const aSaved = isJobSaved(a._id);
+                  const bSaved = isJobSaved(b._id);
+                  if (aSaved && !bSaved) return -1;
+                  if (!aSaved && bSaved) return 1;
+                  return 0;
+                });
+              return [...nonExpired, ...expired];
+            })()
               .map(job => (
-              <div key={job._id} className={`card transition ${isJobSaved(job._id) ? 'ring-2 ring-blue-500 bg-blue-50' : 'hover:shadow-lg'}`}>
+              <div key={job._id} className={`card transition ${isJobSaved(job._id) ? 'ring-2 ring-blue-500 bg-blue-50' : isJobExpired(job) ? 'ring-2 ring-red-400 bg-red-50' : 'hover:shadow-lg'}`}>
                 <div className="flex items-start justify-between">
                   <Link to={`/jobs/${job._id}`} className="flex-1">
                     <div className="flex items-center gap-3">
                       <h3 className="text-xl font-semibold text-gray-900">{job.title}</h3>
-                      <button 
-                        onClick={(e) => { e.preventDefault(); toggleSaveJob(job._id); }}
+                      <button
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleSaveJob(job._id); }}
                         className="p-1.5 rounded hover:bg-gray-100 transition"
                       >
                         <Bookmark className={`w-5 h-5 ${isJobSaved(job._id) ? 'text-blue-600 fill-blue-600' : 'text-gray-400'}`} />
@@ -239,8 +258,12 @@ export default function Jobs() {
                     <div className="flex gap-2 mt-3">{job.requiredSkills?.slice(0, 4).map((skill, i) => <span key={i} className="badge badge-blue">{skill}</span>)}</div>
                   </Link>
                   <div className="text-right ml-4">
-                    <span className="badge badge-green">{job.jobType}</span>
-                    <p className="text-sm text-gray-500 mt-2">{job.applicationDeadline ? new Date(job.applicationDeadline).toLocaleDateString('en-GB') : 'No deadline'}</p>
+                    {new Date(job.applicationDeadline) < new Date() ? (
+                      <span className="badge bg-red-100 text-red-700 border border-red-200">🔴 Expired</span>
+                    ) : (
+                      <span className="badge badge-green">{job.jobType}</span>
+                    )}
+                    <p className="text-sm text-gray-500 mt-2 flex items-center justify-end gap-1"><span>📅</span> Apply by {job.applicationDeadline ? new Date(job.applicationDeadline).toLocaleDateString('en-GB') : 'No deadline'}</p>
                   </div>
                 </div>
               </div>

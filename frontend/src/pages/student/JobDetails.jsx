@@ -87,7 +87,10 @@ export default function JobDetails() {
 
   if (loading) return <div className="flex items-center justify-center min-h-screen"><div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div></div>;
 
-  if (!job) return <div className="text-center py-16"><h2 className="text-xl font-semibold">Job not found</h2><Link to="/jobs" className="btn-primary mt-4">Back to Jobs</Link></div>;
+  const isExpired = job?.applicationDeadline && new Date(job.applicationDeadline) < new Date();
+  const isJobNotFound = !job;
+
+  if (isJobNotFound) return <div className="text-center py-16"><h2 className="text-xl font-semibold">Job not found</h2><Link to="/jobs" className="btn-primary mt-4">Back to Jobs</Link></div>;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -100,7 +103,10 @@ export default function JobDetails() {
         <div className="card mb-6">
           <div className="flex items-start justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">{job.title}</h1>
+              <div className="flex items-center gap-3">
+                <h1 className="text-3xl font-bold text-gray-900">{job.title}</h1>
+                {isExpired && <span className="badge bg-red-100 text-red-700 border border-red-200">🔴 Expired</span>}
+              </div>
               <p className="text-xl text-gray-600 mt-1">{job.companyName}</p>
               <div className="flex items-center gap-6 mt-4 text-gray-500">
                 <span className="flex items-center gap-2"><MapPin className="w-5 h-5" />{job.location || 'Not specified'}</span>
@@ -116,8 +122,8 @@ export default function JobDetails() {
               <button className="p-3 border rounded-lg hover:bg-gray-50"><Share2 className="w-5 h-5 text-gray-600" /></button>
             </div>
           </div>
-          <button onClick={handleApply} disabled={applying || job.hasApplied} className="btn-primary w-full py-4 mt-6 text-lg">
-            {applying ? 'Applying...' : job.hasApplied ? <><CheckCircle className="w-5 h-5 inline mr-2" /> Already Applied</> : 'Apply Now'}
+          <button onClick={handleApply} disabled={applying || job.hasApplied || isExpired} className={`btn-primary w-full py-4 mt-6 text-lg ${isExpired ? 'opacity-50 cursor-not-allowed' : ''}`}>
+            {isExpired ? '🔴 Applications Closed' : applying ? 'Applying...' : job.hasApplied ? <><CheckCircle className="w-5 h-5 inline mr-2" /> Already Applied</> : 'Apply Now'}
           </button>
         </div>
         <div className="card mb-6">

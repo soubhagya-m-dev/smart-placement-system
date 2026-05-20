@@ -34,3 +34,8 @@ body {
 .badge-yellow { @apply bg-yellow-100 text-yellow-700; }
 .badge-red { @apply bg-red-100 text-red-700; }
 .badge-purple { @apply bg-purple-100 text-purple-700; }
+
+@keyframes bounceOnce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+}

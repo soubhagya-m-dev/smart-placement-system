@@ -21,7 +21,7 @@ export default function StudentDashboard() {
         const statsData = await statsRes.json();
         const jobsData = await jobsRes.json();
         if (statsData.success) setStats(statsData.data);
-        if (jobsData.success) setRecentJobs(jobsData.data.jobs);
+        if (jobsData.success) setRecentJobs(jobsData.data.jobs.filter(j => !j.applicationDeadline || new Date(j.applicationDeadline) >= new Date()));
       } catch (error) { console.error('Failed to fetch data'); }
       finally { setLoading(false); }
     };
