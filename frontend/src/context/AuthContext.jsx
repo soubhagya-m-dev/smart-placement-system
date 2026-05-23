@@ -2,6 +2,8 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 import { signInWithGoogle } from '../firebase/config';
 
+const API_URL = import.meta.env.VITE_API_URL || 'https://placement-backend-sq0p.onrender.com';
+
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
@@ -12,7 +14,7 @@ export function AuthProvider({ children }) {
     const token = localStorage.getItem('token');
     if (token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      axios.get('/api/auth/me')
+      axios.get(`${API_URL}/api/auth/me`)
         .then(res => setUser(res.data.data.user))
         .catch(() => localStorage.removeItem('token'))
         .finally(() => setLoading(false));
@@ -22,7 +24,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = async (email, password) => {
-    const res = await axios.post('/api/auth/login', { email, password });
+    const res = await axios.post(`${API_URL}/api/auth/login`, { email, password });
     const { token, user: userData } = res.data.data;
     localStorage.setItem('token', token);
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -34,7 +36,7 @@ export function AuthProvider({ children }) {
     const result = await signInWithGoogle();
     const idToken = await result.user.getIdToken();
     
-    const res = await axios.post('/api/auth/google', {
+    const res = await axios.post(`${API_URL}/api/auth/google`, {
       googleId: result.user.uid,
       email: result.user.email,
       name: result.user.displayName,
@@ -50,12 +52,12 @@ export function AuthProvider({ children }) {
   };
 
   const register = async (data) => {
-    const res = await axios.post('/api/auth/register', data);
+    const res = await axios.post(`${API_URL}/api/auth/register`, data);
     return res.data;
   };
 
   const verifyOTP = async (email, otp) => {
-    const res = await axios.post('/api/auth/verify-otp', { email, otp });
+    const res = await axios.post(`${API_URL}/api/auth/verify-otp`, { email, otp });
     const { token, user: userData } = res.data.data;
     localStorage.setItem('token', token);
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -70,7 +72,7 @@ export function AuthProvider({ children }) {
   };
 
   const updateProfile = async (data) => {
-    const res = await axios.patch('/api/auth/profile', data);
+    const res = await axios.patch(`${API_URL}/api/auth/profile`, data);
     setUser(res.data.data.user);
     return res.data;
   };

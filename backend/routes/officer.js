@@ -8,7 +8,11 @@ const auth = async (req, res, next) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return res.status(401).json({ success: false, message: 'No token' });
-    req.user = jwt.verify(token, process.env.JWT_SECRET || 'secret');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret');
+    if (!decoded.role || (decoded.role !== 'officer' && decoded.role !== 'admin')) {
+      return res.status(403).json({ success: false, message: 'Access denied. Officers only.' });
+    }
+    req.user = decoded;
     next();
   } catch { res.status(401).json({ success: false, message: 'Invalid token' }); }
 };
@@ -23,7 +27,18 @@ router.get('/my-jobs', auth, async (req, res) => {
 
 router.get('/pending-verifications', auth, async (req, res) => {
   try {
-    const students = await User.find({ role: 'student', isVerified: false }).select('name email studentProfile');
+    // Find students who:
+    // 1. Have verified email (isVerified: true)
+    // 2. Have completed their profile (isProfileComplete: true)
+    // 3. Are not yet TPO-verified (studentProfile.verified: false)
+    // 4. Are not rejected (status !== 'rejected')
+    const students = await User.find({ 
+      role: 'student', 
+      isVerified: true,
+      'studentProfile.isProfileComplete': true,
+      'studentProfile.verified': false,
+      status: { $ne: 'rejected' }
+    }).select('name email studentProfile createdAt');
     res.json({ success: true, data: { students } });
   } catch (error) { res.status(500).json({ success: false, message: error.message }); }
 });

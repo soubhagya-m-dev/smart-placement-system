@@ -2,6 +2,9 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import { useAuth } from './AuthContext';
 
+const API_URL = import.meta.env.VITE_API_URL || 'https://placement-backend-sq0p.onrender.com';
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || API_URL;
+
 const SocketContext = createContext();
 
 export function SocketProvider({ children }) {
@@ -12,7 +15,7 @@ export function SocketProvider({ children }) {
 
   useEffect(() => {
     if (user) {
-      const newSocket = io('/', {
+      const newSocket = io(SOCKET_URL, {
         auth: { token: localStorage.getItem('token') },
         transports: ['websocket', 'polling']
       });
@@ -42,7 +45,7 @@ export function SocketProvider({ children }) {
 
   const markAsRead = async (id) => {
     try {
-      await fetch(`/api/notifications/${id}/read`, {
+      await fetch(`${API_URL}/api/notifications/${id}/read`, {
         method: 'PATCH',
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
@@ -53,7 +56,7 @@ export function SocketProvider({ children }) {
 
   const fetchNotifications = async () => {
     try {
-      const res = await fetch('/api/notifications', {
+      const res = await fetch(`${API_URL}/api/notifications`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       const data = await res.json();

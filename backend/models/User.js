@@ -34,7 +34,8 @@ const userSchema = new mongoose.Schema({
       tenthMarks: Number,
       twelfthMarks: Number,
       resume: String,
-      verified: { type: Boolean, default: false }
+      verified: { type: Boolean, default: false },
+      isProfileComplete: { type: Boolean, default: false }
     },
   status: { type: String, enum: ['active', 'rejected', 'suspended'], default: 'active' },
   rejectionReason: String,

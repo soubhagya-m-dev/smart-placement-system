@@ -7,10 +7,7 @@ import { useAuth } from '../../context/AuthContext';
 export default function Jobs() {
   const { user } = useAuth();
   const [jobs, setJobs] = useState([]);
-  const [savedJobs, setSavedJobs] = useState(() => {
-    const stored = localStorage.getItem('savedJobs');
-    return stored ? JSON.parse(stored) : [];
-  });
+  const [savedJobs, setSavedJobs] = useState([]); // Don't init from localStorage - always fetch from server
   const [filters, setFilters] = useState({ 
     jobTitle: '', 
     companyName: '', 
@@ -23,14 +20,7 @@ export default function Jobs() {
   const [showFilters, setShowFilters] = useState(false);
   const [showSaved, setShowSaved] = useState(false);
 
-  useEffect(() => { fetchJobs(); }, []);
-  
-  useEffect(() => {
-    const stored = localStorage.getItem('savedJobs');
-    if (!stored) {
-      fetchSavedJobs();
-    }
-  }, []);
+  useEffect(() => { fetchJobs(); fetchSavedJobs(); }, []);
 
   const fetchJobs = async () => {
     try {
@@ -59,7 +49,6 @@ export default function Jobs() {
       const data = await res.json();
       if (data.success) { 
         setSavedJobs(data.data.jobs);
-        localStorage.setItem('savedJobs', JSON.stringify(data.data.jobs));
       }
     } catch (error) { console.error('Failed to fetch saved jobs'); }
   };
@@ -82,27 +71,29 @@ export default function Jobs() {
   const toggleSaveJob = async (jobId) => {
     try {
       const token = localStorage.getItem('token');
+      console.log('Toggle save - token exists:', !!token, '| jobId:', jobId);
       const res = await fetch(`/api/jobs/saved/${jobId}`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
       });
+      console.log('Toggle save - status:', res.status);
       const data = await res.json();
+      console.log('Toggle save - response:', JSON.stringify(data));
       if (data.success) {
         if (data.data.saved) {
           const jobToSave = jobs.find(j => j._id === jobId);
-          if (jobToSave) {
-            const updated = [...savedJobs, jobToSave];
-            setSavedJobs(updated);
-            localStorage.setItem('savedJobs', JSON.stringify(updated));
-          }
+          if (jobToSave) setSavedJobs(prev => [...prev, jobToSave]);
         } else {
-          const updated = savedJobs.filter(j => j._id !== jobId);
-          setSavedJobs(updated);
-          localStorage.setItem('savedJobs', JSON.stringify(updated));
+          setSavedJobs(prev => prev.filter(j => j._id !== jobId));
         }
         toast.success(data.data.saved ? 'Job saved!' : 'Removed from saved jobs');
+      } else {
+        toast.error(data.message || 'Failed to update saved jobs');
       }
-    } catch (error) { toast.error('Failed to update'); }
+    } catch (error) { 
+      console.error('Toggle save error:', error);
+      toast.error('Failed to update'); 
+    }
   };
 
   const isJobSaved = (jobId) => savedJobs.some(j => j._id === jobId);

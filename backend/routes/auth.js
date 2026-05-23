@@ -3,6 +3,7 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
+const { sendVerificationEmail } = require('../services/emailService');
 
 // Register
 router.post('/register', async (req, res) => {
@@ -22,9 +23,10 @@ router.post('/register', async (req, res) => {
       verificationOTP: { code: otp, expiresAt: otpExpiry }
     });
     
-    console.log(`OTP for ${email}: ${otp}`); // In production, send via email
+    // In production, send real email
+    await sendVerificationEmail(email, otp, name);
     
-    res.json({ success: true, message: 'OTP sent to email', email });
+    res.json({ success: true, message: 'Verification email sent! Check your inbox.', email });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -45,7 +47,7 @@ router.post('/verify-otp', async (req, res) => {
     user.verificationOTP = undefined;
     await user.save();
     
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'secret', { expiresIn: '7d' });
+    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET || 'secret', { expiresIn: '7d' });
     
     res.json({ success: true, data: { token, user } });
   } catch (error) {
@@ -65,7 +67,7 @@ router.post('/login', async (req, res) => {
     
     if (!user.isVerified) return res.status(403).json({ success: false, message: 'Please verify your email first' });
     
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'secret', { expiresIn: '7d' });
+    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET || 'secret', { expiresIn: '7d' });
     
     res.json({ success: true, data: { token, user } });
   } catch (error) {
@@ -95,7 +97,7 @@ router.post('/google', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Email already registered. Please login with password.' });
     }
     
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'secret', { expiresIn: '7d' });
+    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET || 'secret', { expiresIn: '7d' });
     
     res.json({ success: true, data: { token, user } });
   } catch (error) {
@@ -125,6 +127,23 @@ router.patch('/profile', async (req, res) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret');
     
     const { name, phone, studentProfile } = req.body;
+    
+    // If studentProfile data is being submitted, check if profile is complete
+    if (studentProfile) {
+      const p = studentProfile;
+      const requiredFields = [
+        p.universityRollNumber, p.universityRegistrationNumber, p.collegeId,
+        p.admissionType, p.fullName, p.stream, p.section, p.gender,
+        p.dateOfBirth, p.tenthBoard, p.tenthPercentage, p.tenthPassingYear,
+        p.twelfthBoard, p.twelfthPercentage, p.twelfthPassingYear,
+        p.contactNumber, p.currentCGPA, p.numberOfBacklog
+      ];
+      const isProfileComplete = requiredFields.every(f => f !== undefined && f !== null && f !== '');
+      
+      // Add isProfileComplete flag based on whether all required fields are filled
+      studentProfile.isProfileComplete = isProfileComplete;
+    }
+    
     const user = await User.findByIdAndUpdate(decoded.id, { name, phone, ...(studentProfile && { studentProfile }) }, { new: true }).select('-password');
     
     res.json({ success: true, data: { user } });
