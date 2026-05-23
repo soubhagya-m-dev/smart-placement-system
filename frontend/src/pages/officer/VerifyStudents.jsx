@@ -138,7 +138,7 @@ export default function VerifyStudents() {
                     </div>
                     <div>
                       <p className="text-xs text-gray-500">Phone</p>
-                      <p className="font-medium">{selectedStudent.phone || 'Not provided'}</p>
+                      <p className="font-medium">{selectedStudent.studentProfile.contactNumber || 'Not provided'}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
@@ -146,8 +146,8 @@ export default function VerifyStudents() {
                       <FileText className="w-5 h-5 text-blue-600" />
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500">Account Status</p>
-                      <p className="font-medium capitalize">{selectedStudent.status || 'pending'}</p>
+                      <p className="text-xs text-gray-500">Gender</p>
+                      <p className="font-medium capitalize">{selectedStudent.studentProfile.gender || 'Not provided'}</p>
                     </div>
                   </div>
                 </div>
@@ -165,8 +165,8 @@ export default function VerifyStudents() {
                         <Hash className="w-5 h-5 text-green-600" />
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500">Roll Number</p>
-                        <p className="font-medium">{selectedStudent.studentProfile.rollNumber || 'Not provided'}</p>
+                        <p className="text-xs text-gray-500">University Roll Number</p>
+                        <p className="font-medium">{selectedStudent.studentProfile.universityRollNumber || 'Not provided'}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
@@ -175,7 +175,7 @@ export default function VerifyStudents() {
                       </div>
                       <div>
                         <p className="text-xs text-gray-500">Registration Number</p>
-                        <p className="font-medium">{selectedStudent.studentProfile.registrationNumber || 'Not provided'}</p>
+                        <p className="font-medium">{selectedStudent.studentProfile.universityRegistrationNumber || 'Not provided'}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
@@ -183,8 +183,17 @@ export default function VerifyStudents() {
                         <Book className="w-5 h-5 text-green-600" />
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500">Department</p>
-                        <p className="font-medium">{selectedStudent.studentProfile.department || 'Not provided'}</p>
+                        <p className="text-xs text-gray-500">College ID</p>
+                        <p className="font-medium">{selectedStudent.studentProfile.collegeId || 'Not provided'}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                        <Book className="w-5 h-5 text-green-600" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">Stream</p>
+                        <p className="font-medium">{selectedStudent.studentProfile.stream || 'Not provided'}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
@@ -192,8 +201,8 @@ export default function VerifyStudents() {
                         <Calendar className="w-5 h-5 text-green-600" />
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500">Year</p>
-                        <p className="font-medium">{selectedStudent.studentProfile.year || 'Not provided'}</p>
+                        <p className="text-xs text-gray-500">Section</p>
+                        <p className="font-medium">{selectedStudent.studentProfile.section || 'Not provided'}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
@@ -201,8 +210,8 @@ export default function VerifyStudents() {
                         <FileText className="w-5 h-5 text-green-600" />
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500">CGPA</p>
-                        <p className="font-medium">{selectedStudent.studentProfile.cgpa || 'Not provided'}</p>
+                        <p className="text-xs text-gray-500">Current CGPA</p>
+                        <p className="font-medium">{selectedStudent.studentProfile.currentCGPA || 'Not provided'}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
@@ -211,7 +220,7 @@ export default function VerifyStudents() {
                       </div>
                       <div>
                         <p className="text-xs text-gray-500">10th %</p>
-                        <p className="font-medium">{selectedStudent.studentProfile.percentage10th || 'Not provided'}</p>
+                        <p className="font-medium">{selectedStudent.studentProfile.tenthPercentage || 'Not provided'}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
@@ -220,7 +229,16 @@ export default function VerifyStudents() {
                       </div>
                       <div>
                         <p className="text-xs text-gray-500">12th %</p>
-                        <p className="font-medium">{selectedStudent.studentProfile.percentage12th || 'Not provided'}</p>
+                        <p className="font-medium">{selectedStudent.studentProfile.twelfthPercentage || 'Not provided'}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                        <Book className="w-5 h-5 text-green-600" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">Backlogs</p>
+                        <p className="font-medium">{selectedStudent.studentProfile.numberOfBacklog ?? 'Not provided'}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
@@ -228,12 +246,62 @@ export default function VerifyStudents() {
                         <FileText className="w-5 h-5 text-green-600" />
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500">Profile Completion</p>
-                        <p className="font-medium">{selectedStudent.studentProfile.isProfileComplete ? (
-                          <span className="text-green-600">Complete</span>
-                        ) : (
-                          <span className="text-yellow-600">Incomplete</span>
-                        )}</p>
+                        <p className="text-xs text-gray-500">Admission Type</p>
+                        <p className="font-medium">{selectedStudent.studentProfile.admissionType || 'Not provided'}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                        <User className="w-5 h-5 text-green-600" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">Gender</p>
+                        <p className="font-medium">{selectedStudent.studentProfile.gender || 'Not provided'}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                        <Calendar className="w-5 h-5 text-green-600" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">Date of Birth</p>
+                        <p className="font-medium">{selectedStudent.studentProfile.dateOfBirth || 'Not provided'}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                        <Book className="w-5 h-5 text-green-600" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">10th Board</p>
+                        <p className="font-medium">{selectedStudent.studentProfile.tenthBoard || 'Not provided'}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                        <Calendar className="w-5 h-5 text-green-600" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">10th Passing Year</p>
+                        <p className="font-medium">{selectedStudent.studentProfile.tenthPassingYear || 'Not provided'}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                        <Book className="w-5 h-5 text-green-600" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">12th Board</p>
+                        <p className="font-medium">{selectedStudent.studentProfile.twelfthBoard || 'Not provided'}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                        <Calendar className="w-5 h-5 text-green-600" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">12th Passing Year</p>
+                        <p className="font-medium">{selectedStudent.studentProfile.twelfthPassingYear || 'Not provided'}</p>
                       </div>
                     </div>
                   </div>

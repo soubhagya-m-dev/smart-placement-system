@@ -1,7 +1,10 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 import { Save } from 'lucide-react';
+import axios from 'axios';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 export default function Profile() {
   const { user, updateProfile } = useAuth();
@@ -9,29 +12,70 @@ export default function Profile() {
   const [saved, setSaved] = useState(false);
   const [isModified, setIsModified] = useState(false);
   const [form, setForm] = useState({
-    universityRollNumber: user?.studentProfile?.universityRollNumber || '',
-    universityRegistrationNumber: user?.studentProfile?.universityRegistrationNumber || '',
-    collegeId: user?.studentProfile?.collegeId || '',
-    admissionType: user?.studentProfile?.admissionType || '',
-    fullName: user?.studentProfile?.fullName || user?.name || '',
-    stream: user?.studentProfile?.stream || '',
-    section: user?.studentProfile?.section || '',
-    gender: user?.studentProfile?.gender || '',
-    dateOfBirth: user?.studentProfile?.dateOfBirth || '',
-    tenthBoard: user?.studentProfile?.tenthBoard || '',
-    tenthMedium: user?.studentProfile?.tenthMedium || '',
-    tenthPercentage: user?.studentProfile?.tenthPercentage || '',
-    tenthPassingYear: user?.studentProfile?.tenthPassingYear || '',
-    twelfthBoard: user?.studentProfile?.twelfthBoard || '',
-    twelfthMedium: user?.studentProfile?.twelfthMedium || '',
-    twelfthPercentage: user?.studentProfile?.twelfthPercentage || '',
-    twelfthPassingYear: user?.studentProfile?.twelfthPassingYear || '',
-    contactNumber: user?.studentProfile?.contactNumber || '',
-    email: user?.studentProfile?.email || user?.email || '',
-    currentCGPA: user?.studentProfile?.currentCGPA || '',
-    numberOfBacklog: user?.studentProfile?.numberOfBacklog ?? '',
-    skills: user?.studentProfile?.skills?.join(', ') || '',
+    universityRollNumber: '',
+    universityRegistrationNumber: '',
+    collegeId: '',
+    admissionType: '',
+    fullName: '',
+    stream: '',
+    section: '',
+    gender: '',
+    dateOfBirth: '',
+    tenthBoard: '',
+    tenthMedium: '',
+    tenthPercentage: '',
+    tenthPassingYear: '',
+    twelfthBoard: '',
+    twelfthMedium: '',
+    twelfthPercentage: '',
+    twelfthPassingYear: '',
+    contactNumber: '',
+    email: '',
+    currentCGPA: '',
+    numberOfBacklog: '',
+    skills: '',
   });
+
+  // Fetch latest profile data when component mounts
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        const res = await axios.get(`${API_URL}/api/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const fullUser = res.data.data.user;
+        setForm({
+          universityRollNumber: fullUser.studentProfile?.universityRollNumber || '',
+          universityRegistrationNumber: fullUser.studentProfile?.universityRegistrationNumber || '',
+          collegeId: fullUser.studentProfile?.collegeId || '',
+          admissionType: fullUser.studentProfile?.admissionType || '',
+          fullName: fullUser.studentProfile?.fullName || fullUser.name || '',
+          stream: fullUser.studentProfile?.stream || '',
+          section: fullUser.studentProfile?.section || '',
+          gender: fullUser.studentProfile?.gender || '',
+          dateOfBirth: fullUser.studentProfile?.dateOfBirth || '',
+          tenthBoard: fullUser.studentProfile?.tenthBoard || '',
+          tenthMedium: fullUser.studentProfile?.tenthMedium || '',
+          tenthPercentage: fullUser.studentProfile?.tenthPercentage || '',
+          tenthPassingYear: fullUser.studentProfile?.tenthPassingYear || '',
+          twelfthBoard: fullUser.studentProfile?.twelfthBoard || '',
+          twelfthMedium: fullUser.studentProfile?.twelfthMedium || '',
+          twelfthPercentage: fullUser.studentProfile?.twelfthPercentage || '',
+          twelfthPassingYear: fullUser.studentProfile?.twelfthPassingYear || '',
+          contactNumber: fullUser.studentProfile?.contactNumber || '',
+          email: fullUser.studentProfile?.email || fullUser.email || '',
+          currentCGPA: fullUser.studentProfile?.currentCGPA || '',
+          numberOfBacklog: fullUser.studentProfile?.numberOfBacklog ?? '',
+          skills: fullUser.studentProfile?.skills?.join(', ') || '',
+        });
+      } catch (err) {
+        console.error('Failed to fetch profile:', err);
+      }
+    };
+    fetchProfile();
+  }, []);
 
   const handleChange = (field, value) => {
     // Auto-uppercase for full name
@@ -42,13 +86,9 @@ export default function Profile() {
     if (field === 'collegeId') {
       value = value.toUpperCase();
     }
-    // Auto-add +91 for contact number
+    // Only keep digits for contact number
     if (field === 'contactNumber') {
       value = value.replace(/[^0-9]/g, '');
-      if (!value.startsWith('91') && value.length > 0) {
-        value = '91' + value;
-      }
-      value = '+' + value;
     }
     // If backlog is selected, clear CGPA and set to 0
     if (field === 'numberOfBacklog') {
@@ -175,7 +215,7 @@ export default function Profile() {
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Contact Number <span className="text-red-500">*</span></label>
-                <input type="tel" className="input" placeholder="+91XXXXXXXXXX" value={form.contactNumber} onChange={e => handleChange('contactNumber', e.target.value)} maxLength={12} />
+                <input type="tel" className="input" placeholder="9876543210" value={form.contactNumber} onChange={e => handleChange('contactNumber', e.target.value)} maxLength={10} />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Email <span className="text-red-500">*</span></label>

@@ -1,5 +1,7 @@
+// Firebase configuration
+// Copy this from Firebase Console → Project Settings → Your apps → Web app
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: "AIzaSyCaDV6rB4SB9Uwg8lh2fAzy8BgG6u2U2oU",
@@ -12,6 +14,3 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
-export const googleProvider = new GoogleAuthProvider();
-
-export const signInWithGoogle = () => signInWithPopup(auth, googleProvider);

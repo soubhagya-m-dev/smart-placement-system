@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
-import { FaGoogle, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { FaGoogle, FaEye, FaEyeSlash, FaUserShield } from 'react-icons/fa';
 
 export default function Login() {
   const { login, googleLogin } = useAuth();
@@ -19,7 +19,7 @@ export default function Login() {
       toast.success(`Welcome back, ${user.name}!`);
       navigate('/');
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Login failed');
+      toast.error(err.message || 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -32,7 +32,7 @@ export default function Login() {
       toast.success(`Welcome, ${user.name}!`);
       navigate('/');
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Google login failed');
+      toast.error(err.message || 'Google login failed');
     } finally {
       setLoading(false);
     }
@@ -80,6 +80,11 @@ export default function Login() {
           Sign in with Google
         </button>
         <p className="text-center mt-6 text-gray-500">Don't have an account? <Link to="/register" className="text-blue-600 hover:underline">Register</Link></p>
+        <div className="mt-4 pt-4 border-t border-gray-200 text-center">
+          <Link to="/admin-login" className="text-sm text-blue-600 hover:underline flex items-center justify-center gap-1">
+            <FaUserShield className="text-xs" /> Admin / Placement Officer Login
+          </Link>
+        </div>
       </div>
     </div>
   );

@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import { useAuth } from './AuthContext';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://placement-backend-sq0p.onrender.com';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || API_URL;
 
 const SocketContext = createContext();

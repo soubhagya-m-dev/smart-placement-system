@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, Briefcase, Edit } from 'lucide-react';
+import { Plus, Trash2, Briefcase, Edit, Users, X } from 'lucide-react';
 import toast from 'react-hot-toast';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 export default function ManageJobs() {
   const [jobs, setJobs] = useState([]);
@@ -13,11 +15,17 @@ export default function ManageJobs() {
   });
   const [loading, setLoading] = useState(true);
 
+  // Applicants modal state
+  const [showApplicantsModal, setShowApplicantsModal] = useState(false);
+  const [selectedJob, setSelectedJob] = useState(null);
+  const [applicants, setApplicants] = useState([]);
+  const [applicantsLoading, setApplicantsLoading] = useState(false);
+
   useEffect(() => { fetchJobs(); }, []);
 
   const fetchJobs = async () => {
     try {
-      const res = await fetch('/api/officer/my-jobs', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+      const res = await fetch(`${API_URL}/api/officer/my-jobs`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
       const data = await res.json();
       if (data.success) setJobs(data.data.jobs);
     } catch (error) { console.error('Failed'); }
@@ -71,13 +79,13 @@ export default function ManageJobs() {
 
       let res;
       if (editingJob) {
-        res = await fetch(`/api/jobs/${editingJob._id}`, {
+        res = await fetch(`${API_URL}/api/jobs/${editingJob._id}`, {
           method: 'PUT',
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
       } else {
-        res = await fetch('/api/jobs', {
+        res = await fetch(`${API_URL}/api/jobs`, {
           method: 'POST',
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -97,7 +105,7 @@ export default function ManageJobs() {
 
   const deleteJob = async (id) => {
     if (!confirm('Delete this job?')) return;
-    await fetch(`/api/jobs/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+    await fetch(`${API_URL}/api/jobs/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
     toast.success('Deleted');
     fetchJobs();
   };
@@ -105,6 +113,118 @@ export default function ManageJobs() {
   const closeModal = () => {
     setShowModal(false);
     setEditingJob(null);
+  };
+
+  // View applicants for a job
+  const viewApplicants = async (job) => {
+    setSelectedJob(job);
+    setShowApplicantsModal(true);
+    setApplicantsLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/api/officer/job-applicants/${job._id}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setApplicants(data.data.applicants);
+      } else {
+        toast.error(data.message);
+        setApplicants([]);
+      }
+    } catch {
+      toast.error('Failed to fetch applicants');
+      setApplicants([]);
+    } finally {
+      setApplicantsLoading(false);
+    }
+  };
+
+  // Update application status
+  const updateApplicationStatus = async (applicationId, newStatus) => {
+    try {
+      const res = await fetch(`${API_URL}/api/officer/application/${applicationId}`, {
+        method: 'PATCH',
+        headers: { 
+          Authorization: `Bearer ${localStorage.getItem('token')}`, 
+          'Content-Type': 'application/json' 
+        },
+        body: JSON.stringify({ status: newStatus })
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(`Application ${newStatus}`);
+        // Update local state
+        setApplicants(prev => prev.map(app => 
+          app.applicationId === applicationId ? { ...app, status: newStatus } : app
+        ));
+      } else {
+        toast.error(data.message);
+      }
+    } catch {
+      toast.error('Failed to update status');
+    }
+  };
+
+  // Export applicants as CSV
+  const exportCSV = () => {
+    if (applicants.length === 0) {
+      toast.error('No applicants to export');
+      return;
+    }
+
+    // User-requested order: University Roll, Name, Email, Phone, Status, College ID, Reg No, Admission Type, Stream, Section, Gender, Dob, CGPA, Class 10 %, Class 12 %, Skills, + remaining fields
+    const headers = ['University Roll', 'Name', 'Email', 'Phone', 'Status', 'College ID', 'Reg. No', 'Admission Type', 'Stream', 'Section', 'Gender', 'DOB', 'CGPA', 'Class 10 %', 'Class 12 %', 'Skills', 'Class 10 Board', 'Class 12 Board', 'Backlogs', 'Applied Date'];
+    const rows = [headers.join(',')];
+
+    applicants.forEach(app => {
+      const s = app.student;
+      const p = s.studentProfile || {};
+      const row = [
+        `"${p.universityRollNumber || ''}"`,
+        `"${s.name || ''}"`,
+        `"${s.email || ''}"`,
+        `"${p.contactNumber || ''}"`,
+        `"${app.status}"`,
+        `"${p.collegeId || ''}"`,
+        `"${p.universityRegistrationNumber || ''}"`,
+        `"${p.admissionType || ''}"`,
+        `"${p.stream || ''}"`,
+        `"${p.section || ''}"`,
+        `"${p.gender || ''}"`,
+        `"${p.dateOfBirth || ''}"`,
+        `"${p.currentCGPA || ''}"`,
+        `"${p.tenthPercentage || ''}"`,
+        `"${p.twelfthPercentage || ''}"`,
+        `"${(p.skills || []).join('; ')}"`,
+        `"${p.tenthBoard || ''}"`,
+        `"${p.twelfthBoard || ''}"`,
+        `"${p.numberOfBacklog !== undefined ? p.numberOfBacklog : ''}"`,
+        `"${new Date(app.appliedAt).toLocaleDateString()}"`
+      ].join(',');
+      rows.push(row);
+    });
+
+    const csvContent = rows.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${selectedJob?.companyName || 'company'}_applicants_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    toast.success('CSV exported successfully!');
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'pending': return 'bg-yellow-100 text-yellow-800';
+      case 'shortlisted': return 'bg-blue-100 text-blue-800';
+      case 'rejected': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
   };
 
   return (
@@ -119,8 +239,15 @@ export default function ManageJobs() {
         ) : (
           <div className="space-y-4">{jobs.map(job => (
             <div key={job._id} className="card flex items-center justify-between">
-              <div><h3 className="font-semibold text-lg">{job.title}</h3><p className="text-gray-500">{job.companyName} • {job.location}</p><span className="badge badge-blue mt-1">{job.jobType}</span></div>
+              <div>
+                <h3 className="font-semibold text-lg">{job.title}</h3>
+                <p className="text-gray-500">{job.companyName} • {job.location}</p>
+                <span className="badge badge-blue mt-1">{job.jobType}</span>
+              </div>
               <div className="flex items-center gap-2">
+                <button onClick={() => viewApplicants(job)} className="btn-secondary flex items-center gap-1 text-sm">
+                  <Users className="w-4 h-4" /> Applicants
+                </button>
                 <button onClick={() => openEditModal(job)} className="p-2 text-blue-500 hover:bg-blue-50 rounded"><Edit className="w-5 h-5" /></button>
                 <button onClick={() => deleteJob(job._id)} className="p-2 text-red-500 hover:bg-red-50 rounded"><Trash2 className="w-5 h-5" /></button>
               </div>
@@ -128,6 +255,106 @@ export default function ManageJobs() {
           ))}
         </div>
         )}
+        
+        {/* Applicants Modal */}
+        {showApplicantsModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="text-xl font-bold">Applicants</h2>
+                  <p className="text-gray-500">{selectedJob?.title} - {selectedJob?.companyName}</p>
+                </div>
+                <button onClick={() => { setShowApplicantsModal(false); setSelectedJob(null); setApplicants([]); }} className="p-2 hover:bg-gray-100 rounded"><X className="w-5 h-5" /></button>
+              </div>
+
+              {applicantsLoading ? (
+                <div className="text-center py-8">Loading applicants...</div>
+              ) : applicants.length === 0 ? (
+                <div className="text-center py-8">
+                  <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-500">No students have applied yet</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm text-gray-500">{applicants.length} applicant{applicants.length !== 1 ? 's' : ''}</p>
+                    <button onClick={exportCSV} className="btn-secondary flex items-center gap-1 text-sm">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                      Export CSV
+                    </button>
+                  </div>
+                  {applicants.map((app) => (
+                    <div key={app.applicationId} className="border rounded-lg p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-lg">{app.student.name}</h3>
+                          <p className="text-gray-500 text-sm">{app.student.email}</p>
+                          <p className="text-gray-500 text-sm">📱 {app.student.phone || 'N/A'}</p>
+                        </div>
+                        <div className="flex flex-col items-end gap-2">
+                          <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(app.status)}`}>
+                            {app.status}
+                          </span>
+                          <span className="text-xs text-gray-400">
+                            Applied: {new Date(app.appliedAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      {/* All Student Fields */}
+                      <div className="bg-gray-50 rounded-lg p-3 mb-3">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-1 text-xs">
+                          {app.student.studentProfile?.universityRollNumber && <p><span className="font-medium">University Roll:</span> {app.student.studentProfile.universityRollNumber}</p>}
+                          {app.student.studentProfile?.collegeId && <p><span className="font-medium">College ID:</span> {app.student.studentProfile.collegeId}</p>}
+                          {app.student.studentProfile?.stream && <p><span className="font-medium">Stream:</span> {app.student.studentProfile.stream}</p>}
+                          {app.student.studentProfile?.section && <p><span className="font-medium">Section:</span> {app.student.studentProfile.section}</p>}
+                          {app.student.studentProfile?.gender && <p><span className="font-medium">Gender:</span> {app.student.studentProfile.gender}</p>}
+                          {app.student.studentProfile?.dateOfBirth && <p><span className="font-medium">DOB:</span> {app.student.studentProfile.dateOfBirth}</p>}
+                          {app.student.studentProfile?.admissionType && <p><span className="font-medium">Admission Type:</span> {app.student.studentProfile.admissionType}</p>}
+                          {app.student.studentProfile?.universityRegistrationNumber && <p><span className="font-medium">Reg. No:</span> {app.student.studentProfile.universityRegistrationNumber}</p>}
+                          {app.student.studentProfile?.currentCGPA && <p><span className="font-medium">CGPA:</span> {app.student.studentProfile.currentCGPA}</p>}
+                          {app.student.studentProfile?.twelfthPercentage && <p><span className="font-medium">Class 12 %:</span> {app.student.studentProfile.twelfthPercentage}</p>}
+                          {app.student.studentProfile?.tenthPercentage && <p><span className="font-medium">Class 10 %:</span> {app.student.studentProfile.tenthPercentage}</p>}
+                          {app.student.studentProfile?.twelfthBoard && <p><span className="font-medium">12th Board:</span> {app.student.studentProfile.twelfthBoard}</p>}
+                          {app.student.studentProfile?.tenthBoard && <p><span className="font-medium">10th Board:</span> {app.student.studentProfile.tenthBoard}</p>}
+                          {app.student.studentProfile?.contactNumber && <p><span className="font-medium">Contact:</span> {app.student.studentProfile.contactNumber}</p>}
+                          {app.student.studentProfile?.numberOfBacklog !== undefined && <p><span className="font-medium">Backlogs:</span> {app.student.studentProfile.numberOfBacklog}</p>}
+                          {app.student.studentProfile?.skills?.length > 0 && <p className="col-span-4"><span className="font-medium">Skills:</span> {app.student.studentProfile.skills.join(', ')}</p>}
+                        </div>
+                      </div>
+                      <div className="mt-4 flex gap-2">
+                        <button 
+                          onClick={() => updateApplicationStatus(app.applicationId, 'shortlisted')}
+                          disabled={app.status === 'shortlisted'}
+                          className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200 disabled:opacity-50"
+                        >
+                          Shortlist
+                        </button>
+                        
+                        <button 
+                          onClick={() => updateApplicationStatus(app.applicationId, 'rejected')}
+                          disabled={app.status === 'rejected'}
+                          className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200 disabled:opacity-50"
+                        >
+                          Reject
+                        </button>
+                        <button 
+                          onClick={() => updateApplicationStatus(app.applicationId, 'pending')}
+                          disabled={app.status === 'pending'}
+                          className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 disabled:opacity-50"
+                        >
+                          Reset
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {showModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">

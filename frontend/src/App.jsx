@@ -4,9 +4,10 @@ import { SocketProvider } from './context/SocketContext';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://placement-backend-sq0p.onrender.com';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
+import AdminOfficerLogin from './pages/auth/AdminOfficerLogin';
 import StudentDashboard from './pages/student/Dashboard';
 import Jobs from './pages/student/Jobs';
 import JobDetails from './pages/student/JobDetails';
@@ -30,13 +31,28 @@ function ProtectedRoute({ children, roles }) {
 // Restricts students who haven't completed profile + been verified by TPO
 function StudentAccessRoute({ children }) {
   const { user, loading } = useAuth();
-  const [accessStatus, setAccessStatus] = useState(null); // null = checking, {canAccess, code, message} = result
+  const [accessStatus, setAccessStatus] = useState(null);
 
   useEffect(() => {
     if (!user) return;
     if (user.role !== 'student') { setAccessStatus({ canAccess: true }); return; }
     axios.get(`${API_URL}/api/students/status`)
-      .then(res => setAccessStatus(res.data.data))
+      .then(res => {
+        const data = res.data.data;
+        // Determine canAccess based on actual response fields
+        const canAccess = data.isProfileComplete && data.isVerified && data.status !== 'rejected';
+        setAccessStatus({ 
+          canAccess, 
+          code: !data.isProfileComplete ? 'PROFILE_INCOMPLETE' : 
+                !data.isVerified ? 'PENDING_VERIFICATION' : 
+                data.status === 'rejected' ? 'ACCOUNT_REJECTED' : 'OK',
+          message: !data.isProfileComplete ? 'Please complete your profile to access all features.' :
+                   !data.isVerified ? 'Your profile is under review by the placement officer.' :
+                   data.status === 'rejected' ? 'Your account has been rejected. Contact placement officer.' :
+                   'Access granted',
+          rejectionReason: data.rejectionReason || null
+        });
+      })
       .catch(() => setAccessStatus({ canAccess: false, code: 'ERROR', message: 'Failed to check access' }));
   }, [user]);
 
@@ -84,6 +100,7 @@ function AppRoutes() {
     <Routes>
       <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />
       <Route path="/register" element={user ? <Navigate to="/" /> : <Register />} />
+      <Route path="/admin-login" element={user ? <Navigate to="/" /> : <AdminOfficerLogin />} />
       <Route path="/" element={<ProtectedRoute>{
         user?.role === 'admin' ? <AdminDashboard /> : 
         user?.role === 'officer' ? <OfficerDashboard /> : 
@@ -109,6 +126,7 @@ function AppRoutes() {
       <Route path="/officer/jobs" element={<ProtectedRoute roles={['officer']}><ManageJobs /></ProtectedRoute>} />
       <Route path="/officer/verify" element={<ProtectedRoute roles={['officer']}><VerifyStudents /></ProtectedRoute>} />
       <Route path="/officer/stats" element={<ProtectedRoute roles={['officer']}><Stats /></ProtectedRoute>} />
+      <Route path="/admin/dashboard" element={<ProtectedRoute roles={['admin']}><AdminDashboard /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   );

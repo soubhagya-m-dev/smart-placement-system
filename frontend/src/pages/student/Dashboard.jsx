@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://placement-backend-sq0p.onrender.com';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 export default function StudentDashboard() {
   const { user, logout } = useAuth();
@@ -41,7 +41,7 @@ export default function StudentDashboard() {
     finally { setLoading(false); }
   };
 
-  const isRestricted = accessStatus && !accessStatus.isProfileComplete || !accessStatus?.isVerified || accessStatus?.status === 'rejected';
+  const isRestricted = accessStatus && (!accessStatus.isProfileComplete || !accessStatus.isVerified || accessStatus.status === 'rejected');
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -57,9 +57,7 @@ export default function StudentDashboard() {
 
       <main className="max-w-7xl mx-auto px-4 py-8">
         {/* Access restriction banner */}
-        {accessStatus && (
-          !accessStatus.isProfileComplete || !accessStatus.isVerified || accessStatus.status === 'rejected'
-        ) && (
+        {(accessStatus && (!accessStatus.isProfileComplete || !accessStatus.isVerified || accessStatus.status === 'rejected')) && (
           <div className="card mb-6 border-2 border-yellow-300 bg-yellow-50">
             <div className="flex items-start gap-4">
               <AlertCircle className="w-6 h-6 text-yellow-600 mt-1 flex-shrink-0" />

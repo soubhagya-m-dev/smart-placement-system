@@ -133,7 +133,24 @@ If you didn't request this, please ignore this email.
 </html>
   `.trim();
 
-  return sendEmail({ to: email, subject, text, html });
+  // ALWAYS log OTP to console for local testing (regardless of EMAIL_PROVIDER)
+  console.log(`\n========================================`);
+  console.log(`📧 OTP for ${email}: ${otp}`);
+  console.log(`========================================\n`);
+
+  // Try to send email, but don't fail if it doesn't work
+  try {
+    const result = await sendEmail({ to: email, subject, text, html });
+    if (result.success) {
+      console.log(`✅ Email sent to ${email}`);
+    } else {
+      console.log(`⚠️ Email failed but OTP is shown above`);
+    }
+    return result;
+  } catch (error) {
+    console.log(`⚠️ Email error: ${error.message}. OTP is shown above.`);
+    return { success: false, error: error.message };
+  }
 };
 
 /**
@@ -184,4 +201,87 @@ You can now log in and complete your student profile.
   return sendEmail({ to: email, subject, text, html });
 };
 
-module.exports = { sendEmail, sendVerificationEmail, sendWelcomeEmail };
+/**
+ * Send application status update email (shortlist/reject)
+ */
+const sendApplicationStatusEmail = async (email, name, jobTitle, companyName, status) => {
+  const statusText = status === 'shortlisted' ? 'Shortlisted' : 'Rejected';
+  const statusColor = status === 'shortlisted' ? '#10b981' : '#ef4444';
+  const statusEmoji = status === 'shortlisted' ? '🎉' : '😔';
+  
+  const subject = `Application Update: ${statusText} for ${jobTitle}`;
+  
+  const text = `
+Hi ${name},
+
+${statusText === 'Shortlisted' 
+  ? `Congratulations! You have been shortlisted for ${jobTitle} at ${companyName}.` 
+  : `We regret to inform you that your application for ${jobTitle} at ${companyName} has not been shortlisted.`
+}
+
+${statusText === 'Shortlisted' 
+  ? 'Our team will contact you soon with further details about the interview process.' 
+  : 'Thank you for your interest. We encourage you to apply for other positions that match your profile.'
+}
+
+Best regards,
+Training & Placement Cell
+  `.trim();
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 20px; }
+    .container { max-width: 480px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+    .header { background: ${statusColor}; color: white; padding: 30px; text-align: center; }
+    .header h1 { margin: 0; font-size: 22px; font-weight: 600; }
+    .body { padding: 30px; text-align: center; }
+    .emoji { font-size: 60px; margin-bottom: 20px; }
+    .status-badge { display: inline-block; background: ${statusColor}; color: white; padding: 8px 20px; border-radius: 20px; font-size: 14px; font-weight: 600; }
+    .job-info { background: #f8f9fa; border-radius: 8px; padding: 15px; margin: 20px 0; text-align: left; }
+    .job-info p { margin: 5px 0; color: #555; }
+    .job-info strong { color: #333; }
+    .footer { background: #f4f4f4; padding: 15px; text-align: center; font-size: 12px; color: #999; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>${statusEmoji} Application Update</h1>
+    </div>
+    <div class="body">
+      <div class="emoji">${statusEmoji}</div>
+      <span class="status-badge">${statusText}</span>
+      <p style="font-size: 16px; color: #333; margin-top: 20px;">Hi <strong>${name}</strong>,</p>
+      <p style="color: #555;">
+        ${statusText === 'Shortlisted' 
+          ? `Congratulations! You have been <strong>shortlisted</strong> for the position.` 
+          : `We regret to inform you that your application has not been shortlisted.`
+        }
+      </p>
+      <div class="job-info">
+        <p><strong>Position:</strong> ${jobTitle}</p>
+        <p><strong>Company:</strong> ${companyName}</p>
+        <p><strong>Status:</strong> ${statusText}</p>
+      </div>
+      <p style="color: #555; font-size: 14px;">
+        ${statusText === 'Shortlisted' 
+          ? 'Our team will contact you soon with further details.' 
+          : 'Thank you for your interest. Keep checking for new opportunities.'
+        }
+      </p>
+    </div>
+    <div class="footer">
+      Training & Placement Cell — College Placement System
+    </div>
+  </div>
+</body>
+</html>
+  `.trim();
+
+  return sendEmail({ to: email, subject, text, html });
+};
+
+module.exports = { sendEmail, sendVerificationEmail, sendWelcomeEmail, sendApplicationStatusEmail };

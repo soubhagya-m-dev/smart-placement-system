@@ -96,7 +96,11 @@ router.get('/pending', auth, async (req, res) => {
     
     const students = await User.find({ 
       role: 'student',
-      'studentProfile.verified': false,
+      $or: [
+        { 'studentProfile.verified': false },
+        { 'studentProfile.verified': null },
+        { 'studentProfile.verified': { $exists: false } }
+      ],
       status: { $ne: 'rejected' }
     }).select('name email studentProfile status createdAt');
     
