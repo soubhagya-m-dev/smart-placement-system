@@ -59,9 +59,9 @@ router.get('/job-applicants/:jobId', auth, async (req, res) => {
     
     // Get all applications for this job with student details
     const applications = await Application.find({ job: jobId })
-      .populate('student', 'name email phone studentProfile universityRollNo rollNo department stream section cgpa class12Percentage class10Percentage dateOfBirth gender category aadharCard address fatherName motherName emergencyContact annualIncome')
+      .populate('student', 'name email phone studentProfile universityRollNo rollNo department stream section cgpa class12Percentage class10Percentage dateOfBirth gender category aadharCard address fatherName motherName emergencyContact annualIncome contactNumber')
       .sort({ appliedAt: -1 });
-    
+
     const applicants = applications.map(app => ({
       applicationId: app._id,
       status: app.status,
@@ -70,7 +70,8 @@ router.get('/job-applicants/:jobId', auth, async (req, res) => {
         id: app.student._id,
         name: app.student.name,
         email: app.student.email,
-        phone: app.student.phone,
+        phone: app.student.phone || app.student.studentProfile?.contactNumber || null,
+        contactNumber: app.student.studentProfile?.contactNumber || null,
         universityRollNo: app.student.universityRollNo,
         rollNo: app.student.rollNo,
         studentProfile: app.student.studentProfile,
@@ -95,7 +96,7 @@ router.get('/job-applicants/:jobId', auth, async (req, res) => {
     res.json({ 
       success: true, 
       data: { 
-        job: { id: job._id, title: job.title, company: job.company },
+        job: { id: job._id, title: job.title, company: job.company, eligibility: job.eligibility },
         applicants,
         totalCount: applicants.length
       } 

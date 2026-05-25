@@ -19,6 +19,7 @@ export default function Jobs() {
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
   const [showSaved, setShowSaved] = useState(false);
+  const [showEligible, setShowEligible] = useState(false);
 
   useEffect(() => { fetchJobs(); fetchSavedJobs(); }, []);
 
@@ -99,6 +100,17 @@ export default function Jobs() {
   const isJobSaved = (jobId) => savedJobs.some(j => j._id === jobId);
   const isJobExpired = (job) => job.applicationDeadline && new Date(job.applicationDeadline) < new Date();
 
+  const isEligible = (job) => {
+    const sp = user?.studentProfile;
+    if (!sp) return false;
+    if (job.eligibility?.minCGPA && sp.currentCGPA < job.eligibility.minCGPA) return false;
+    if (job.eligibility?.class12Percentage && sp.twelfthPercentage < job.eligibility.class12Percentage) return false;
+    if (job.eligibility?.class10Percentage && sp.tenthPercentage < job.eligibility.class10Percentage) return false;
+    return true;
+  };
+
+  const eligibleCount = jobs.filter(j => !isJobExpired(j) && isEligible(j)).length;
+
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm border-b sticky top-0 z-10">
@@ -106,26 +118,37 @@ export default function Jobs() {
           
           {/* Header with Filter and Saved Jobs Toggles - Side by Side */}
           <div className="flex items-center justify-between">
-            <button 
+            <button
               onClick={() => setShowFilters(!showFilters)}
               className="flex items-center gap-2 text-gray-700 hover:text-gray-900 transition"
             >
               <Filter className="w-5 h-5" />
               <span className="font-medium">Filters</span>
             </button>
-            
-            <button 
-              onClick={() => setShowSaved(!showSaved)}
-              className="flex items-center gap-2 text-gray-700 hover:text-gray-900 transition"
-            >
-              <Bookmark className="w-5 h-5" />
-              <span className="font-medium">Saved Jobs ({savedJobs.length})</span>
-              <ChevronDown className={`w-4 h-4 transition-transform ${showSaved ? 'rotate-180' : ''}`} />
-            </button>
+
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setShowEligible(!showEligible)}
+                className="flex items-center gap-2 text-gray-700 hover:text-gray-900 transition"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <span className="font-medium">Eligible Jobs ({eligibleCount})</span>
+                <ChevronDown className={`w-4 h-4 transition-transform ${showEligible ? 'rotate-180' : ''}`} />
+              </button>
+
+              <button
+                onClick={() => setShowSaved(!showSaved)}
+                className="flex items-center gap-2 text-gray-700 hover:text-gray-900 transition"
+              >
+                <Bookmark className="w-5 h-5" />
+                <span className="font-medium">Saved Jobs ({savedJobs.length})</span>
+                <ChevronDown className={`w-4 h-4 transition-transform ${showSaved ? 'rotate-180' : ''}`} />
+              </button>
+            </div>
           </div>
 
           {/* Expanded Sections */}
-          {(showFilters || showSaved) && (
+          {(showFilters || showSaved || showEligible) && (
             <div className="mt-4 space-y-4">
               
               {/* Filters Section - Full Width */}
@@ -176,13 +199,38 @@ export default function Jobs() {
                             <p className="font-medium text-gray-900 text-sm truncate">{job.title}</p>
                             <p className="text-xs text-gray-500 truncate">{job.companyName}</p>
                           </Link>
-                          <button 
+                          <button
                             onClick={() => toggleSaveJob(job._id)}
                             className="p-1 text-gray-400 hover:text-red-500 transition ml-2"
                             title="Remove from saved"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Eligible Jobs Section */}
+              {showEligible && (
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <h3 className="font-medium text-gray-700 mb-3 flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    Eligible Jobs ({eligibleCount})
+                  </h3>
+                  {eligibleCount === 0 ? (
+                    <p className="text-gray-500 text-sm">No jobs match your eligibility criteria yet. Check back later!</p>
+                  ) : (
+                    <div className="space-y-2 max-h-60 overflow-y-auto">
+                      {jobs.filter(j => !isJobExpired(j) && isEligible(j)).map(job => (
+                        <div key={job._id} className="flex items-center justify-between p-2 bg-white rounded-lg">
+                          <Link to={`/jobs/${job._id}`} className="flex-1 min-w-0 hover:text-blue-600" onClick={() => setShowEligible(false)}>
+                            <p className="font-medium text-gray-900 text-sm truncate">{job.title}</p>
+                            <p className="text-xs text-gray-500 truncate">{job.companyName}</p>
+                          </Link>
+                          <span className="ml-2 text-green-600 text-xs font-medium">✅ Eligible</span>
                         </div>
                       ))}
                     </div>

@@ -102,7 +102,15 @@ router.get('/:id', auth, checkStudentAccess, async (req, res) => {
   try {
     const job = await Job.findById(req.params.id);
     const hasApplied = await Application.findOne({ job: req.params.id, student: req.user.id });
-    res.json({ success: true, data: { job: { ...job.toObject(), hasApplied: !!hasApplied } } });
+    const user = await User.findById(req.user.id);
+    console.log('GET /jobs/:id - studentProfile:', JSON.stringify(user.studentProfile));
+    res.json({
+      success: true,
+      data: {
+        job: { ...job.toObject(), hasApplied: !!hasApplied },
+        studentProfile: user.studentProfile || {}
+      }
+    });
   } catch (error) { res.status(500).json({ success: false, message: error.message }); }
 });
 

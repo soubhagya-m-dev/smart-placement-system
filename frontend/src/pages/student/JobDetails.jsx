@@ -11,6 +11,7 @@ export default function JobDetails() {
   const [loading, setLoading] = useState(true);
   const [isSaved, setIsSaved] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [studentProfile, setStudentProfile] = useState(null);
 
   useEffect(() => { fetchJob(); }, [id]);
 
@@ -18,8 +19,12 @@ export default function JobDetails() {
     try {
       const res = await fetch(`/api/jobs/${id}`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
       const data = await res.json();
-      if (data.success) setJob(data.data.job);
-    } catch (error) { console.error('Failed to fetch'); }
+      console.log('JobDetails API response:', JSON.stringify(data, null, 2));
+      if (data.success) {
+        setJob(data.data.job);
+        setStudentProfile(data.data.studentProfile);
+      }
+    } catch (error) { console.error('Failed to fetch', error); }
     finally { setLoading(false); }
   };
 
@@ -136,13 +141,52 @@ export default function JobDetails() {
             <div className="flex flex-wrap gap-2">{job.requiredSkills?.map((skill, i) => <span key={i} className="badge badge-blue text-sm px-3 py-2">{skill}</span>) || <p className="text-gray-500">Not specified</p>}</div>
           </div>
           <div className="card">
-            <h2 className="text-xl font-semibold mb-4">Eligibility Criteria</h2>
-            <div className="space-y-2">
-              {job.eligibility?.minCGPA ? <p className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-500" />Minimum CGPA: {job.eligibility.minCGPA}</p> : null}
-              {job.eligibility?.class12Percentage ? <p className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-500" />Class 12 Percentage: {job.eligibility.class12Percentage}%</p> : null}
-              {job.eligibility?.class10Percentage ? <p className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-500" />Class 10 Percentage: {job.eligibility.class10Percentage}%</p> : null}
-              {!job.eligibility?.minCGPA && !job.eligibility?.class12Percentage && !job.eligibility?.class10Percentage && <p className="text-gray-500">Not specified</p>}
-            </div>
+            <h2 className="text-lg font-semibold mb-4">Eligibility</h2>
+            {job.eligibility?.minCGPA || job.eligibility?.class12Percentage || job.eligibility?.class10Percentage ? (
+              <div className="space-y-2">
+                {job.eligibility?.minCGPA && (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className={`text-lg ${studentProfile?.currentCGPA >= job.eligibility.minCGPA ? '✅' : '❌'}`}>
+                        {studentProfile?.currentCGPA >= job.eligibility.minCGPA ? '✅' : '❌'}
+                      </span>
+                      <span className="text-gray-600">CGPA</span>
+                    </div>
+                    <span className={`font-medium ${studentProfile?.currentCGPA >= job.eligibility.minCGPA ? 'text-green-600' : 'text-red-600'}`}>
+                      {studentProfile?.currentCGPA ?? '—'} <span className="text-gray-400 text-sm">/ {job.eligibility.minCGPA}</span>
+                    </span>
+                  </div>
+                )}
+                {job.eligibility?.class12Percentage && (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className={`text-lg ${studentProfile?.twelfthPercentage >= job.eligibility.class12Percentage ? '✅' : '❌'}`}>
+                        {studentProfile?.twelfthPercentage >= job.eligibility.class12Percentage ? '✅' : '❌'}
+                      </span>
+                      <span className="text-gray-600">Class 12 %</span>
+                    </div>
+                    <span className={`font-medium ${studentProfile?.twelfthPercentage >= job.eligibility.class12Percentage ? 'text-green-600' : 'text-red-600'}`}>
+                      {studentProfile?.twelfthPercentage ?? '—'} <span className="text-gray-400 text-sm">/ {job.eligibility.class12Percentage}%</span>
+                    </span>
+                  </div>
+                )}
+                {job.eligibility?.class10Percentage && (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className={`text-lg ${studentProfile?.tenthPercentage >= job.eligibility.class10Percentage ? '✅' : '❌'}`}>
+                        {studentProfile?.tenthPercentage >= job.eligibility.class10Percentage ? '✅' : '❌'}
+                      </span>
+                      <span className="text-gray-600">Class 10 %</span>
+                    </div>
+                    <span className={`font-medium ${studentProfile?.tenthPercentage >= job.eligibility.class10Percentage ? 'text-green-600' : 'text-red-600'}`}>
+                      {studentProfile?.tenthPercentage ?? '—'} <span className="text-gray-400 text-sm">/ {job.eligibility.class10Percentage}%</span>
+                    </span>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p className="text-gray-500">No eligibility criteria defined.</p>
+            )}
           </div>
         </div>
       </main>

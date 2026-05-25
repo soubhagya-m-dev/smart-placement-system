@@ -127,6 +127,7 @@ export default function ManageJobs() {
       const data = await res.json();
       if (data.success) {
         setApplicants(data.data.applicants);
+        setSelectedJob(prev => ({ ...prev, eligibility: data.data.job.eligibility }));
       } else {
         toast.error(data.message);
         setApplicants([]);
@@ -137,6 +138,22 @@ export default function ManageJobs() {
     } finally {
       setApplicantsLoading(false);
     }
+  };
+
+  const isStudentEligible = (app) => {
+    if (!selectedJob?.eligibility) return true;
+    const el = selectedJob.eligibility;
+    const sp = app.student.studentProfile || {};
+
+    const cgpa = sp.currentCGPA ?? app.student.cgpa;
+    const cls12 = sp.twelfthPercentage ?? app.student.class12Percentage;
+    const cls10 = sp.tenthPercentage ?? app.student.class10Percentage;
+
+    if (el.minCGPA !== undefined && (cgpa === undefined || cgpa === null || cgpa < el.minCGPA)) return false;
+    if (el.class12Percentage !== undefined && (cls12 === undefined || cls12 === null || cls12 < el.class12Percentage)) return false;
+    if (el.class10Percentage !== undefined && (cls10 === undefined || cls10 === null || cls10 < el.class10Percentage)) return false;
+
+    return true;
   };
 
   // Update application status
@@ -173,7 +190,7 @@ export default function ManageJobs() {
     }
 
     // User-requested order: University Roll, Name, Email, Phone, Status, College ID, Reg No, Admission Type, Stream, Section, Gender, Dob, CGPA, Class 10 %, Class 12 %, Skills, + remaining fields
-    const headers = ['University Roll', 'Name', 'Email', 'Phone', 'Status', 'College ID', 'Reg. No', 'Admission Type', 'Stream', 'Section', 'Gender', 'DOB', 'CGPA', 'Class 10 %', 'Class 12 %', 'Skills', 'Class 10 Board', 'Class 12 Board', 'Backlogs', 'Applied Date'];
+    const headers = ['University Roll', 'Name', 'Email', 'Phone', 'Status', 'Eligibility', 'College ID', 'Reg. No', 'Admission Type', 'Stream', 'Section', 'Gender', 'DOB', 'CGPA', 'Class 10 %', 'Class 12 %', 'Skills', 'Class 10 Board', 'Class 12 Board', 'Backlogs', 'Applied Date'];
     const rows = [headers.join(',')];
 
     applicants.forEach(app => {
@@ -185,6 +202,7 @@ export default function ManageJobs() {
         `"${s.email || ''}"`,
         `"${p.contactNumber || ''}"`,
         `"${app.status}"`,
+        `"${isStudentEligible(app) ? 'Eligible' : 'Not Eligible'}"`,
         `"${p.collegeId || ''}"`,
         `"${p.universityRegistrationNumber || ''}"`,
         `"${p.admissionType || ''}"`,
@@ -288,9 +306,14 @@ export default function ManageJobs() {
                     <div key={app.applicationId} className="border rounded-lg p-4">
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1">
-                          <h3 className="font-semibold text-lg">{app.student.name}</h3>
+                          <h3 className="font-semibold text-lg flex items-center gap-2">
+                            {app.student.name}
+                            <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${isStudentEligible(app) ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                              {isStudentEligible(app) ? '✅ Eligible' : '❌ Not Eligible'}
+                            </span>
+                          </h3>
                           <p className="text-gray-500 text-sm">{app.student.email}</p>
-                          <p className="text-gray-500 text-sm">📱 {app.student.phone || 'N/A'}</p>
+                          <p className="text-gray-500 text-sm">📱 {app.student.phone || app.student.contactNumber || 'N/A'}</p>
                         </div>
                         <div className="flex flex-col items-end gap-2">
                           <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(app.status)}`}>
