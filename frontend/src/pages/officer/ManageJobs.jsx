@@ -20,6 +20,15 @@ export default function ManageJobs() {
   const [selectedJob, setSelectedJob] = useState(null);
   const [applicants, setApplicants] = useState([]);
   const [applicantsLoading, setApplicantsLoading] = useState(false);
+  const [searchRoll, setSearchRoll] = useState('');
+
+  const filteredApplicants = searchRoll
+    ? applicants.filter(app =>
+        app.student.studentProfile?.universityRollNumber
+          ?.toLowerCase()
+          .includes(searchRoll.toLowerCase())
+    )
+    : applicants;
 
   useEffect(() => { fetchJobs(); }, []);
 
@@ -140,8 +149,8 @@ export default function ManageJobs() {
     }
   };
 
-  const isStudentEligible = (app) => {
-    if (!selectedJob?.eligibility) return true;
+  const getEligibilityFailure = (app) => {
+    if (!selectedJob?.eligibility) return null;
     const el = selectedJob.eligibility;
     const sp = app.student.studentProfile || {};
 
@@ -149,12 +158,15 @@ export default function ManageJobs() {
     const cls12 = sp.twelfthPercentage ?? app.student.class12Percentage;
     const cls10 = sp.tenthPercentage ?? app.student.class10Percentage;
 
-    if (el.minCGPA !== undefined && (cgpa === undefined || cgpa === null || cgpa < el.minCGPA)) return false;
-    if (el.class12Percentage !== undefined && (cls12 === undefined || cls12 === null || cls12 < el.class12Percentage)) return false;
-    if (el.class10Percentage !== undefined && (cls10 === undefined || cls10 === null || cls10 < el.class10Percentage)) return false;
+    const failures = [];
+    if (el.minCGPA !== undefined && (cgpa === undefined || cgpa === null || cgpa < el.minCGPA)) failures.push('cgpa');
+    if (el.class12Percentage !== undefined && (cls12 === undefined || cls12 === null || cls12 < el.class12Percentage)) failures.push('cls12');
+    if (el.class10Percentage !== undefined && (cls10 === undefined || cls10 === null || cls10 < el.class10Percentage)) failures.push('cls10');
 
-    return true;
+    return failures.length > 0 ? failures : null;
   };
+
+  const isStudentEligible = (app) => getEligibilityFailure(app) === null;
 
   // Update application status
   const updateApplicationStatus = async (applicationId, newStatus) => {
@@ -240,6 +252,7 @@ export default function ManageJobs() {
     switch (status) {
       case 'pending': return 'bg-yellow-100 text-yellow-800';
       case 'shortlisted': return 'bg-blue-100 text-blue-800';
+      case 'accepted': return 'bg-green-100 text-green-800';
       case 'rejected': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
@@ -283,7 +296,7 @@ export default function ManageJobs() {
                   <h2 className="text-xl font-bold">Applicants</h2>
                   <p className="text-gray-500">{selectedJob?.title} - {selectedJob?.companyName}</p>
                 </div>
-                <button onClick={() => { setShowApplicantsModal(false); setSelectedJob(null); setApplicants([]); }} className="p-2 hover:bg-gray-100 rounded"><X className="w-5 h-5" /></button>
+                <button onClick={() => { setShowApplicantsModal(false); setSelectedJob(null); setApplicants([]); setSearchRoll(''); }} className="p-2 hover:bg-gray-100 rounded"><X className="w-5 h-5" /></button>
               </div>
 
               {applicantsLoading ? (
@@ -295,83 +308,134 @@ export default function ManageJobs() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm text-gray-500">{applicants.length} applicant{applicants.length !== 1 ? 's' : ''}</p>
-                    <button onClick={exportCSV} className="btn-secondary flex items-center gap-1 text-sm">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                      Export CSV
-                    </button>
-                  </div>
-                  {applicants.map((app) => (
-                    <div key={app.applicationId} className="border rounded-lg p-4">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-lg flex items-center gap-2">
-                            {app.student.name}
-                            <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${isStudentEligible(app) ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                              {isStudentEligible(app) ? '✅ Eligible' : '❌ Not Eligible'}
-                            </span>
-                          </h3>
-                          <p className="text-gray-500 text-sm">{app.student.email}</p>
-                          <p className="text-gray-500 text-sm">📱 {app.student.phone || app.student.contactNumber || 'N/A'}</p>
-                        </div>
-                        <div className="flex flex-col items-end gap-2">
-                          <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(app.status)}`}>
-                            {app.status}
-                          </span>
-                          <span className="text-xs text-gray-400">
-                            Applied: {new Date(app.appliedAt).toLocaleDateString()}
-                          </span>
-                        </div>
-                      </div>
-                      
-                      {/* All Student Fields */}
-                      <div className="bg-gray-50 rounded-lg p-3 mb-3">
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-1 text-xs">
-                          {app.student.studentProfile?.universityRollNumber && <p><span className="font-medium">University Roll:</span> {app.student.studentProfile.universityRollNumber}</p>}
-                          {app.student.studentProfile?.collegeId && <p><span className="font-medium">College ID:</span> {app.student.studentProfile.collegeId}</p>}
-                          {app.student.studentProfile?.stream && <p><span className="font-medium">Stream:</span> {app.student.studentProfile.stream}</p>}
-                          {app.student.studentProfile?.section && <p><span className="font-medium">Section:</span> {app.student.studentProfile.section}</p>}
-                          {app.student.studentProfile?.gender && <p><span className="font-medium">Gender:</span> {app.student.studentProfile.gender}</p>}
-                          {app.student.studentProfile?.dateOfBirth && <p><span className="font-medium">DOB:</span> {app.student.studentProfile.dateOfBirth}</p>}
-                          {app.student.studentProfile?.admissionType && <p><span className="font-medium">Admission Type:</span> {app.student.studentProfile.admissionType}</p>}
-                          {app.student.studentProfile?.universityRegistrationNumber && <p><span className="font-medium">Reg. No:</span> {app.student.studentProfile.universityRegistrationNumber}</p>}
-                          {app.student.studentProfile?.currentCGPA && <p><span className="font-medium">CGPA:</span> {app.student.studentProfile.currentCGPA}</p>}
-                          {app.student.studentProfile?.twelfthPercentage && <p><span className="font-medium">Class 12 %:</span> {app.student.studentProfile.twelfthPercentage}</p>}
-                          {app.student.studentProfile?.tenthPercentage && <p><span className="font-medium">Class 10 %:</span> {app.student.studentProfile.tenthPercentage}</p>}
-                          {app.student.studentProfile?.twelfthBoard && <p><span className="font-medium">12th Board:</span> {app.student.studentProfile.twelfthBoard}</p>}
-                          {app.student.studentProfile?.tenthBoard && <p><span className="font-medium">10th Board:</span> {app.student.studentProfile.tenthBoard}</p>}
-                          {app.student.studentProfile?.contactNumber && <p><span className="font-medium">Contact:</span> {app.student.studentProfile.contactNumber}</p>}
-                          {app.student.studentProfile?.numberOfBacklog !== undefined && <p><span className="font-medium">Backlogs:</span> {app.student.studentProfile.numberOfBacklog}</p>}
-                          {app.student.studentProfile?.skills?.length > 0 && <p className="col-span-4"><span className="font-medium">Skills:</span> {app.student.studentProfile.skills.join(', ')}</p>}
-                        </div>
-                      </div>
-                      <div className="mt-4 flex gap-2">
-                        <button 
-                          onClick={() => updateApplicationStatus(app.applicationId, 'shortlisted')}
-                          disabled={app.status === 'shortlisted'}
-                          className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200 disabled:opacity-50"
-                        >
-                          Shortlist
+                  <div className="flex items-center justify-between flex-wrap gap-3">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        placeholder="Search by University Roll..."
+                        value={searchRoll}
+                        onChange={e => setSearchRoll(e.target.value)}
+                        className="input text-sm py-1.5 px-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-56"
+                      />
+                      {searchRoll && (
+                        <button onClick={() => setSearchRoll('')} className="text-gray-400 hover:text-gray-600 text-sm">
+                          <X className="w-4 h-4" />
                         </button>
-                        
-                        <button 
-                          onClick={() => updateApplicationStatus(app.applicationId, 'rejected')}
-                          disabled={app.status === 'rejected'}
-                          className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200 disabled:opacity-50"
-                        >
-                          Reject
-                        </button>
-                        <button 
-                          onClick={() => updateApplicationStatus(app.applicationId, 'pending')}
-                          disabled={app.status === 'pending'}
-                          className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 disabled:opacity-50"
-                        >
-                          Reset
-                        </button>
-                      </div>
+                      )}
                     </div>
-                  ))}
+                    <div className="flex items-center gap-3">
+                      <p className="text-sm text-gray-500">
+                        {searchRoll ? `${filteredApplicants.length} of ${applicants.length}` : `${filteredApplicants.length}`} applicant{filteredApplicants.length !== 1 ? 's' : ''}
+                      </p>
+                      <button onClick={exportCSV} className="btn-secondary flex items-center gap-1 text-sm">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                        Export CSV
+                      </button>
+                    </div>
+                  </div>
+                  {filteredApplicants.length === 0 && searchRoll ? (
+                    <div className="text-center py-8 text-gray-500">No applicant found with roll: {searchRoll}</div>
+                  ) : (
+                    filteredApplicants.map((app) => {
+                      const failures = getEligibilityFailure(app);
+                      return (
+                        <div key={app.applicationId} className="border rounded-lg p-4">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex-1">
+                              <h3 className="font-semibold text-lg flex items-center gap-2">
+                                {app.student.name}
+                                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${isStudentEligible(app) ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                  {isStudentEligible(app) ? '✅ Eligible' : '❌ Not Eligible'}
+                                </span>
+                              </h3>
+                              <p className="text-gray-500 text-sm">{app.student.email}</p>
+                              <p className="text-gray-500 text-sm">📱 {app.student.phone || app.student.contactNumber || 'N/A'}</p>
+                            </div>
+                            <div className="flex flex-col items-end gap-2">
+                              <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(app.status)}`}>
+                                {app.status}
+                              </span>
+                              <span className="text-xs text-gray-400">
+                                Applied: {new Date(app.appliedAt).toLocaleDateString()}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* All Student Fields */}
+                          <div className="bg-gray-50 rounded-lg p-3 mb-3">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-1 text-xs">
+                              {app.student.studentProfile?.universityRollNumber && <p><span className="font-medium">University Roll:</span> {app.student.studentProfile.universityRollNumber}</p>}
+                              {app.student.studentProfile?.collegeId && <p><span className="font-medium">College ID:</span> {app.student.studentProfile.collegeId}</p>}
+                              {app.student.studentProfile?.stream && <p><span className="font-medium">Stream:</span> {app.student.studentProfile.stream}</p>}
+                              {app.student.studentProfile?.section && <p><span className="font-medium">Section:</span> {app.student.studentProfile.section}</p>}
+                              {app.student.studentProfile?.gender && <p><span className="font-medium">Gender:</span> {app.student.studentProfile.gender}</p>}
+                              {app.student.studentProfile?.dateOfBirth && <p><span className="font-medium">DOB:</span> {app.student.studentProfile.dateOfBirth}</p>}
+                              {app.student.studentProfile?.admissionType && <p><span className="font-medium">Admission Type:</span> {app.student.studentProfile.admissionType}</p>}
+                              {app.student.studentProfile?.universityRegistrationNumber && <p><span className="font-medium">Reg. No:</span> {app.student.studentProfile.universityRegistrationNumber}</p>}
+                              {(() => {
+                                const sp = app.student.studentProfile || {};
+                                const val = sp.currentCGPA ?? app.student.cgpa;
+                                const req = selectedJob?.eligibility?.minCGPA;
+                                const failed = failures?.includes('cgpa');
+                                return <p className={failed ? 'text-red-600 font-medium' : ''}><span className="font-medium">CGPA:</span> {val ?? 'N/A'}{req !== undefined ? ` (required: ${req})` : ''}</p>;
+                              })()}
+                              {(() => {
+                                const sp = app.student.studentProfile || {};
+                                const val = sp.twelfthPercentage ?? app.student.class12Percentage;
+                                const req = selectedJob?.eligibility?.class12Percentage;
+                                const failed = failures?.includes('cls12');
+                                return <p className={failed ? 'text-red-600 font-medium' : ''}><span className="font-medium">Class 12 %:</span> {val ?? 'N/A'}{req !== undefined ? ` (required: ${req})` : ''}</p>;
+                              })()}
+                              {(() => {
+                                const sp = app.student.studentProfile || {};
+                                const val = sp.tenthPercentage ?? app.student.class10Percentage;
+                                const req = selectedJob?.eligibility?.class10Percentage;
+                                const failed = failures?.includes('cls10');
+                                return <p className={failed ? 'text-red-600 font-medium' : ''}><span className="font-medium">Class 10 %:</span> {val ?? 'N/A'}{req !== undefined ? ` (required: ${req})` : ''}</p>;
+                              })()}
+                              {app.student.studentProfile?.twelfthBoard && <p><span className="font-medium">12th Board:</span> {app.student.studentProfile.twelfthBoard}</p>}
+                              {app.student.studentProfile?.tenthBoard && <p><span className="font-medium">10th Board:</span> {app.student.studentProfile.tenthBoard}</p>}
+                              {app.student.studentProfile?.contactNumber && <p><span className="font-medium">Contact:</span> {app.student.studentProfile.contactNumber}</p>}
+                              {app.student.studentProfile?.numberOfBacklog !== undefined && <p><span className="font-medium">Backlogs:</span> {app.student.studentProfile.numberOfBacklog}</p>}
+                              {app.student.studentProfile?.skills?.length > 0 && <p className="col-span-4"><span className="font-medium">Skills:</span> {app.student.studentProfile.skills.join(', ')}</p>}
+                            </div>
+                          </div>
+                          <div className="mt-4 flex gap-2">
+<button
+                                onClick={() => updateApplicationStatus(app.applicationId, 'accepted')}
+                                disabled={app.status === 'accepted'}
+                                className="px-3 py-1 text-sm bg-green-100 text-green-700 rounded hover:bg-green-200 disabled:opacity-50"
+                              >
+                                Accept
+                              </button>
+
+                              <button
+                                onClick={() => updateApplicationStatus(app.applicationId, 'shortlisted')}
+                                disabled={app.status === 'shortlisted'}
+                                className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200 disabled:opacity-50"
+                              >
+                                Shortlist
+                              </button>
+
+                              <button
+                                onClick={() => updateApplicationStatus(app.applicationId, 'rejected')}
+                                disabled={app.status === 'rejected'}
+                                className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200 disabled:opacity-50"
+                              >
+                                Reject
+                              </button>
+                              <button
+                                onClick={() => updateApplicationStatus(app.applicationId, 'pending')}
+                                disabled={app.status === 'pending'}
+                                className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 disabled:opacity-50"
+                              >
+                                Reset
+                              </button>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
               )}
             </div>

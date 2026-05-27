@@ -110,7 +110,7 @@ router.patch('/application/:applicationId', auth, async (req, res) => {
     const { applicationId } = req.params;
     const { status } = req.body;
     
-    if (!['pending', 'shortlisted', 'rejected'].includes(status)) {
+    if (!['pending', 'shortlisted', 'accepted', 'rejected'].includes(status)) {
       return res.status(400).json({ success: false, message: 'Invalid status' });
     }
     
@@ -123,20 +123,30 @@ router.patch('/application/:applicationId', auth, async (req, res) => {
     if (!application) return res.status(404).json({ success: false, message: 'Application not found' });
     
     // Create notification for status update
+      let notificationTitle, notificationMessage;
+      if (status === 'shortlisted') {
+        notificationTitle = 'Congratulations! You are shortlisted!';
+        notificationMessage = `You have been shortlisted for ${application.job.title} at ${application.job.companyName}.`;
+      } else if (status === 'accepted') {
+        notificationTitle = 'Congratulations! You are accepted!';
+        notificationMessage = `You have been accepted for ${application.job.title} at ${application.job.companyName}. Please check your email for further details.`;
+      } else {
+        notificationTitle = 'Application Update';
+        notificationMessage = `Your application for ${application.job.title} at ${application.job.companyName} has been rejected.`;
+      }
+
       const notification = new Notification({
         user: application.student._id,
         type: 'application_update',
-        title: status === 'shortlisted' ? 'Congratulations! You are shortlisted!' : 'Application Update',
-        message: status === 'shortlisted'
-          ? `You have been shortlisted for ${application.job.title} at ${application.job.companyName}.`
-          : `Your application for ${application.job.title} at ${application.job.companyName} has been rejected.`,
+        title: notificationTitle,
+        message: notificationMessage,
         link: '/student/my-applications',
         read: false
       });
       await notification.save();
       
       // Send email notification to student
-      if (status === 'shortlisted' || status === 'rejected') {
+      if (status === 'shortlisted' || status === 'rejected' || status === 'accepted') {
         const { sendApplicationStatusEmail } = require('../services/emailService');
         sendApplicationStatusEmail(
           application.student.email,
