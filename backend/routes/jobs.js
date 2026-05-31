@@ -125,6 +125,7 @@ router.delete('/:id', auth, async (req, res) => {
   try { 
     const job = await Job.findById(req.params.id);
     if (!job) return res.status(404).json({ success: false, message: 'Job not found' });
+    await Application.deleteMany({ job: req.params.id });
     await Job.findByIdAndDelete(req.params.id); 
     res.json({ success: true, message: 'Job deleted' }); 
   }

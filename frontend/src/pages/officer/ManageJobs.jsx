@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, Briefcase, Edit, Users, X } from 'lucide-react';
+import { Plus, Trash2, Briefcase, Edit, Users, X, Bell, Calendar, FileText, Award, Mail, Star } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
@@ -22,6 +22,17 @@ export default function ManageJobs() {
   const [applicantsLoading, setApplicantsLoading] = useState(false);
   const [searchRoll, setSearchRoll] = useState('');
 
+  // Notification modal state
+  const [showNotificationModal, setShowNotificationModal] = useState(false);
+  const [notificationForm, setNotificationForm] = useState({
+    type: 'general',
+    title: '',
+    message: '',
+    metadata: {},
+    eventDate: ''
+  });
+  const [sendingNotification, setSendingNotification] = useState(false);
+
   const filteredApplicants = searchRoll
     ? applicants.filter(app =>
         app.student.studentProfile?.universityRollNumber
@@ -29,6 +40,10 @@ export default function ManageJobs() {
           .includes(searchRoll.toLowerCase())
     )
     : applicants;
+
+  const [selectedApplicants, setSelectedApplicants] = useState([]);
+  const [bulkMode, setBulkMode] = useState(false);
+  const [showSelectDropdown, setShowSelectDropdown] = useState(false);
 
   useEffect(() => { fetchJobs(); }, []);
 
@@ -248,6 +263,113 @@ export default function ManageJobs() {
     toast.success('CSV exported successfully!');
   };
 
+  // Notification target state
+  const [notificationTarget, setNotificationTarget] = useState({ applicationId: null, studentId: null });
+
+  // Open notification modal for a student
+  const openNotificationModal = (app) => {
+    setNotificationForm({
+      type: 'general',
+      title: '',
+      message: '',
+      metadata: {},
+      eventDate: ''
+    });
+    setNotificationTarget({ applicationId: app.applicationId, studentId: app.student._id });
+    setShowNotificationModal(true);
+  };
+
+  // Open bulk notification modal for selected students
+  const openBulkNotificationModal = () => {
+    setNotificationForm({
+      type: 'general',
+      title: '',
+      message: '',
+      metadata: {},
+      eventDate: ''
+    });
+    setNotificationTarget({ applicationIds: selectedApplicants, studentId: null });
+    setShowNotificationModal(true);
+  };
+
+  // Handle notification type change
+  const handleNotificationTypeChange = (type) => {
+    setNotificationForm(prev => ({
+      ...prev,
+      type,
+      title: getDefaultTitle(type),
+      metadata: {}
+    }));
+  };
+
+  // Get default title based on type
+  const getDefaultTitle = (type) => {
+    switch (type) {
+      case 'interview': return 'Interview Scheduled';
+      case 'exam': return 'Exam Scheduled';
+      case 'offer_letter': return 'Selected for the Job';
+      case 'rejection': return 'Application Rejected';
+      case 'shortlist': return 'Application Shortlisted';
+      default: return '';
+    }
+  };
+
+  // Send notification
+  const sendNotification = async (e) => {
+    e.preventDefault();
+    if (!notificationForm.title.trim()) {
+      toast.error('Please enter a title');
+      return;
+    }
+    if (!notificationTarget.studentId && !notificationTarget.applicationIds?.length) {
+      toast.error('No student selected');
+      return;
+    }
+
+    setSendingNotification(true);
+    try {
+      const isBulk = !!notificationTarget.applicationIds;
+      const payload = {
+        studentId: notificationTarget.studentId,
+        jobId: selectedJob?._id,
+        applicationId: notificationTarget.applicationId,
+        applicationIds: notificationTarget.applicationIds,
+        type: notificationForm.type,
+        title: notificationForm.title,
+        message: notificationForm.message,
+        metadata: notificationForm.metadata,
+        eventDate: notificationForm.eventDate || null
+      };
+
+      const endpoint = isBulk ? `${API_URL}/api/notifications/send-bulk` : `${API_URL}/api/notifications/send`;
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        toast.success(isBulk ? `Notification sent to ${notificationTarget.applicationIds.length} students!` : 'Notification sent!');
+        setShowNotificationModal(false);
+        setNotificationForm({ type: 'general', title: '', message: '', metadata: {}, eventDate: '' });
+        setSelectedApplicants([]);
+        setBulkMode(false);
+        // Refresh applicants list to show updated status
+        if (selectedJob?._id) viewApplicants(selectedJob);
+      } else {
+        toast.error(data.message || 'Failed to send notification');
+      }
+    } catch (error) {
+      toast.error('Failed to send notification');
+    } finally {
+      setSendingNotification(false);
+    }
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'pending': return 'bg-yellow-100 text-yellow-800';
@@ -296,7 +418,7 @@ export default function ManageJobs() {
                   <h2 className="text-xl font-bold">Applicants</h2>
                   <p className="text-gray-500">{selectedJob?.title} - {selectedJob?.companyName}</p>
                 </div>
-                <button onClick={() => { setShowApplicantsModal(false); setSelectedJob(null); setApplicants([]); setSearchRoll(''); }} className="p-2 hover:bg-gray-100 rounded"><X className="w-5 h-5" /></button>
+                <button onClick={() => { setShowApplicantsModal(false); setSelectedJob(null); setApplicants([]); setSearchRoll(''); setSelectedApplicants([]); setBulkMode(false); }} className="p-2 hover:bg-gray-100 rounded"><X className="w-5 h-5" /></button>
               </div>
 
               {applicantsLoading ? (
@@ -326,21 +448,108 @@ export default function ManageJobs() {
                     <div className="flex items-center gap-3">
                       <p className="text-sm text-gray-500">
                         {searchRoll ? `${filteredApplicants.length} of ${applicants.length}` : `${filteredApplicants.length}`} applicant{filteredApplicants.length !== 1 ? 's' : ''}
+                        {selectedApplicants.length > 0 && <span className="ml-1 text-purple-600 font-medium">({selectedApplicants.length} selected)</span>}
                       </p>
+                      {bulkMode ? (
+                        <div className="flex items-center gap-2">
+                          <div className="relative" onClick={(e) => e.stopPropagation()}>
+                            <button
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); setShowSelectDropdown(!showSelectDropdown); }}
+                              className="flex items-center gap-1 text-xs text-purple-600 hover:text-purple-800 font-medium border border-purple-300 hover:border-purple-500 rounded-md px-2.5 py-1 transition-colors"
+                            >
+                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>
+                              Select
+                              <svg className={`w-3 h-3 transition-transform duration-150 ${showSelectDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                            </button>
+                            {showSelectDropdown && (
+                              <div className="absolute z-20 mt-1 right-0 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden w-44 animate-dropdown">
+                                <button
+                                  type="button"
+                                  onClick={() => { setSelectedApplicants(filteredApplicants.map(a => a.applicationId)); setShowSelectDropdown(false); }}
+                                  className="w-full text-left px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                                >
+                                  Select All
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => { setSelectedApplicants(filteredApplicants.filter(a => isStudentEligible(a)).map(a => a.applicationId)); setShowSelectDropdown(false); }}
+                                  className="w-full text-left px-3 py-2 text-xs text-green-700 hover:bg-green-50"
+                                >
+                                  Select All Eligible
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => { setSelectedApplicants(filteredApplicants.filter(a => !isStudentEligible(a)).map(a => a.applicationId)); setShowSelectDropdown(false); }}
+                                  className="w-full text-left px-3 py-2 text-xs text-red-700 hover:bg-red-50"
+                                >
+                                  Select All Not Eligible
+                                </button>
+                                <div className="border-t border-gray-100" />
+                                <button
+                                  type="button"
+                                  onClick={() => { setSelectedApplicants([]); setBulkMode(false); setShowSelectDropdown(false); }}
+                                  className="w-full text-left px-3 py-2 text-xs text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setBulkMode(true)}
+                          className="btn-secondary flex items-center gap-1 text-sm"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                          Bulk Select
+                        </button>
+                      )}
                       <button onClick={exportCSV} className="btn-secondary flex items-center gap-1 text-sm">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                         Export CSV
                       </button>
                     </div>
                   </div>
+                  {bulkMode && selectedApplicants.length > 0 && (
+                    <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 flex items-center justify-between">
+                      <span className="text-sm text-purple-700">
+                        {selectedApplicants.length} student{selectedApplicants.length !== 1 ? 's' : ''} selected
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => openBulkNotificationModal()}
+                        className="px-4 py-1.5 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 flex items-center gap-1"
+                      >
+                        <Bell className="w-4 h-4" />
+                        Send Bulk Notification
+                      </button>
+                    </div>
+                  )}
                   {filteredApplicants.length === 0 && searchRoll ? (
                     <div className="text-center py-8 text-gray-500">No applicant found with roll: {searchRoll}</div>
                   ) : (
                     filteredApplicants.map((app) => {
                       const failures = getEligibilityFailure(app);
                       return (
-                        <div key={app.applicationId} className="border rounded-lg p-4">
+                        <div key={app.applicationId} className={`border rounded-lg p-4 ${bulkMode && selectedApplicants.includes(app.applicationId) ? 'border-purple-400 bg-purple-50' : ''}`}>
                           <div className="flex items-start justify-between mb-3">
+                            {bulkMode && (
+                              <input
+                                type="checkbox"
+                                checked={selectedApplicants.includes(app.applicationId)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setSelectedApplicants(prev => [...prev, app.applicationId]);
+                                  } else {
+                                    setSelectedApplicants(prev => prev.filter(id => id !== app.applicationId));
+                                  }
+                                }}
+                                className="mt-1 w-4 h-4 text-purple-600 rounded border-gray-300 focus:ring-purple-500 cursor-pointer"
+                              />
+                            )}
                             <div className="flex-1">
                               <h3 className="font-semibold text-lg flex items-center gap-2">
                                 {app.student.name}
@@ -400,37 +609,24 @@ export default function ManageJobs() {
                               {app.student.studentProfile?.skills?.length > 0 && <p className="col-span-4"><span className="font-medium">Skills:</span> {app.student.studentProfile.skills.join(', ')}</p>}
                             </div>
                           </div>
-                          <div className="mt-4 flex gap-2">
-<button
-                                onClick={() => updateApplicationStatus(app.applicationId, 'accepted')}
-                                disabled={app.status === 'accepted'}
-                                className="px-3 py-1 text-sm bg-green-100 text-green-700 rounded hover:bg-green-200 disabled:opacity-50"
-                              >
-                                Accept
-                              </button>
+                          <div className="mt-4 flex gap-2 flex-wrap">
+                            {/* Send Notification Button */}
+                            <button
+                              onClick={() => openNotificationModal(app)}
+                              className="px-3 py-1 text-sm bg-purple-100 text-purple-700 rounded hover:bg-purple-200 flex items-center gap-1"
+                            >
+                              <Bell className="w-4 h-4" />
+                              Send Notification
+                            </button>
 
-                              <button
-                                onClick={() => updateApplicationStatus(app.applicationId, 'shortlisted')}
-                                disabled={app.status === 'shortlisted'}
-                                className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200 disabled:opacity-50"
-                              >
-                                Shortlist
-                              </button>
-
-                              <button
-                                onClick={() => updateApplicationStatus(app.applicationId, 'rejected')}
-                                disabled={app.status === 'rejected'}
-                                className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200 disabled:opacity-50"
-                              >
-                                Reject
-                              </button>
-                              <button
-                                onClick={() => updateApplicationStatus(app.applicationId, 'pending')}
-                                disabled={app.status === 'pending'}
-                                className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 disabled:opacity-50"
-                              >
-                                Reset
-                              </button>
+                            {/* Reset Button */}
+                            <button
+                              onClick={() => updateApplicationStatus(app.applicationId, 'pending')}
+                              disabled={app.status === 'pending'}
+                              className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 disabled:opacity-50"
+                            >
+                              Reset
+                            </button>
                           </div>
                         </div>
                       );
@@ -484,6 +680,311 @@ export default function ManageJobs() {
                 <div className="flex gap-4">
                   <button type="submit" className="btn-primary flex-1">{editingJob ? 'Update' : 'Post'}</button>
                   <button type="button" onClick={closeModal} className="btn-secondary">Cancel</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Send Notification Modal */}
+        {showNotificationModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold flex items-center gap-2">
+                  <Bell className="w-5 h-5 text-purple-600" />
+                  {notificationTarget.applicationIds ? 'Bulk Notification' : 'Send Notification'}
+                  {notificationTarget.applicationIds && (
+                    <span className="text-sm font-normal text-gray-500">
+                      ({notificationTarget.applicationIds.length} students)
+                    </span>
+                  )}
+                </h2>
+                <button onClick={() => { setShowNotificationModal(false); setSelectedApplicants([]); setBulkMode(false); }} className="p-2 hover:bg-gray-100 rounded">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <form onSubmit={sendNotification} className="space-y-4">
+                {/* Notification Type */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Notification Type</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { value: 'interview', label: ' Interview', icon: Calendar },
+                      { value: 'exam', label: ' Exam', icon: FileText },
+                      { value: 'offer_letter', label: ' Selection', icon: Award },
+                      { value: 'rejection', label: ' Rejection', icon: X },
+                      { value: 'shortlist', label: ' Shortlisted', icon: Star },
+                      { value: 'general', label: ' General', icon: Mail }
+                    ].map(({ value, label, icon: Icon }) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => handleNotificationTypeChange(value)}
+                        className={`px-3 py-2 text-sm rounded-lg border-2 transition-all flex items-center justify-center gap-1 ${
+                          notificationForm.type === value 
+                            ? 'border-purple-500 bg-purple-50 text-purple-700' 
+                            : 'border-gray-200 hover:border-purple-300'
+                        }`}
+                      >
+                        <Icon className="w-4 h-4" />
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Dynamic Fields Based on Type */}
+                {notificationForm.type === 'interview' && (
+                  <div className="space-y-3 p-4 bg-blue-50 rounded-lg">
+                    <h4 className="font-medium text-blue-800 flex items-center gap-2">
+                      <Calendar className="w-4 h-4" /> Interview Details
+                    </h4>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs text-gray-600">Date</label>
+                        <input
+                          type="date"
+                          className="input text-sm"
+                          onChange={e => setNotificationForm(prev => ({
+                            ...prev,
+                            metadata: { ...prev.metadata, interviewDate: e.target.value }
+                          }))}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-gray-600">Time</label>
+                        <input
+                          type="time"
+                          className="input text-sm"
+                          onChange={e => setNotificationForm(prev => ({
+                            ...prev,
+                            metadata: { ...prev.metadata, interviewTime: e.target.value }
+                          }))}
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-600">Location / Link</label>
+                      <input
+                        type="text"
+                        className="input text-sm"
+                        placeholder="Conference Room or Meeting Link"
+                        onChange={e => setNotificationForm(prev => ({
+                          ...prev,
+                          metadata: { ...prev.metadata, interviewLocation: e.target.value }
+                        }))}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-600">Mode</label>
+                      <select
+                        className="input text-sm"
+                        onChange={e => setNotificationForm(prev => ({
+                          ...prev,
+                          metadata: { ...prev.metadata, interviewMode: e.target.value }
+                        }))}
+                      >
+                        <option value="">Select Mode</option>
+                        <option value="virtual">Virtual</option>
+                        <option value="in-person">In-Person</option>
+                        <option value="phone">Phone</option>
+                      </select>
+                    </div>
+                  </div>
+                )}
+
+                {notificationForm.type === 'exam' && (
+                  <div className="space-y-3 p-4 bg-green-50 rounded-lg">
+                    <h4 className="font-medium text-green-800 flex items-center gap-2">
+                      <FileText className="w-4 h-4" /> Exam Details
+                    </h4>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs text-gray-600">Date</label>
+                        <input
+                          type="date"
+                          className="input text-sm"
+                          onChange={e => setNotificationForm(prev => ({
+                            ...prev,
+                            metadata: { ...prev.metadata, examDate: e.target.value }
+                          }))}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-gray-600">Time</label>
+                        <input
+                          type="time"
+                          className="input text-sm"
+                          onChange={e => setNotificationForm(prev => ({
+                            ...prev,
+                            metadata: { ...prev.metadata, examTime: e.target.value }
+                          }))}
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs text-gray-600">Duration</label>
+                        <input
+                          type="text"
+                          className="input text-sm"
+                          placeholder="e.g., 2 hours"
+                          onChange={e => setNotificationForm(prev => ({
+                            ...prev,
+                            metadata: { ...prev.metadata, examDuration: e.target.value }
+                          }))}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-gray-600">Mode</label>
+                        <select
+                          className="input text-sm"
+                          onChange={e => setNotificationForm(prev => ({
+                            ...prev,
+                            metadata: { ...prev.metadata, examMode: e.target.value }
+                          }))}
+                        >
+                          <option value="">Select</option>
+                          <option value="online">Online</option>
+                          <option value="offline">Offline</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-600">Location (if offline)</label>
+                      <input
+                        type="text"
+                        className="input text-sm"
+                        placeholder="Exam center location"
+                        onChange={e => setNotificationForm(prev => ({
+                          ...prev,
+                          metadata: { ...prev.metadata, examLocation: e.target.value }
+                        }))}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {notificationForm.type === 'offer_letter' && (
+                  <div className="space-y-3 p-4 bg-yellow-50 rounded-lg">
+                    <h4 className="font-medium text-yellow-800 flex items-center gap-2">
+                      <Award className="w-4 h-4" /> Offer Details
+                    </h4>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs text-gray-600">CTC (₹)</label>
+                        <input
+                          type="text"
+                          className="input text-sm"
+                          placeholder="e.g., 8 LPA"
+                          onChange={e => setNotificationForm(prev => ({
+                            ...prev,
+                            metadata: { ...prev.metadata, ctc: e.target.value }
+                          }))}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-gray-600">Role</label>
+                        <input
+                          type="text"
+                          className="input text-sm"
+                          placeholder="Job role"
+                          onChange={e => setNotificationForm(prev => ({
+                            ...prev,
+                            metadata: { ...prev.metadata, role: e.target.value }
+                          }))}
+                        />
+                      </div>
+                    </div>
+                    
+                    
+                  </div>
+                )}
+
+                {notificationForm.type === 'rejection' && (
+                  <div className="space-y-3 p-4 bg-red-50 rounded-lg">
+                    <h4 className="font-medium text-red-800 flex items-center gap-2">
+                      <X className="w-4 h-4" /> Rejection Details
+                    </h4>
+                    <div>
+                      <label className="text-xs text-gray-600">Reason (Optional)</label>
+                      <textarea
+                        className="input text-sm"
+                        rows={3}
+                        placeholder="Optional feedback for the student..."
+                        onChange={e => setNotificationForm(prev => ({
+                          ...prev,
+                          metadata: { ...prev.metadata, reason: e.target.value }
+                        }))}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Shortlist fields */}
+
+                {/* Common Fields: Title */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Title *</label>
+                  <input
+                    type="text"
+                    className="input"
+                    placeholder="Notification title"
+                    value={notificationForm.title}
+                    onChange={e => setNotificationForm(prev => ({ ...prev, title: e.target.value }))}
+                    required
+                  />
+                </div>
+
+                {/* Event Date - for student timeline tracking */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">📅 Event Date</label>
+                  <input
+                    type="date"
+                    className="input"
+                    value={notificationForm.eventDate || ''}
+                    onChange={e => setNotificationForm(prev => ({ ...prev, eventDate: e.target.value }))}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">This date will be shown in the student's application timeline</p>
+                </div>
+
+                {/* Common Fields: Message */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Message (Optional)</label>
+                  <textarea
+                    className="input"
+                    rows={3}
+                    placeholder="Additional message or notes..."
+                    value={notificationForm.message}
+                    onChange={e => setNotificationForm(prev => ({ ...prev, message: e.target.value }))}
+                  />
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-3 pt-2">
+                  <button
+                    type="submit"
+                    disabled={sendingNotification}
+                    className="btn-primary flex-1 flex items-center justify-center gap-2"
+                  >
+                    {sendingNotification ? (
+                      <>Sending...</>
+                    ) : (
+                      <>
+                        <Bell className="w-4 h-4" />
+                        Send Notification
+                      </>
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowNotificationModal(false)}
+                    className="btn-secondary"
+                  >
+                    Cancel
+                  </button>
                 </div>
               </form>
             </div>

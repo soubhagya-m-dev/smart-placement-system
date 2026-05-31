@@ -67,7 +67,7 @@ router.get('/job-applicants/:jobId', auth, async (req, res) => {
       status: app.status,
       appliedAt: app.appliedAt,
       student: {
-        id: app.student._id,
+        _id: app.student._id,
         name: app.student.name,
         email: app.student.email,
         phone: app.student.phone || app.student.studentProfile?.contactNumber || null,
@@ -96,7 +96,7 @@ router.get('/job-applicants/:jobId', auth, async (req, res) => {
     res.json({ 
       success: true, 
       data: { 
-        job: { id: job._id, title: job.title, company: job.company, eligibility: job.eligibility },
+        job: { id: job._id, title: job.title, companyName: job.companyName, eligibility: job.eligibility },
         applicants,
         totalCount: applicants.length
       } 
