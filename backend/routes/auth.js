@@ -34,6 +34,33 @@ const createToken = (user) => {
   );
 };
 
+// Helper: Kick off a deadline reminder scan for one user, fire-and-forget.
+// Called after a successful student login so any reminders that should
+// have fired while the server was asleep (Render free tier sleeps after
+// 15min idle) get flushed the moment a student actually uses the app.
+//
+// We schedule via `setImmediate` so the scan doesn't run on the same
+// tick as the login response — that would add latency to the response.
+// We never `await` it from the login handler, so even if the scan
+// throws, the login response is unaffected.
+const { runDeadlineReminderScan } = require('../services/deadlineReminders');
+function triggerReminderScanForUser(_userId) {
+  setImmediate(async () => {
+    try {
+      // Currently the scan is a "scan everyone" job, not a per-user
+      // job. That's fine: the dedupe key (per student, per job, per
+      // day) keeps the work bounded — most students will get zero new
+      // rows, and the cost is one User.find + one Application.find
+      // per *job in the 3-day window*, which is tiny in the steady
+      // state. If this ever gets hot, swap to a per-user scan that
+      // hits User.savedJobs first.
+      await runDeadlineReminderScan();
+    } catch (err) {
+      console.error('[deadline-reminders] login-triggered scan failed:', err.message);
+    }
+  });
+}
+
 // ============================================
 // REGISTER (email/password via Firebase)
 // ============================================
@@ -201,6 +228,12 @@ router.post('/login', async (req, res) => {
       }
 
       const token = createToken(user);
+      // Fire-and-forget deadline reminder scan. We don't await it so the
+      // login response is snappy. Any pending reminders get sent in the
+      // background and the student will see them on their next bell badge
+      // refresh. Wrapped in a try/catch + setImmediate so an error here
+      // can never bubble back to the login promise chain.
+      triggerReminderScanForUser(user._id);
       return res.json({
         success: true,
         data: { token, user: { id: user._id, name: user.name, email: user.email, role: user.role } }
@@ -222,6 +255,7 @@ router.post('/login', async (req, res) => {
     }
 
     const token = createToken(user);
+    triggerReminderScanForUser(user._id);
     res.json({
       success: true,
       data: { token, user: { id: user._id, name: user.name, email: user.email, role: user.role } }
@@ -295,6 +329,7 @@ router.patch('/profile', async (req, res) => {
         'studentProfile.contactNumber': studentProfile.contactNumber,
         'studentProfile.currentCGPA': studentProfile.currentCGPA,
         'studentProfile.numberOfBacklog': studentProfile.numberOfBacklog,
+        'studentProfile.graduationPassingYear': studentProfile.graduationPassingYear,
         'studentProfile.skills': studentProfile.skills,
         'studentProfile.isProfileComplete': isProfileComplete,
         'studentProfile.verified': false, // Reset verification when student updates profile

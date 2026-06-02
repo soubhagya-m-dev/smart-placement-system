@@ -30,6 +30,7 @@ const userSchema = new mongoose.Schema({
     contactNumber: String,
     currentCGPA: Number,
     numberOfBacklog: { type: Number },
+    graduationPassingYear: Number,
     skills: [String],
     tenthMarks: Number,
     twelfthMarks: Number,

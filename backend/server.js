@@ -43,6 +43,15 @@ app.use('/api/stats', require('./routes/stats'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/admin', require('./routes/admin'));
 
+// Deadline reminder scheduler — see services/deadlineReminders.js.
+// Runs every 6h to nudge students who saved a job but haven't applied
+// 3 / 2 / 1 / 0 days before the deadline. The periodic timer covers
+// long-lived dev/local runs; the on-login hook in routes/auth.js is
+// the catch-up path for the Render free tier (which sleeps between
+// requests, so a setInterval may not fire for hours at a time).
+const { startDeadlineReminderScheduler } = require('./services/deadlineReminders');
+startDeadlineReminderScheduler(io);
+
 // Socket handlers
 io.on('connection', (socket) => {
   console.log('Socket connected:', socket.id);
