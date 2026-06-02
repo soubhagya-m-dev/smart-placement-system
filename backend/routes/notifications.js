@@ -21,6 +21,13 @@ router.get('/', auth, async (req, res) => {
       filter.job = req.query.jobId;
     }
     const notifications = await Notification.find(filter)
+      // Populate `job` so the frontend can show a "View job" button on
+      // job-related notifications (e.g. interview scheduled, shortlist,
+      // offer letter) and link straight to the matching application in
+      // the student's Applications page.
+      // We only project a few fields to keep the response light.
+      .populate('job', 'title companyName')
+      .populate('application', 'status')
       .sort({ createdAt: -1 })
       .limit(50);
     res.json({ success: true, data: { notifications } });
