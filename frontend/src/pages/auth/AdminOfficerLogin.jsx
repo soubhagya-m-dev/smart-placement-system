@@ -44,7 +44,10 @@ export default function AdminOfficerLogin() {
         if (userData.role === 'admin') {
           navigate('/admin/dashboard');
         } else if (userData.role === 'officer') {
-          navigate('/officer/jobs');
+          // Land on the dashboard by default (overview + at-a-glance stats).
+          // The officer can navigate to /officer/jobs, /officer/verify, or
+          // /officer/stats from the sidebar/header.
+          navigate('/officer');
         } else {
           navigate('/');
         }
