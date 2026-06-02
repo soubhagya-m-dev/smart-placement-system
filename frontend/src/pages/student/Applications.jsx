@@ -1,20 +1,95 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { FileText, Clock, CheckCircle, XCircle, Briefcase, ChevronDown, ChevronUp, Calendar, Star, Users, Bell } from 'lucide-react';
 import { useSocket } from '../../context/SocketContext';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const VALID_FILTERS = ['all', 'pending', 'shortlisted', 'accepted', 'rejected'];
 
 export default function Applications() {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlFilter = searchParams.get('status');
+  const urlJobId = searchParams.get('job');
+  // Local state tracking the application id that should receive the
+  // "just arrived" highlight pulse. Decoupled from urlJobId so the
+  // highlight can persist for a moment after we strip the ?job= param
+  // from the URL — otherwise React's re-render would yank the class off
+  // before the animation could play.
+  const [highlightedAppId, setHighlightedAppId] = useState(null);
+  const [filter, setFilter] = useState(
+    urlFilter && VALID_FILTERS.includes(urlFilter) ? urlFilter : 'all'
+  );
   const [expandedApp, setExpandedApp] = useState(null);
   const [timeline, setTimeline] = useState({});
   const [timelineLoading, setTimelineLoading] = useState(false);
   const { notifications } = useSocket();
 
   useEffect(() => { fetchApplications(); }, []);
+
+  // Keep filter in sync with ?status= URL param (e.g. when arriving from Dashboard)
+  useEffect(() => {
+    const next = urlFilter && VALID_FILTERS.includes(urlFilter) ? urlFilter : 'all';
+    setFilter(next);
+  }, [urlFilter]);
+
+  // When arriving from a notification's "View job" button (?job=<id>),
+  // auto-expand the matching application, scroll to it, and clear the
+  // ?job= param from the URL so the filter doesn't keep reapplying on
+  // subsequent re-renders.
+  useEffect(() => {
+    if (!urlJobId || applications.length === 0) return;
+    const target = applications.find(app => {
+      const appJobId = typeof app.job === 'object' ? app.job?._id : app.job;
+      return String(appJobId) === String(urlJobId);
+    });
+    if (!target) return;
+    // Expand the card so the timeline is visible immediately
+    setExpandedApp(target._id);
+    // Trigger a one-shot highlight pulse on the matching card
+    setHighlightedAppId(target._id);
+    const highlightTimer = setTimeout(() => setHighlightedAppId(null), 1500);
+    // Preload the timeline notifications for this job
+    if (!timeline[target._id]) {
+      fetch(`${API_URL}/api/notifications?jobId=${urlJobId}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            const appNotifications = data.data.notifications.filter(n =>
+              n.job === urlJobId || n.application === target._id
+            );
+            setTimeline(prev => ({ ...prev, [target._id]: appNotifications }));
+          }
+        })
+        .catch(err => console.error('Failed to fetch timeline for job:', err));
+    }
+    // Scroll the matching card into view after the next paint
+    const scrollTimer = setTimeout(() => {
+      const el = document.getElementById(`app-${target._id}`);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 200);
+    // Drop the ?job= param so it doesn't keep filtering the list
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete('job');
+    setSearchParams(newParams, { replace: true });
+    return () => {
+      clearTimeout(highlightTimer);
+      clearTimeout(scrollTimer);
+    };
+  }, [urlJobId, applications.length]);
+
+  const handleFilterChange = (next) => {
+    setFilter(next);
+    if (next === 'all') {
+      searchParams.delete('status');
+    } else {
+      searchParams.set('status', next);
+    }
+    setSearchParams(searchParams, { replace: true });
+  };
 
   const fetchApplications = async () => {
     try {
@@ -52,7 +127,18 @@ export default function Applications() {
     }
   };
 
-  const filteredApps = applications.filter(app => filter === 'all' || app.status === filter);
+  const filteredApps = applications.filter(app => {
+    // Status filter (existing behavior)
+    if (filter !== 'all' && app.status !== filter) return false;
+    // Job filter (e.g. arrived from a notification with a "View job" link).
+    // We match by job._id (populated) or by raw job id (unpopulated), to be
+    // safe either way.
+    if (urlJobId) {
+      const appJobId = typeof app.job === 'object' ? app.job?._id : app.job;
+      if (String(appJobId) !== String(urlJobId)) return false;
+    }
+    return true;
+  });
   const statusIcon = (status) => {
     switch(status) {
       case 'pending': return <Clock className="w-5 h-5 text-yellow-500" />;
@@ -106,8 +192,8 @@ export default function Applications() {
       <div className="max-w-4xl mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold mb-6">My Applications</h1>
         <div className="flex gap-2 mb-6 flex-wrap">
-          {['all', 'pending', 'shortlisted', 'accepted', 'rejected'].map(f => (
-            <button key={f} onClick={() => setFilter(f)} className={`px-4 py-2 rounded-lg capitalize text-sm ${filter === f ? 'bg-blue-600 text-white' : 'bg-white border hover:bg-gray-50'}`}>{f}</button>
+          {VALID_FILTERS.map(f => (
+            <button key={f} onClick={() => handleFilterChange(f)} className={`px-4 py-2 rounded-lg capitalize text-sm ${filter === f ? 'bg-blue-600 text-white' : 'bg-white border hover:bg-gray-50'}`}>{f}</button>
           ))}
         </div>
         {loading ? (
@@ -117,7 +203,11 @@ export default function Applications() {
         ) : (
           <div className="space-y-4">
             {filteredApps.map(app => (
-              <div key={app._id} className="card overflow-hidden">
+              <div
+                key={app._id}
+                id={`app-${app._id}`}
+                className={`card overflow-hidden transition-all ${highlightedAppId === app._id ? 'animate-notifHighlight' : ''}`}
+              >
                 {/* Application Header */}
                 <div
                   className="flex items-center justify-between cursor-pointer hover:bg-gray-50 p-2 -m-2 rounded-lg transition-colors"
