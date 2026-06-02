@@ -33,6 +33,7 @@ export default function Profile() {
     email: '',
     currentCGPA: '',
     numberOfBacklog: '',
+    graduationPassingYear: '',
     skills: '',
   });
 
@@ -68,6 +69,7 @@ export default function Profile() {
           email: fullUser.studentProfile?.email || fullUser.email || '',
           currentCGPA: fullUser.studentProfile?.currentCGPA || '',
           numberOfBacklog: fullUser.studentProfile?.numberOfBacklog ?? '',
+          graduationPassingYear: fullUser.studentProfile?.graduationPassingYear || '',
           skills: fullUser.studentProfile?.skills?.join(', ') || '',
         });
       } catch (err) {
@@ -117,6 +119,7 @@ export default function Profile() {
           numberOfBacklog: form.numberOfBacklog !== '' ? parseInt(form.numberOfBacklog) : undefined,
           tenthPassingYear: form.tenthPassingYear ? parseInt(form.tenthPassingYear) : undefined,
           twelfthPassingYear: form.twelfthPassingYear ? parseInt(form.twelfthPassingYear) : undefined,
+          graduationPassingYear: form.graduationPassingYear ? parseInt(form.graduationPassingYear) : undefined,
           skills: form.skills.split(',').map(s => s.trim()).filter(Boolean),
         }
       });
@@ -320,7 +323,16 @@ export default function Profile() {
                   {[...Array(11)].map((_, i) => <option key={i} value={i}>{i}</option>)}
                 </select>
               </div>
-              <div className="md:col-span-1">
+              <div>
+                <label className="block text-sm font-medium mb-1">Graduation Passing Year</label>
+                <select className="input" value={form.graduationPassingYear} onChange={e => handleChange('graduationPassingYear', e.target.value)}>
+                  <option value="">Select Year</option>
+                  {Array.from({ length: 2040 - 2020 + 1 }, (_, i) => 2020 + i).map(year => (
+                    <option key={year} value={year}>{year}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="md:col-span-3">
                 <label className="block text-sm font-medium mb-1">Skills (comma-separated)</label>
                 <input type="text" className="input" placeholder="Python, React, Java" value={form.skills} onChange={e => handleChange('skills', e.target.value)} />
               </div>
