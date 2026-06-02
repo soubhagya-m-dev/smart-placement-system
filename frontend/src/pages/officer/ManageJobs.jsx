@@ -217,7 +217,7 @@ export default function ManageJobs() {
     }
 
     // User-requested order: University Roll, Name, Email, Phone, Status, College ID, Reg No, Admission Type, Stream, Section, Gender, Dob, CGPA, Class 10 %, Class 12 %, Skills, + remaining fields
-    const headers = ['University Roll', 'Name', 'Email', 'Phone', 'Status', 'Eligibility', 'College ID', 'Reg. No', 'Admission Type', 'Stream', 'Section', 'Gender', 'DOB', 'CGPA', 'Class 10 %', 'Class 12 %', 'Skills', 'Class 10 Board', 'Class 12 Board', 'Backlogs', 'Applied Date'];
+    const headers = ['University Roll', 'Name', 'Email', 'Phone', 'Status', 'Eligibility', 'College ID', 'Reg. No', 'Admission Type', 'Graduation Year', 'Stream', 'Section', 'Gender', 'DOB', 'CGPA', 'Class 10 %', 'Class 12 %', 'Skills', 'Class 10 Board', 'Class 12 Board', 'Backlogs', 'Applied Date'];
     const rows = [headers.join(',')];
 
     applicants.forEach(app => {
@@ -233,6 +233,7 @@ export default function ManageJobs() {
         `"${p.collegeId || ''}"`,
         `"${p.universityRegistrationNumber || ''}"`,
         `"${p.admissionType || ''}"`,
+        `"${p.graduationPassingYear || ''}"`,
         `"${p.stream || ''}"`,
         `"${p.section || ''}"`,
         `"${p.gender || ''}"`,
@@ -580,6 +581,7 @@ export default function ManageJobs() {
                               {app.student.studentProfile?.gender && <p><span className="font-medium">Gender:</span> {app.student.studentProfile.gender}</p>}
                               {app.student.studentProfile?.dateOfBirth && <p><span className="font-medium">DOB:</span> {app.student.studentProfile.dateOfBirth}</p>}
                               {app.student.studentProfile?.admissionType && <p><span className="font-medium">Admission Type:</span> {app.student.studentProfile.admissionType}</p>}
+                              {app.student.studentProfile?.graduationPassingYear && <p><span className="font-medium">Graduation Year:</span> {app.student.studentProfile.graduationPassingYear}</p>}
                               {app.student.studentProfile?.universityRegistrationNumber && <p><span className="font-medium">Reg. No:</span> {app.student.studentProfile.universityRegistrationNumber}</p>}
                               {(() => {
                                 const sp = app.student.studentProfile || {};

@@ -189,6 +189,19 @@ export default function VerifyStudents() {
                     </div>
                     <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
                       <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                        <Calendar className="w-5 h-5 text-green-600" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">Graduation Passing Year</p>
+                        <p className="font-medium">
+                          {selectedStudent.studentProfile.graduationPassingYear
+                            ? selectedStudent.studentProfile.graduationPassingYear
+                            : <span className="text-amber-600 text-sm">⚠ Not set — ask student to update</span>}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
                         <Book className="w-5 h-5 text-green-600" />
                       </div>
                       <div>
@@ -248,15 +261,6 @@ export default function VerifyStudents() {
                       <div>
                         <p className="text-xs text-gray-500">Admission Type</p>
                         <p className="font-medium">{selectedStudent.studentProfile.admissionType || 'Not provided'}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                        <User className="w-5 h-5 text-green-600" />
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-500">Gender</p>
-                        <p className="font-medium">{selectedStudent.studentProfile.gender || 'Not provided'}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
