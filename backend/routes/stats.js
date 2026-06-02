@@ -16,6 +16,20 @@ const auth = async (req, res, next) => {
 
 router.get('/dashboard', auth, async (req, res) => {
   try {
+    // Per-student stats when the logged-in user is a student
+    if (req.user.role === 'student') {
+      const studentId = req.user.id;
+      const [totalApplications, shortlisted, placed] = await Promise.all([
+        Application.countDocuments({ student: studentId }),
+        // Shortlisted = applications that were ever shortlisted (still in 'shortlisted' OR have moved to 'accepted' = placed).
+        // Intentionally does NOT shrink when a student gets placed — placed is a subset of shortlisted.
+        Application.countDocuments({ student: studentId, status: { $in: ['shortlisted', 'accepted'] } }),
+        Application.countDocuments({ student: studentId, status: 'accepted' })
+      ]);
+      return res.json({ success: true, data: { totalApplications, shortlisted, placed } });
+    }
+
+    // Admin/officer view: global stats
     const [totalStudents, verifiedStudents, activeJobs, totalApplications, placed] = await Promise.all([
       User.countDocuments({ role: 'student' }),
       User.countDocuments({ role: 'student', isVerified: true }),
