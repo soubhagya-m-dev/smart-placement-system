@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { FileText, Clock, CheckCircle, XCircle, Briefcase, ChevronDown, ChevronUp, Calendar, Star, Users, Bell } from 'lucide-react';
 import { useSocket } from '../../context/SocketContext';
+import { refId } from '../../lib/api';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 const VALID_FILTERS = ['all', 'pending', 'shortlisted', 'accepted', 'rejected'];
@@ -24,9 +25,41 @@ export default function Applications() {
   const [expandedApp, setExpandedApp] = useState(null);
   const [timeline, setTimeline] = useState({});
   const [timelineLoading, setTimelineLoading] = useState(false);
-  const { notifications } = useSocket();
+  // We watch newNotifFlag (a counter that bumps on every new socket
+  // notification) rather than the notifications array itself, so we
+  // refetch exactly once per incoming notification and not on every
+  // re-render that mutates the list (e.g. marking one as read).
+  const { newNotifFlag } = useSocket();
 
   useEffect(() => { fetchApplications(); }, []);
+
+  // Refetch applications when a new notification arrives via socket.
+  // The TPO's status update (shortlisted/accepted/rejected) triggers
+  // a backend auto-update to Application.status, but without a refetch
+  // the student's "My Applications" list keeps showing the old status.
+  useEffect(() => {
+    if (newNotifFlag > 0) fetchApplications();
+  }, [newNotifFlag]);
+
+  // Refetch when the tab regains focus, so a student who kept the page
+  // open in a background tab sees fresh statuses when they switch back.
+  useEffect(() => {
+    let hiddenAt = null;
+    const onVisChange = () => {
+      if (document.hidden) {
+        hiddenAt = Date.now();
+      } else if (hiddenAt && Date.now() - hiddenAt > 2000) {
+        // Only refetch if the tab was hidden for more than 2 seconds,
+        // so we don't refetch on every quick tab switch.
+        fetchApplications();
+        hiddenAt = null;
+      } else {
+        hiddenAt = null;
+      }
+    };
+    document.addEventListener('visibilitychange', onVisChange);
+    return () => document.removeEventListener('visibilitychange', onVisChange);
+  }, []);
 
   // Keep filter in sync with ?status= URL param (e.g. when arriving from Dashboard)
   useEffect(() => {
@@ -59,7 +92,7 @@ export default function Applications() {
         .then(data => {
           if (data.success) {
             const appNotifications = data.data.notifications.filter(n =>
-              n.job === urlJobId || n.application === target._id
+              refId(n.job) === urlJobId || refId(n.application) === target._id
             );
             setTimeline(prev => ({ ...prev, [target._id]: appNotifications }));
           }
@@ -116,9 +149,11 @@ export default function Applications() {
         });
         const data = await res.json();
         if (data.success) {
-          // Filter notifications for this application
+          // Filter notifications for this application. We compare against
+          // the raw _id (using refId) because the backend populates both
+          // `job` and `application`, so they're objects not id strings.
           const appNotifications = data.data.notifications.filter(n =>
-            n.job === app.job?._id || n.application === app._id
+            refId(n.job) === app.job?._id || refId(n.application) === app._id
           );
           setTimeline(prev => ({ ...prev, [app._id]: appNotifications }));
         }
