@@ -18,6 +18,7 @@ import OfficerDashboard from './pages/officer/Dashboard';
 import ManageJobs from './pages/officer/ManageJobs';
 import VerifyStudents from './pages/officer/VerifyStudents';
 import Stats from './pages/officer/Stats';
+import AllStudents from './pages/officer/AllStudents';
 import AdminDashboard from './pages/admin/Dashboard';
 
 function ProtectedRoute({ children, roles }) {
@@ -126,6 +127,7 @@ function AppRoutes() {
       <Route path="/officer/jobs" element={<ProtectedRoute roles={['officer']}><ManageJobs /></ProtectedRoute>} />
       <Route path="/officer/verify" element={<ProtectedRoute roles={['officer']}><VerifyStudents /></ProtectedRoute>} />
       <Route path="/officer/stats" element={<ProtectedRoute roles={['officer']}><Stats /></ProtectedRoute>} />
+      <Route path="/officer/students" element={<ProtectedRoute roles={['officer']}><AllStudents /></ProtectedRoute>} />
       <Route path="/admin/dashboard" element={<ProtectedRoute roles={['admin']}><AdminDashboard /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>

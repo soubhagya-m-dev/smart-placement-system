@@ -8,7 +8,8 @@ const auth = async (req, res, next) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return res.status(401).json({ success: false, message: 'No token' });
-    req.user = jwt.verify(token, process.env.JWT_SECRET || 'secret');
+    if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET is not set');
+    req.user = jwt.verify(token, process.env.JWT_SECRET);
     next();
   } catch { res.status(401).json({ success: false, message: 'Invalid token' }); }
 };

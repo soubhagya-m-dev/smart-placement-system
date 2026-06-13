@@ -22,7 +22,8 @@ app.use('/uploads', express.static('uploads'));
 // Socket.io setup
 const io = new Server(server, {
   cors: {
-    origin: '*'
+    origin: process.env.FRONTEND_URL || '*',
+    credentials: true
   }
 });
 

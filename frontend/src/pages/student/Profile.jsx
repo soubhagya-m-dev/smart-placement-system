@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 import { Save } from 'lucide-react';
 import axios from 'axios';
+import { STREAM_OPTIONS, SECTION_OPTIONS, YEAR_OPTIONS } from '../../lib/profileOptions';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -183,25 +184,14 @@ export default function Profile() {
                 <label className="block text-sm font-medium mb-1">Stream <span className="text-red-500">*</span></label>
                 <select className="input" value={form.stream} onChange={e => handleChange('stream', e.target.value)}>
                   <option value="">Select Stream</option>
-                  <option value="CSE">CSE</option>
-                  <option value="CSE(AI&ML)">CSE (AI & ML)</option>
-                  <option value="AUE">AUE</option>
-                  <option value="Civil">Civil</option>
-                  <option value="ECE">ECE</option>
-                  <option value="EE">EE</option>
-                  <option value="ME">ME</option>
-                  <option value="Robotics">Robotics</option>
+                  {STREAM_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Section <span className="text-red-500">*</span></label>
                 <select className="input" value={form.section} onChange={e => handleChange('section', e.target.value)}>
                   <option value="">Select Section</option>
-                  <option value="A">A</option>
-                  <option value="B">B</option>
-                  <option value="C">C</option>
-                  <option value="D">D</option>
-                  <option value="E">E</option>
+                  {SECTION_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
               </div>
               <div>
@@ -327,7 +317,7 @@ export default function Profile() {
                 <label className="block text-sm font-medium mb-1">Graduation Passing Year</label>
                 <select className="input" value={form.graduationPassingYear} onChange={e => handleChange('graduationPassingYear', e.target.value)}>
                   <option value="">Select Year</option>
-                  {Array.from({ length: 2040 - 2020 + 1 }, (_, i) => 2020 + i).map(year => (
+                  {YEAR_OPTIONS.map(year => (
                     <option key={year} value={year}>{year}</option>
                   ))}
                 </select>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, MapPin, DollarSign, Briefcase, Calendar, CheckCircle, Bookmark, Share2 } from 'lucide-react';
+import { ArrowLeft, MapPin, DollarSign, Briefcase, Calendar, CheckCircle, Bookmark } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function JobDetails() {
@@ -124,7 +124,6 @@ export default function JobDetails() {
               <button onClick={handleToggleSave} disabled={saving} className={`p-3 border rounded-lg transition ${isSaved ? 'bg-blue-50 border-blue-300' : 'hover:bg-gray-50'}`}>
                 <Bookmark className={`w-5 h-5 ${isSaved ? 'text-blue-600 fill-blue-600' : 'text-gray-600'}`} />
               </button>
-              <button className="p-3 border rounded-lg hover:bg-gray-50"><Share2 className="w-5 h-5 text-gray-600" /></button>
             </div>
           </div>
           <button onClick={handleApply} disabled={applying || job.hasApplied || isExpired} className={`btn-primary w-full py-4 mt-6 text-lg ${isExpired ? 'opacity-50 cursor-not-allowed' : ''}`}>

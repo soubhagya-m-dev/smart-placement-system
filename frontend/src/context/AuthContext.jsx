@@ -68,23 +68,46 @@ export function AuthProvider({ children }) {
   };
 
   // ============================================
-  // LOGIN with Firebase Email/Password
+  // LOGIN
+  // Two paths:
+  //  1. Backend email/password (officer-created accounts have no Firebase)
+  //  2. Firebase email/password (legacy self-signup accounts)
+  // We try backend first because Firebase will throw auth/user-not-found for
+  // officer-created students. If the backend says "use Google" or the
+  // account isn't a password account, we fall through to Firebase.
   // ============================================
   const login = async (email, password) => {
+    // ----- Path 1: backend email/password -----
+    try {
+      const res = await axios.post(`${API_URL}/api/auth/login`, { email, password });
+      const { token, user: userData } = res.data.data;
+      localStorage.setItem('token', token);
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      // /login only returns the slim user — fetch the full record so
+      // dashboards (especially studentProfile.*) get populated.
+      const meRes = await axios.get(`${API_URL}/api/auth/me`);
+      setUser(meRes.data.data.user);
+      return meRes.data.data.user;
+    } catch (backendErr) {
+      // If the backend explicitly said "use Google", don't bother with
+      // Firebase email/password — surface that message directly.
+      const msg = backendErr?.response?.data?.message || '';
+      if (msg.toLowerCase().includes('google sign-in')) throw new Error(msg);
+
+      // Otherwise (account-not-found / invalid creds), fall through to
+      // Firebase in case the user is a legacy self-signup account.
+    }
+
+    // ----- Path 2: Firebase email/password -----
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const idToken = await userCredential.user.getIdToken();
 
-      const res = await axios.post(`${API_URL}/api/auth/login`, {
-        email,
-        idToken
-      });
-
+      const res = await axios.post(`${API_URL}/api/auth/login`, { email, idToken });
       const { token } = res.data.data;
       localStorage.setItem('token', token);
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
-      // Fetch full user profile with studentProfile data
       const meRes = await axios.get(`${API_URL}/api/auth/me`);
       setUser(meRes.data.data.user);
       return meRes.data.data.user;
@@ -137,8 +160,22 @@ export function AuthProvider({ children }) {
     return res.data;
   };
 
+  // ============================================
+  // CHANGE PASSWORD (used by the forced-first-login flow)
+  // The backend clears the mustChangePassword flag and returns a
+  // fresh /me-shaped user, which we re-apply to context.
+  // ============================================
+  const changePassword = async (currentPassword, newPassword) => {
+    const res = await axios.post(`${API_URL}/api/auth/change-password`, {
+      currentPassword,
+      newPassword,
+    });
+    if (res.data?.data?.user) setUser(res.data.data.user);
+    return res.data;
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, googleLogin, register, logout, updateProfile, setUser }}>
+    <AuthContext.Provider value={{ user, loading, login, googleLogin, register, logout, updateProfile, changePassword, setUser }}>
       {children}
     </AuthContext.Provider>
   );

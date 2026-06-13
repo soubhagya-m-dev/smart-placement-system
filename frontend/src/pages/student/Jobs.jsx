@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Briefcase, MapPin, DollarSign, Filter, Search, X, Bookmark, Trash2, ChevronDown } from 'lucide-react';
+import { Briefcase, MapPin, DollarSign, Filter, Search, X, Bookmark, Trash2, ChevronDown, ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 
@@ -118,13 +118,19 @@ export default function Jobs() {
           
           {/* Header with Filter and Saved Jobs Toggles - Side by Side */}
           <div className="flex items-center justify-between">
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 text-gray-700 hover:text-gray-900 transition"
-            >
-              <Filter className="w-5 h-5" />
-              <span className="font-medium">Filters</span>
-            </button>
+            <div className="flex items-center gap-4">
+              <Link to="/" className="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition">
+                <ArrowLeft className="w-5 h-5" />
+                <span className="font-medium">Back to Dashboard</span>
+              </Link>
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className="flex items-center gap-2 text-gray-700 hover:text-gray-900 transition"
+              >
+                <Filter className="w-5 h-5" />
+                <span className="font-medium">Filters</span>
+              </button>
+            </div>
 
             <div className="flex items-center gap-4">
               <button

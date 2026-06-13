@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Briefcase, FileText, CheckCircle, Clock, TrendingUp, LogOut, Bell, AlertCircle, Award } from 'lucide-react';
+import { Briefcase, FileText, CheckCircle, Clock, TrendingUp, LogOut, Bell, AlertCircle, Award, KeyRound, Eye, EyeOff, Check, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
 import axios from 'axios';
@@ -8,13 +8,51 @@ import axios from 'axios';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 export default function StudentDashboard() {
-  const { user, logout } = useAuth();
+  const { user, logout, changePassword } = useAuth();
   const { unreadCount, newNotifFlag } = useSocket();
   const [stats, setStats] = useState({ totalApplications: 0, shortlisted: 0, placed: 0 });
   const [recentJobs, setRecentJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [accessStatus, setAccessStatus] = useState(null); // null = checking
   const [bellPing, setBellPing] = useState(false);
+
+  // ============================================================
+  // Forced password change (officer-created accounts)
+  // When the officer creates a student, they get a temp password
+  // and the user.mustChangePassword flag is set server-side. The
+  // student MUST set their own password before using the dashboard.
+  // We render a non-dismissible modal that intercepts the whole page
+  // until the password is changed. The dashboard itself stays mounted
+  // in the background but is non-interactive.
+  // ============================================================
+  const mustChangePw = !!user?.mustChangePassword;
+  const [pwForm, setPwForm] = useState({ current: '', next: '', confirm: '' });
+  const [pwShow, setPwShow] = useState({ current: false, next: false, confirm: false });
+  const [pwBusy, setPwBusy] = useState(false);
+  const [pwErr, setPwErr] = useState('');
+
+  const submitChangePassword = async (e) => {
+    e.preventDefault();
+    setPwErr('');
+    if (pwForm.next.length < 6) return setPwErr('New password must be at least 6 characters.');
+    if (pwForm.next !== pwForm.confirm) return setPwErr('Passwords do not match.');
+    if (pwForm.next === pwForm.current) return setPwErr('New password must differ from the current one.');
+    setPwBusy(true);
+    try {
+      // We pass the temp password as "current" — for officer-created
+      // accounts this is exactly what the officer shared. The backend
+      // also requires the current password to match, so it acts as a
+      // sanity check that the student has the right temp password.
+      await changePassword(pwForm.current, pwForm.next);
+      // No need to navigate — the user object is now refreshed by
+      // changePassword(), so mustChangePw flips to false and the
+      // modal disappears.
+    } catch (err) {
+      setPwErr(err?.response?.data?.message || err.message || 'Could not change password.');
+    } finally {
+      setPwBusy(false);
+    }
+  };
 
   useEffect(() => {
     fetchData();
@@ -149,6 +187,148 @@ export default function StudentDashboard() {
           )}
         </div>
       </main>
+
+      {/* ============================================================ */}
+      {/* FORCED PASSWORD CHANGE — rendered above everything when       */}
+      {/* user.mustChangePassword is true. Non-dismissible: no backdrop  */}
+      {/* click handler, no Escape key, no X button. The student can    */}
+      {/* either set a new password or log out (top-right of card).     */}
+      {/* ============================================================ */}
+      {mustChangePw && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-gray-900/60 animate-[fadeIn_150ms_ease-out]"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="force-pw-title"
+          data-testid="force-pw-modal"
+        >
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-[slideUp_200ms_ease-out]">
+            <form onSubmit={submitChangePassword}>
+              <div className="px-6 py-5 border-b flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                  <KeyRound className="w-5 h-5 text-amber-600" />
+                </div>
+                <div className="flex-1">
+                  <h2 id="force-pw-title" className="text-lg font-semibold text-gray-900">
+                    Set your password
+                  </h2>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    Welcome, {user?.name?.split(' ')[0] || 'student'} — the placement officer created
+                    your account. Please choose a password to continue.
+                  </p>
+                </div>
+              </div>
+
+              <div className="px-6 py-5 space-y-4">
+                {/* Current (temp) password */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Temporary password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={pwShow.current ? 'text' : 'password'}
+                      required
+                      autoFocus
+                      value={pwForm.current}
+                      onChange={(e) => setPwForm(f => ({ ...f, current: e.target.value }))}
+                      placeholder="Paste the password the officer shared"
+                      className="w-full pl-3 pr-10 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setPwShow(s => ({ ...s, current: !s.current }))}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      aria-label={pwShow.current ? 'Hide password' : 'Show password'}
+                    >
+                      {pwShow.current ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* New password */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    New password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={pwShow.next ? 'text' : 'password'}
+                      required
+                      value={pwForm.next}
+                      onChange={(e) => setPwForm(f => ({ ...f, next: e.target.value }))}
+                      placeholder="At least 6 characters"
+                      className="w-full pl-3 pr-10 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setPwShow(s => ({ ...s, next: !s.next }))}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      aria-label={pwShow.next ? 'Hide password' : 'Show password'}
+                    >
+                      {pwShow.next ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Confirm new password */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Confirm new password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={pwShow.confirm ? 'text' : 'password'}
+                      required
+                      value={pwForm.confirm}
+                      onChange={(e) => setPwForm(f => ({ ...f, confirm: e.target.value }))}
+                      className="w-full pl-3 pr-10 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setPwShow(s => ({ ...s, confirm: !s.confirm }))}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      aria-label={pwShow.confirm ? 'Hide password' : 'Show password'}
+                    >
+                      {pwShow.confirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                {pwErr && (
+                  <div className="px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 flex items-start gap-2">
+                    <X className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <span>{pwErr}</span>
+                  </div>
+                )}
+
+                <div className="text-xs text-gray-500 flex items-start gap-1.5">
+                  <Check className="w-3.5 h-3.5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <span>After this step you'll be taken to your profile to fill in roll number, branch, etc.</span>
+                </div>
+              </div>
+
+              <div className="px-6 py-3 bg-gray-50 border-t flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={logout}
+                  className="text-sm text-gray-600 hover:text-red-600 transition flex items-center gap-1.5"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Log out
+                </button>
+                <button
+                  type="submit"
+                  disabled={pwBusy || !pwForm.current || !pwForm.next || !pwForm.confirm}
+                  className="px-5 py-2 text-sm bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {pwBusy ? 'Saving…' : 'Save & continue'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

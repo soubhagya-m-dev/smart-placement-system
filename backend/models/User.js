@@ -54,6 +54,13 @@ const userSchema = new mongoose.Schema({
   annualIncome: String,
   status: { type: String, enum: ['active', 'rejected', 'suspended'], default: 'active' },
   rejectionReason: String,
+  // Set true when an officer creates a student account with a temp password.
+  // Student must change password + complete profile before getting full access.
+  mustChangePassword: { type: Boolean, default: false },
+  // Officer-set temp password (plain text) — only populated while mustChangePassword is true.
+  // Used to show the officer the generated password exactly once at creation.
+  // NOT exposed via any GET endpoint, and cleared on first successful change.
+  tempPassword: { type: String, default: null, select: false },
   savedJobs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Job' }]
 }, { timestamps: true });
 module.exports = mongoose.model('User', userSchema);

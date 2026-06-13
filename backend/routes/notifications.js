@@ -8,7 +8,8 @@ const auth = async (req, res, next) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return res.status(401).json({ success: false, message: 'No token' });
-    req.user = jwt.verify(token, process.env.JWT_SECRET || 'secret');
+    if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET is not set');
+    req.user = jwt.verify(token, process.env.JWT_SECRET);
     next();
   } catch { res.status(401).json({ success: false, message: 'Invalid token' }); }
 };
@@ -81,7 +82,9 @@ router.post('/send', auth, async (req, res) => {
 
     await notification.save();
 
-    // Auto-update application status based on notification type
+    // Auto-update application status based on notification type.
+    // For offer_letter, also persist the parsed CTC (LPA) on the Application so the
+    // analytics page can compute average package across accepted offers.
     if (applicationId) {
       const Application = require('../models/Application');
       let newStatus = null;
@@ -95,7 +98,13 @@ router.post('/send', auth, async (req, res) => {
       }
 
       if (newStatus) {
-        await Application.findByIdAndUpdate(applicationId, { status: newStatus });
+        const update = { status: newStatus };
+        if (type === 'offer_letter' && metadata && metadata.ctc) {
+          const { parseCtcToLpa } = require('../utils/parseCtc');
+          const lpa = parseCtcToLpa(metadata.ctc);
+          if (lpa != null) update.offeredCtc = lpa;
+        }
+        await Application.findByIdAndUpdate(applicationId, update);
       }
     }
 
@@ -168,7 +177,9 @@ router.post('/send-bulk', auth, async (req, res) => {
 
     await Notification.insertMany(notifications);
 
-    // Auto-update application statuses
+    // Auto-update application statuses.
+    // For offer_letter, also persist the parsed CTC (LPA) on each Application so the
+    // analytics page can compute average package across accepted offers.
     if (appsToUpdate.length > 0) {
       const Application = require('../models/Application');
       let newStatus = null;
@@ -182,9 +193,15 @@ router.post('/send-bulk', auth, async (req, res) => {
       }
 
       if (newStatus) {
+        const update = { status: newStatus };
+        if (type === 'offer_letter' && metadata && metadata.ctc) {
+          const { parseCtcToLpa } = require('../utils/parseCtc');
+          const lpa = parseCtcToLpa(metadata.ctc);
+          if (lpa != null) update.offeredCtc = lpa;
+        }
         await Application.updateMany(
           { _id: { $in: appsToUpdate } },
-          { $set: { status: newStatus } }
+          { $set: update }
         );
       }
     }

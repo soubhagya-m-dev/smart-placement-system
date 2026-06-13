@@ -10,7 +10,8 @@ const adminAuth = async (req, res, next) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return res.status(401).json({ success: false, message: 'No token' });
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret');
+    if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET is not set');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const user = await User.findById(decoded.id);
     if (!user || user.role !== 'admin') return res.status(403).json({ success: false, message: 'Admin only' });
     req.user = user;
@@ -122,7 +123,10 @@ router.get('/stats', adminAuth, async (req, res) => {
   try {
     const [totalStudents, verifiedStudents, totalOfficers, activeJobs, totalApplications, placed] = await Promise.all([
       User.countDocuments({ role: 'student' }),
-      User.countDocuments({ role: 'student', isVerified: true }),
+      // Officer-approval flag lives in studentProfile.verified (toggled by /officer/students/:id/approve).
+      // The top-level `isVerified` defaults to true for everyone and is unrelated to officer review,
+      // so we must NOT count by it here — that's what made admin "Verified" match "Total Students".
+      User.countDocuments({ role: 'student', 'studentProfile.verified': true }),
       User.countDocuments({ role: 'officer' }),
       Job.countDocuments({ status: 'active' }),
       Application.countDocuments(),
