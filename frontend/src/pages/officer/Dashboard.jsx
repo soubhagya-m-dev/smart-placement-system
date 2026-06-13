@@ -3,13 +3,15 @@ import { Link } from 'react-router-dom';
 import { Users, Briefcase, CheckCircle, IndianRupee, LogOut } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 export default function OfficerDashboard() {
   const { user, logout } = useAuth();
   const [stats, setStats] = useState({ totalStudents: 0, verifiedStudents: 0, activeJobs: 0, placed: 0, avgPackageLpa: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/stats/dashboard', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
+    fetch(`${API_URL}/api/stats/dashboard`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
       .then(res => res.json())
       .then(data => { if (data.success) setStats(data.data); })
       .catch(console.error)

@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { CheckCircle, XCircle, Eye, X, User, Mail, Phone, Hash, Book, Calendar, Code, FileText } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 export default function VerifyStudents() {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -12,7 +14,7 @@ export default function VerifyStudents() {
 
   const fetchStudents = async () => {
     try {
-      const res = await fetch('/api/officer/pending-verifications', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+      const res = await fetch(`${API_URL}/api/officer/pending-verifications`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
       const data = await res.json();
       if (data.success) setStudents(data.data.students);
     } catch (error) { console.error('Failed'); }

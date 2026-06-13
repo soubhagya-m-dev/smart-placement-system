@@ -3,6 +3,8 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, MapPin, DollarSign, Briefcase, Calendar, CheckCircle, Bookmark } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 export default function JobDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -17,7 +19,7 @@ export default function JobDetails() {
 
   const fetchJob = async () => {
     try {
-      const res = await fetch(`/api/jobs/${id}`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+      const res = await fetch(`${API_URL}/api/jobs/${id}`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
       const data = await res.json();
       console.log('JobDetails API response:', JSON.stringify(data, null, 2));
       if (data.success) {
@@ -31,7 +33,7 @@ export default function JobDetails() {
   const handleApply = async () => {
     setApplying(true);
     try {
-      const res = await fetch('/api/applications', {
+      const res = await fetch(`${API_URL}/api/applications`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ jobId: id })
@@ -50,7 +52,7 @@ export default function JobDetails() {
   const handleToggleSave = async () => {
     setSaving(true);
     try {
-      const res = await fetch(`/api/jobs/saved/${id}`, {
+      const res = await fetch(`${API_URL}/api/jobs/saved/${id}`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
@@ -59,7 +61,7 @@ export default function JobDetails() {
         setIsSaved(data.data.saved);
         
         // Fetch fresh saved jobs list and dispatch event
-        const savedRes = await fetch('/api/jobs/saved', { 
+        const savedRes = await fetch(`${API_URL}/api/jobs/saved`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } 
         });
         const savedData = await savedRes.json();

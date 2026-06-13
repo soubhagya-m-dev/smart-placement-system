@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { Users, Briefcase, FileText, CheckCircle, Clock, TrendingUp, LogOut, Plus, Trash2, Shield } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 export default function AdminDashboard() {
   const { user, logout } = useAuth();
   const [stats, setStats] = useState({ totalStudents: 0, verifiedStudents: 0, totalOfficers: 0, activeJobs: 0, totalApplications: 0, placed: 0 });
@@ -19,8 +21,8 @@ export default function AdminDashboard() {
     try {
       const token = localStorage.getItem('token');
       const [statsRes, officersRes] = await Promise.all([
-        fetch('/api/admin/stats', { headers: { Authorization: `Bearer ${token}` } }),
-        fetch('/api/admin/officers', { headers: { Authorization: `Bearer ${token}` } })
+        fetch(`${API_URL}/api/admin/stats`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`${API_URL}/api/admin/officers`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
       const statsData = await statsRes.json();
       const officersData = await officersRes.json();
@@ -38,7 +40,7 @@ export default function AdminDashboard() {
     setSubmitting(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/admin/officers', {
+      const res = await fetch(`${API_URL}/api/admin/officers`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(formData)

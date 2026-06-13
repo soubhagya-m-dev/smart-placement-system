@@ -79,8 +79,8 @@ export default function StudentDashboard() {
   const fetchData = async () => {
     try {
       const [statsRes, jobsRes] = await Promise.all([
-        fetch('/api/stats/dashboard', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }),
-        fetch('/api/jobs?limit=5', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
+        fetch(`${API_URL}/api/stats/dashboard`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }),
+        fetch(`${API_URL}/api/jobs?limit=5`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
       ]);
       const statsData = await statsRes.json();
       const jobsData = await jobsRes.json();

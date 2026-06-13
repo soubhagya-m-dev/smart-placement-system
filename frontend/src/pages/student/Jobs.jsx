@@ -4,6 +4,8 @@ import { Briefcase, MapPin, DollarSign, Filter, Search, X, Bookmark, Trash2, Che
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 export default function Jobs() {
   const { user } = useAuth();
   const [jobs, setJobs] = useState([]);
@@ -44,7 +46,7 @@ export default function Jobs() {
 
   const fetchSavedJobs = async () => {
     try {
-      const res = await fetch('/api/jobs/saved', {
+      const res = await fetch(`${API_URL}/api/jobs/saved`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       const data = await res.json();
