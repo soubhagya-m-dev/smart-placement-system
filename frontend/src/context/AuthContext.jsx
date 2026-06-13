@@ -35,9 +35,11 @@ export function AuthProvider({ children }) {
     // signInWithRedirect() navigates the whole page to Google, then back.
     // getRedirectResult() picks up the credential after the return trip.
     getRedirectResult(auth).then(async (result) => {
+      console.log('[GoogleRedirect] getRedirectResult returned:', result);
       if (!result) return;
       try {
         const idToken = await result.user.getIdToken();
+        console.log('[GoogleRedirect] got idToken, posting to backend');
         const res = await axios.post(`${API_URL}/api/auth/google`, {
           idToken,
           googleId: result.user.uid,
@@ -45,16 +47,19 @@ export function AuthProvider({ children }) {
           name: result.user.displayName,
           photoUrl: result.user.photoURL
         });
+        console.log('[GoogleRedirect] backend response:', res.status, res.data);
         const { token } = res.data.data;
         localStorage.setItem('token', token);
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         const meRes = await axios.get(`${API_URL}/api/auth/me`);
+        console.log('[GoogleRedirect] /me response:', meRes.status, meRes.data);
         setUser(meRes.data.data.user);
+        console.log('[GoogleRedirect] setUser done, should navigate to /');
       } catch (err) {
-        console.error('Google redirect login failed:', err);
+        console.error('[GoogleRedirect] FAILED:', err.response?.status, err.response?.data || err.message);
       }
     }).catch(err => {
-      console.error('getRedirectResult error:', err);
+      console.error('[GoogleRedirect] getRedirectResult error:', err);
     });
   }, []);
 
