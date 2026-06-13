@@ -26,14 +26,16 @@ export default function Login() {
   };
 
   const handleGoogleLogin = async () => {
+    // Redirect flow: signInWithRedirect navigates the whole page to Google.
+    // The result is picked up on the next page load (see AuthContext useEffect).
+    // We don't await a user here — googleLogin() resolves once the redirect
+    // has been initiated, and the rest of the login (token + redirect to /)
+    // happens after the user comes back from Google.
     setLoading(true);
     try {
-      const user = await googleLogin();
-      toast.success(`Welcome, ${user.name}!`);
-      navigate('/');
+      await googleLogin();
     } catch (err) {
       toast.error(err.message || 'Google login failed');
-    } finally {
       setLoading(false);
     }
   };

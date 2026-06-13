@@ -4,7 +4,8 @@ import {
   getAuth, 
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword,
-  signInWithPopup, 
+  signInWithRedirect,
+  getRedirectResult,
   GoogleAuthProvider,
   updateProfile
 } from 'firebase/auth';
@@ -29,6 +30,32 @@ export function AuthProvider({ children }) {
     } else {
       setLoading(false);
     }
+
+    // Handle Google redirect result on app load.
+    // signInWithRedirect() navigates the whole page to Google, then back.
+    // getRedirectResult() picks up the credential after the return trip.
+    getRedirectResult(auth).then(async (result) => {
+      if (!result) return;
+      try {
+        const idToken = await result.user.getIdToken();
+        const res = await axios.post(`${API_URL}/api/auth/google`, {
+          idToken,
+          googleId: result.user.uid,
+          email: result.user.email,
+          name: result.user.displayName,
+          photoUrl: result.user.photoURL
+        });
+        const { token } = res.data.data;
+        localStorage.setItem('token', token);
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        const meRes = await axios.get(`${API_URL}/api/auth/me`);
+        setUser(meRes.data.data.user);
+      } catch (err) {
+        console.error('Google redirect login failed:', err);
+      }
+    }).catch(err => {
+      console.error('getRedirectResult error:', err);
+    });
   }, []);
 
   // ============================================
@@ -118,34 +145,14 @@ export function AuthProvider({ children }) {
   };
 
   // ============================================
-  // GOOGLE SIGN-IN
+  // GOOGLE SIGN-IN (redirect flow — production-safe)
+  // signInWithRedirect navigates the whole page to Google, so we can't
+  // await the result here. The credential lands back in getRedirectResult
+  // (in the useEffect above) on the next page load.
   // ============================================
   const googleLogin = async () => {
-    try {
-      const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
-      const idToken = await result.user.getIdToken();
-
-      const res = await axios.post(`${API_URL}/api/auth/google`, {
-        idToken,
-        googleId: result.user.uid,
-        email: result.user.email,
-        name: result.user.displayName,
-        photoUrl: result.user.photoURL
-      });
-
-      const { token } = res.data.data;
-      localStorage.setItem('token', token);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-
-      // Fetch full user profile with studentProfile data
-      const meRes = await axios.get(`${API_URL}/api/auth/me`);
-      setUser(meRes.data.data.user);
-      return meRes.data.data.user;
-    } catch (error) {
-      const errorMessage = formatFirebaseError(error.code);
-      throw new Error(errorMessage);
-    }
+    const provider = new GoogleAuthProvider();
+    await signInWithRedirect(auth, provider);
   };
 
   const logout = () => {

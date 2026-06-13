@@ -33,14 +33,12 @@ export default function Register() {
   };
 
   const handleGoogleRegister = async () => {
+    // Redirect flow: see comment in Login.jsx handleGoogleLogin.
     setLoading(true);
     try {
-      const user = await googleLogin();
-      toast.success(`Welcome, ${user.name}!`);
-      navigate('/');
+      await googleLogin();
     } catch (err) {
       toast.error(err.message || 'Google registration failed');
-    } finally {
       setLoading(false);
     }
   };
