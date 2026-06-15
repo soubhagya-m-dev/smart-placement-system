@@ -37,8 +37,12 @@ export default function Register() {
     setLoading(true);
     try {
       await googleLogin();
+      // On success the page navigates away — code below never runs.
     } catch (err) {
       toast.error(err.message || 'Google registration failed');
+    } finally {
+      // If we're still on this page (redirect didn't fire — e.g. unauthorized
+      // domain), reset loading so the button isn't stuck disabled.
       setLoading(false);
     }
   };
