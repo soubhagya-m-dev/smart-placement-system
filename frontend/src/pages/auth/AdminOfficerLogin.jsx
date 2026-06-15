@@ -124,13 +124,7 @@ export default function AdminOfficerLogin() {
         </form>
 
         {/* Info */}
-        <div className="mt-6 text-center text-blue-300 text-sm">
-          <p className="mb-2">Demo Accounts:</p>
-          <div className="text-xs space-y-1">
-            <p>Admin: admin@placement.com / admin123</p>
-            <p>Officer: officer@placement.com / officer123</p>
-          </div>
-        </div>
+        
       </div>
     </div>
   );
