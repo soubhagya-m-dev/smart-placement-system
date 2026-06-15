@@ -65,7 +65,7 @@ export default function AdminDashboard() {
     if (!confirm('Are you sure you want to remove this officer?')) return;
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`/api/admin/officers/${id}`, {
+      const res = await fetch(`${API_URL}/api/admin/officers/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });

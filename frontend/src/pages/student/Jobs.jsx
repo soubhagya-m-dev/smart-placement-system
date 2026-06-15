@@ -35,7 +35,7 @@ export default function Jobs() {
       if (filters.jobType) params.append('jobType', filters.jobType);
       if (filters.salaryMin) params.append('salaryMin', filters.salaryMin);
       
-      const res = await fetch(`/api/jobs?${params}`, {
+      const res = await fetch(`${API_URL}/api/jobs?${params}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       const data = await res.json();
@@ -64,7 +64,7 @@ export default function Jobs() {
   const clearFilters = () => {
     const cleared = { jobTitle: '', companyName: '', location: '', skills: '', jobType: '', salaryMin: '' };
     setFilters(cleared);
-    fetch(`/api/jobs`, {
+    fetch(`${API_URL}/api/jobs`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     }).then(r => r.json()).then(data => {
       if (data.success) setJobs(data.data.jobs);
@@ -75,7 +75,7 @@ export default function Jobs() {
     try {
       const token = localStorage.getItem('token');
       console.log('Toggle save - token exists:', !!token, '| jobId:', jobId);
-      const res = await fetch(`/api/jobs/saved/${jobId}`, {
+      const res = await fetch(`${API_URL}/api/jobs/saved/${jobId}`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
       });

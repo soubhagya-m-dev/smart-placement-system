@@ -28,7 +28,7 @@ export default function VerifyStudents() {
 
   const verify = async (id) => {
     try {
-      const res = await fetch(`/api/students/${id}/verify`, { method: 'PATCH', headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+      const res = await fetch(`${API_URL}/api/students/${id}/verify`, { method: 'PATCH', headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
       const data = await res.json();
       if (data.success) {
         toast.success('Student verified!');
@@ -45,7 +45,7 @@ export default function VerifyStudents() {
     const reason = prompt('Reason for rejection:');
     if (!reason) return;
     try {
-      const res = await fetch(`/api/students/${id}/reject`, { method: 'PATCH', headers: { Authorization: `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ reason }) });
+      const res = await fetch(`${API_URL}/api/students/${id}/reject`, { method: 'PATCH', headers: { Authorization: `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ reason }) });
       const data = await res.json();
       if (data.success) {
         toast.success('Student rejected');

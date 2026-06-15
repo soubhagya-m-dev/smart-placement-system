@@ -80,7 +80,7 @@ export default function JobDetails() {
   // Check if job is saved on mount
   useEffect(() => {
     if (id) {
-      fetch(`/api/jobs/saved`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
+      fetch(`${API_URL}/api/jobs/saved`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
         .then(r => r.json())
         .then(data => {
           if (data.success) {
