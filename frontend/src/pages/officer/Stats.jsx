@@ -10,6 +10,8 @@ import {
 } from 'recharts';
 import { STREAM_OPTIONS, SECTION_OPTIONS, YEAR_OPTIONS } from '../../lib/profileOptions';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 // Color palette — distinct per branch series, with a green→amber→red gradient
 // for placement percentage contexts. Matches existing badge palette.
 const COLORS = {
@@ -139,7 +141,7 @@ export default function Stats() {
     let cancelled = false;
     const q = new URLSearchParams();
     Object.entries(filters).forEach(([k, v]) => { if (v !== 'all') q.set(k, v); });
-    const url = `/api/stats/analytics${q.toString() ? `?${q}` : ''}`;
+    const url = `${API_URL}/api/stats/analytics${q.toString() ? `?${q}` : ''}`;
     setLoading(true);
     fetch(url, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
       .then(r => r.json())
