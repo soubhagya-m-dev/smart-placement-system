@@ -85,9 +85,7 @@ export default function Login() {
           <FaGoogle className="text-red-500" />
           Sign in with Google
         </button>
-        <p className="text-center mt-6 text-gray-500 text-sm">
-          Accounts are created by your placement officer. Contact them if you can't sign in.
-        </p>
+        
         <div className="mt-4 pt-4 border-t border-gray-200 text-center">
           <Link to="/admin-login" className="text-sm text-blue-600 hover:underline flex items-center justify-center gap-1">
             <FaUserShield className="text-xs" /> Admin / Placement Officer Login
