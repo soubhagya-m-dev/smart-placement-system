@@ -2,7 +2,6 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 import {
   getAuth,
-  createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signInWithPopup,
   GoogleAuthProvider,
@@ -30,42 +29,6 @@ export function AuthProvider({ children }) {
       setLoading(false);
     }
   }, []);
-
-  // ============================================
-  // REGISTER with Firebase Email/Password
-  // ============================================
-  const register = async ({ name, email, password, phone, rollNumber, department, role }) => {
-    try {
-      // Create Firebase account
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const idToken = await userCredential.user.getIdToken();
-      
-      // Update display name in Firebase
-      await updateProfile(userCredential.user, { displayName: name });
-
-      // Send Firebase token to our backend
-      const res = await axios.post(`${API_URL}/api/auth/register`, {
-        idToken,
-        name,
-        email: userCredential.user.email,
-        phone,
-        rollNumber,
-        department,
-        role: role || 'student'
-      });
-
-      const { token, user: userData } = res.data.data;
-      localStorage.setItem('token', token);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      setUser(userData);
-      
-      return res.data;
-    } catch (error) {
-      // Parse Firebase errors
-      const errorMessage = formatFirebaseError(error.code);
-      throw new Error(errorMessage);
-    }
-  };
 
   // ============================================
   // LOGIN
@@ -169,7 +132,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, googleLogin, register, logout, updateProfile, changePassword, setUser }}>
+    <AuthContext.Provider value={{ user, loading, login, googleLogin, logout, updateProfile, changePassword, setUser }}>
       {children}
     </AuthContext.Provider>
   );
