@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { Save } from 'lucide-react';
+import { Save, X, ArrowLeft } from 'lucide-react';
 import axios from 'axios';
 import { STREAM_OPTIONS, SECTION_OPTIONS, YEAR_OPTIONS } from '../../lib/profileOptions';
 
@@ -9,8 +10,36 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 export default function Profile() {
   const { user, updateProfile } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [missingFields, setMissingFields] = useState([]);
+  const [formatError, setFormatError] = useState(null); // { field, message } | null
+  const formRef = useRef(null); // used to scroll the page back to the error banner on submit/catch
+
+  // Field labels for the "fill all the fields" message
+  const FIELD_LABELS = {
+    universityRollNumber: 'University Roll Number',
+    universityRegistrationNumber: 'University Registration Number',
+    collegeId: 'College ID',
+    admissionType: 'Admission Type',
+    fullName: 'Full Name',
+    stream: 'Stream',
+    section: 'Section',
+    gender: 'Gender',
+    dateOfBirth: 'Date of Birth',
+    contactNumber: 'Contact Number',
+    email: 'Email',
+    graduationPassingYear: 'Graduation Passing Year',
+    tenthBoard: '10th Board',
+    tenthPercentage: '10th Percentage',
+    tenthPassingYear: '10th Passing Year',
+    twelfthBoard: '12th Board',
+    twelfthPercentage: '12th Percentage',
+    twelfthPassingYear: '12th Passing Year',
+    currentCGPA: 'Current CGPA',
+    numberOfBacklog: 'Number of Backlogs'
+  };
   const [isModified, setIsModified] = useState(false);
   const [form, setForm] = useState({
     universityRollNumber: '',
@@ -85,9 +114,11 @@ export default function Profile() {
     if (field === 'fullName') {
       value = value.toUpperCase();
     }
-    // Auto-uppercase for college ID (alphanumeric)
+    // Auto-uppercase for college ID, force DSC + 8 digits
     if (field === 'collegeId') {
-      value = value.toUpperCase();
+      // Strip the DSC prefix if user typed it, plus any non-digits
+      let digits = String(value).replace(/^DSC/i, '').replace(/\D/g, '').slice(0, 8);
+      value = 'DSC' + digits;
     }
     // Only keep digits for contact number
     if (field === 'contactNumber') {
@@ -101,22 +132,162 @@ export default function Profile() {
         return;
       }
     }
+    // CGPA: strip non-digits-except-dot, keep at most 2 decimal places (live)
+    if (field === 'currentCGPA') {
+      let v = String(value).replace(/[^0-9.]/g, '');
+      const firstDot = v.indexOf('.');
+      if (firstDot !== -1) v = v.slice(0, firstDot + 1) + v.slice(firstDot + 1).replace(/\./g, '');
+      const dotIdx = v.indexOf('.');
+      if (dotIdx !== -1 && v.length - dotIdx - 1 > 2) v = v.slice(0, dotIdx + 3);
+      if (v.length > 5) v = v.slice(0, 5); // 2 digits + . + 2 digits max
+      if (formatError && formatError.field === 'currentCGPA') setFormatError(null);
+      setForm({ ...form, currentCGPA: v });
+      setIsModified(true);
+      return;
+    }
+    // Clear format error for this field if user is editing it
+    if (formatError && formatError.field === field) {
+      setFormatError(null);
+    }
     setForm({ ...form, [field]: value });
     setIsModified(true);
   };
 
+  // Scroll the page so the error banner (top of form) is visible.
+  // Used after any submit-time validation failure so the user always sees
+  // the banner, even if they were scrolled to the bottom of the form.
+  // Runs after a tick so React has flushed the banner into the DOM first.
+  const scrollToErrorBanner = () => {
+    setTimeout(() => {
+      const banner = document.getElementById('profile-error-banner');
+      if (banner) {
+        banner.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else if (formRef.current) {
+        formRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 0);
+  };
+
+  // Backlog check that uses the LATEST form state, not the stale closure copy.
+  // Used by validators that run before the submit `try` block rebuilds `hasBacklog`.
+  const hasBacklogField = () => form.numberOfBacklog !== '' && parseInt(form.numberOfBacklog) > 0;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setMissingFields([]);
+    setFormatError(null);
+    // STEP 1: Check ALL fields are present first — missing-fields banner wins
+    const requiredFields = [
+      'universityRollNumber', 'universityRegistrationNumber', 'collegeId', 'admissionType',
+      'fullName', 'stream', 'section', 'gender', 'dateOfBirth',
+      'tenthBoard', 'tenthPercentage', 'tenthPassingYear',
+      'twelfthBoard', 'twelfthPercentage', 'twelfthPassingYear',
+      'contactNumber', 'email', 'currentCGPA', 'numberOfBacklog', 'graduationPassingYear'
+    ];
+    const absent = requiredFields.filter(f => {
+      const v = form[f];
+      return v === '' || v === null || v === undefined;
+    });
+    if (absent.length > 0) {
+      setMissingFields(absent);
+      scrollToErrorBanner();
+      const labels = absent.map(f => FIELD_LABELS[f] || f).join(', ');
+      toast.error(`Please fill all fields for verification. Missing: ${labels}`, { autoClose: 6000 });
+      const firstAbsent = absent[0];
+      const el = document.querySelector(`[name="${firstAbsent}"]`);
+      if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.focus({ preventScroll: true }); }
+      setLoading(false);
+      return;
+    }
+    // STEP 2: All fields present — now check format of filled values
+    if (form.universityRollNumber.length !== 11) {
+      const err = { field: 'universityRollNumber', message: 'Input your 11 digit roll number' };
+      setFormatError(err);
+      scrollToErrorBanner();
+      toast.error(err.message, { autoClose: 5000 });
+      const el = document.querySelector('[name="universityRollNumber"]');
+      if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.focus({ preventScroll: true }); }
+      setLoading(false);
+      return;
+    }
+    if (form.universityRegistrationNumber.length !== 12) {
+      const err = { field: 'universityRegistrationNumber', message: 'Input your 12 digit registration number' };
+      setFormatError(err);
+      scrollToErrorBanner();
+      toast.error(err.message, { autoClose: 5000 });
+      const el = document.querySelector('[name="universityRegistrationNumber"]');
+      if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.focus({ preventScroll: true }); }
+      setLoading(false);
+      return;
+    }
+    if (form.contactNumber.length !== 10) {
+      const err = { field: 'contactNumber', message: 'Contact Number must be exactly 10 digits' };
+      setFormatError(err);
+      scrollToErrorBanner();
+      toast.error(err.message, { autoClose: 5000 });
+      const el = document.querySelector('[name="contactNumber"]');
+      if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.focus({ preventScroll: true }); }
+      setLoading(false);
+      return;
+    }
+    if (!/^DSC\d{8}$/.test(form.collegeId)) {
+      const err = { field: 'collegeId', message: 'College ID must be DSC followed by 8 digits' };
+      setFormatError(err);
+      scrollToErrorBanner();
+      toast.error(err.message, { autoClose: 5000 });
+      const el = document.querySelector('[name="collegeId"]');
+      if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.focus({ preventScroll: true }); }
+      setLoading(false);
+      return;
+    }
+    // 10th & 12th percentage must be 30 ≤ value ≤ 100
+    const tenthPct = parseFloat(form.tenthPercentage);
+    if (isNaN(tenthPct) || tenthPct < 30 || tenthPct > 100) {
+      const err = { field: 'tenthPercentage', message: '10th Percentage must be between 30 and 100' };
+      setFormatError(err);
+      scrollToErrorBanner();
+      toast.error(err.message, { autoClose: 5000 });
+      const el = document.querySelector('[name="tenthPercentage"]');
+      if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.focus({ preventScroll: true }); }
+      setLoading(false);
+      return;
+    }
+    const twelfthPct = parseFloat(form.twelfthPercentage);
+    if (isNaN(twelfthPct) || twelfthPct < 30 || twelfthPct > 100) {
+      const err = { field: 'twelfthPercentage', message: '12th Percentage must be between 30 and 100' };
+      setFormatError(err);
+      scrollToErrorBanner();
+      toast.error(err.message, { autoClose: 5000 });
+      const el = document.querySelector('[name="twelfthPercentage"]');
+      if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.focus({ preventScroll: true }); }
+      setLoading(false);
+      return;
+    }
+    // CGPA range check (skipped when backlog is selected — backlog forces CGPA=0)
+    if (!hasBacklogField()) {
+      const cgpa = parseFloat(form.currentCGPA);
+      if (isNaN(cgpa) || cgpa < 4 || cgpa > 10) {
+        const err = { field: 'currentCGPA', message: 'CGPA must be between 4 and 10' };
+        setFormatError(err);
+        scrollToErrorBanner();
+        toast.error(err.message, { autoClose: 5000 });
+        const el = document.querySelector('[name="currentCGPA"]');
+        if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.focus({ preventScroll: true }); }
+        setLoading(false);
+        return;
+      }
+    }
+
     try {
       const hasBacklog = form.numberOfBacklog !== '' && parseInt(form.numberOfBacklog) > 0;
-      await updateProfile({
+      const res = await updateProfile({
         studentProfile: {
           ...user.studentProfile,
           ...form,
           tenthPercentage: form.tenthPercentage ? parseFloat(parseFloat(form.tenthPercentage).toFixed(2)) : undefined,
           twelfthPercentage: form.twelfthPercentage ? parseFloat(parseFloat(form.twelfthPercentage).toFixed(2)) : undefined,
-          currentCGPA: hasBacklog ? 0 : (form.currentCGPA ? parseFloat(form.currentCGPA) : undefined),
+          currentCGPA: hasBacklog ? 0 : (form.currentCGPA ? parseFloat(parseFloat(form.currentCGPA).toFixed(2)) : undefined),
           numberOfBacklog: form.numberOfBacklog !== '' ? parseInt(form.numberOfBacklog) : undefined,
           tenthPassingYear: form.tenthPassingYear ? parseInt(form.tenthPassingYear) : undefined,
           twelfthPassingYear: form.twelfthPassingYear ? parseInt(form.twelfthPassingYear) : undefined,
@@ -124,53 +295,136 @@ export default function Profile() {
           skills: form.skills.split(',').map(s => s.trim()).filter(Boolean),
         }
       });
-      toast.success('Profile updated!');
+      const isComplete = res?.data?.user?.studentProfile?.isProfileComplete;
+      if (isComplete) {
+        toast.success('Profile saved! Sent for verification.');
+      } else {
+        toast.success('Draft saved. Please complete remaining fields for verification.');
+      }
       setSaved(true);
       setIsModified(false);
       setTimeout(() => setSaved(false), 2000);
-    } catch (error) { toast.error('Failed to update'); }
+    } catch (error) {
+      // Backend rejects first-save with 400 + missingFields list when something is empty
+      if (error.response?.status === 400 && error.response?.data?.code === 'PROFILE_INCOMPLETE') {
+        const missing = error.response.data.missingFields || [];
+        setMissingFields(missing);
+        scrollToErrorBanner();
+        const labels = missing.map(f => FIELD_LABELS[f] || f).join(', ');
+        toast.error(`Please fill all fields for verification. Missing: ${labels}`, { autoClose: 6000 });
+        // Scroll to the first missing field so the student sees it
+        const firstMissing = missing[0];
+        if (firstMissing) {
+          const el = document.querySelector(`[name="${firstMissing}"]`);
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            el.focus({ preventScroll: true });
+          }
+        }
+      } else if (error.response?.status === 400 && error.response?.data?.code === 'PROFILE_INVALID') {
+        // Format error (e.g. roll number not 11 digits) — show friendly banner + highlight offending field
+        const formatErrors = error.response.data.formatErrors || [];
+        const firstField = formatErrors[0]?.match(/^(\w+)/)?.[1];
+        // Friendly message override for the numeric fields
+        let message = error.response.data.message || 'Profile contains invalid data';
+        if (firstField === 'universityRollNumber') message = 'Input your 11 digit roll number';
+        if (firstField === 'universityRegistrationNumber') message = 'Input your 12 digit registration number';
+        if (firstField === 'contactNumber') message = 'Contact Number must be exactly 10 digits';
+        if (firstField === 'collegeId') message = 'College ID must be DSC followed by 8 digits';
+        if (firstField === 'tenthPercentage') message = '10th Percentage must be between 30 and 100';
+        if (firstField === 'twelfthPercentage') message = '12th Percentage must be between 30 and 100';
+        if (firstField === 'currentCGPA') message = 'CGPA must be between 4 and 10';
+        if (firstField) setFormatError({ field: firstField, message });
+        scrollToErrorBanner();
+        toast.error(message, { autoClose: 5000 });
+        if (firstField) {
+          const el = document.querySelector(`[name="${firstField}"]`);
+          if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.focus({ preventScroll: true }); }
+        }
+      } else {
+        toast.error(error.response?.data?.message || 'Failed to update profile');
+      }
+    }
     finally { setLoading(false); }
   };
 
   const hasBacklog = form.numberOfBacklog !== '' && parseInt(form.numberOfBacklog) > 0;
 
+  // Header shows the latest saved profile name/email (form state) — falls back
+  // to the auth-user values (Gmail-derived) only when the student hasn't
+  // filled their profile yet, so freshly-onboarded users still see something.
+  const displayName = form.fullName || user?.name;
+  const displayEmail = form.email || user?.email;
+
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-3xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6">My Profile</h1>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold">My Profile</h1>
+          <button
+            type="button"
+            onClick={() => navigate('/')}
+            className="flex items-center gap-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium rounded-lg transition-all duration-300"
+          >
+            <ArrowLeft className="w-4 h-4" /> Back to Dashboard
+          </button>
+        </div>
         <div className="card mb-6">
           <div className="flex items-center gap-4 pb-6 border-b">
             <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center">
-              <span className="text-2xl font-bold text-blue-600">{user?.name?.[0]}</span>
+              <span className="text-2xl font-bold text-blue-600">{displayName?.[0]}</span>
             </div>
             <div>
-              <h2 className="text-xl font-semibold">{user?.name}</h2>
-              <p className="text-gray-500">{user?.email}</p>
+              <h2 className="text-xl font-semibold">{displayName}</h2>
+              <p className="text-gray-500">{displayEmail}</p>
               <span className="badge badge-blue mt-1">{user?.role}</span>
             </div>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
+          {(formatError || missingFields.length > 0) && (
+            // Wrapper div lets handleSubmit scroll to a stable id regardless of
+            // which banner (missing-fields red or format yellow) is visible.
+            <div id="profile-error-banner" className="space-y-3">
+              {formatError && (
+                <div className="bg-yellow-50 border border-yellow-400 text-yellow-900 px-4 py-3 rounded-lg flex items-start gap-3">
+                  <span className="text-xl">⚠️</span>
+                  <p className="font-semibold">{formatError.message}</p>
+                </div>
+              )}
+              {missingFields.length > 0 && (
+                <div className="bg-red-50 border border-red-300 text-red-800 px-4 py-3 rounded-lg flex items-start gap-3">
+                  <span className="text-xl">⚠️</span>
+                  <div>
+                    <p className="font-semibold">Please fill all required fields before saving for verification.</p>
+                    <p className="text-sm mt-1">
+                      Missing: {missingFields.map(f => FIELD_LABELS[f] || f).join(', ')}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
           {/* Personal Information */}
           <div className="card">
             <h2 className="text-lg font-semibold mb-4">Personal Information</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-1">University Roll Number <span className="text-red-500">*</span></label>
-                <input type="number" className="input" placeholder="Roll Number" value={form.universityRollNumber} onChange={e => handleChange('universityRollNumber', e.target.value)} minLength={11} maxLength={11} />
+                <input type="text" inputMode="numeric" name="universityRollNumber" className={`input ${missingFields.includes('universityRollNumber') || formatError?.field === 'universityRollNumber' ? 'border-red-500 ring-2 ring-red-200' : ''}`} placeholder="Roll Number" value={form.universityRollNumber} onChange={e => { const v = e.target.value.replace(/\D/g, '').slice(0, 11); handleChange('universityRollNumber', v); }} onWheel={e => e.target.blur()} onKeyDown={e => { if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault(); }} maxLength={11} pattern="\d{11}" />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">University Registration Number <span className="text-red-500">*</span></label>
-                <input type="number" className="input" placeholder="Registration Number" value={form.universityRegistrationNumber} onChange={e => handleChange('universityRegistrationNumber', e.target.value)} minLength={12} maxLength={14} />
+                <input type="text" inputMode="numeric" name="universityRegistrationNumber" className={`input ${missingFields.includes('universityRegistrationNumber') || formatError?.field === 'universityRegistrationNumber' ? 'border-red-500 ring-2 ring-red-200' : ''}`} placeholder="Registration Number" value={form.universityRegistrationNumber} onChange={e => { const v = e.target.value.replace(/\D/g, '').slice(0, 12); handleChange('universityRegistrationNumber', v); }} onWheel={e => e.target.blur()} onKeyDown={e => { if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault(); }} maxLength={12} />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">College ID <span className="text-red-500">*</span></label>
-                <input type="text" className="input" placeholder="12 digit alphanumeric" value={form.collegeId} onChange={e => handleChange('collegeId', e.target.value)} maxLength={12} />
+                <input type="text" name="collegeId" className={`input ${missingFields.includes('collegeId') || formatError?.field === 'collegeId' ? 'border-red-500 ring-2 ring-red-200' : ''}`} placeholder="DSC12345678" value={form.collegeId} onChange={e => handleChange('collegeId', e.target.value)} maxLength={11} />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Admission Type <span className="text-red-500">*</span></label>
-                <select className="input" value={form.admissionType} onChange={e => handleChange('admissionType', e.target.value)}>
+                <select name="admissionType" className={`input ${missingFields.includes('admissionType') ? 'border-red-500 ring-2 ring-red-200' : ''}`} value={form.admissionType} onChange={e => handleChange('admissionType', e.target.value)}>
                   <option value="">Select</option>
                   <option value="Regular 4-year">Regular 4-year</option>
                   <option value="Lateral 3-year">Lateral 3-year</option>
@@ -178,25 +432,25 @@ export default function Profile() {
               </div>
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium mb-1">Full Name (Block Letters) <span className="text-red-500">*</span></label>
-                <input type="text" className="input" placeholder="Enter your full name" value={form.fullName} onChange={e => handleChange('fullName', e.target.value)} />
+                <input type="text" name="fullName" className={`input ${missingFields.includes('fullName') ? 'border-red-500 ring-2 ring-red-200' : ''}`} placeholder="Enter your full name" value={form.fullName} onChange={e => handleChange('fullName', e.target.value)} />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Stream <span className="text-red-500">*</span></label>
-                <select className="input" value={form.stream} onChange={e => handleChange('stream', e.target.value)}>
+                <select name="stream" className={`input ${missingFields.includes('stream') ? 'border-red-500 ring-2 ring-red-200' : ''}`} value={form.stream} onChange={e => handleChange('stream', e.target.value)}>
                   <option value="">Select Stream</option>
                   {STREAM_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Section <span className="text-red-500">*</span></label>
-                <select className="input" value={form.section} onChange={e => handleChange('section', e.target.value)}>
+                <select name="section" className={`input ${missingFields.includes('section') ? 'border-red-500 ring-2 ring-red-200' : ''}`} value={form.section} onChange={e => handleChange('section', e.target.value)}>
                   <option value="">Select Section</option>
                   {SECTION_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Gender <span className="text-red-500">*</span></label>
-                <select className="input" value={form.gender} onChange={e => handleChange('gender', e.target.value)}>
+                <select name="gender" className={`input ${missingFields.includes('gender') ? 'border-red-500 ring-2 ring-red-200' : ''}`} value={form.gender} onChange={e => handleChange('gender', e.target.value)}>
                   <option value="">Select Gender</option>
                   <option value="Male">Male</option>
                   <option value="Female">Female</option>
@@ -204,11 +458,11 @@ export default function Profile() {
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Date of Birth <span className="text-red-500">*</span></label>
-                <input type="date" className="input" value={form.dateOfBirth} onChange={e => handleChange('dateOfBirth', e.target.value)} />
+                <input type="date" name="dateOfBirth" className={`input ${missingFields.includes('dateOfBirth') ? 'border-red-500 ring-2 ring-red-200' : ''}`} value={form.dateOfBirth} onChange={e => handleChange('dateOfBirth', e.target.value)} />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Contact Number <span className="text-red-500">*</span></label>
-                <input type="tel" className="input" placeholder="9876543210" value={form.contactNumber} onChange={e => handleChange('contactNumber', e.target.value)} maxLength={10} />
+                <input type="tel" name="contactNumber" className={`input ${missingFields.includes('contactNumber') ? 'border-red-500 ring-2 ring-red-200' : ''}`} placeholder="9876543210" value={form.contactNumber} onChange={e => handleChange('contactNumber', e.target.value)} maxLength={10} />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Email <span className="text-red-500">*</span></label>
@@ -223,7 +477,7 @@ export default function Profile() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-1">Board <span className="text-red-500">*</span></label>
-                <select className="input" value={form.tenthBoard} onChange={e => handleChange('tenthBoard', e.target.value)}>
+                <select name="tenthBoard" className={`input ${missingFields.includes('tenthBoard') ? 'border-red-500 ring-2 ring-red-200' : ''}`} value={form.tenthBoard} onChange={e => handleChange('tenthBoard', e.target.value)}>
                   <option value="">Select Board</option>
                   <option value="CBSE">CBSE</option>
                   <option value="ICSE">ICSE</option>
@@ -242,11 +496,11 @@ export default function Profile() {
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Percentage<span className="text-red-500">*</span></label>
-                <input type="number" step="0.01" min="0" max="100" className="input" placeholder="Percentage" value={form.tenthPercentage} onChange={e => handleChange('tenthPercentage', e.target.value)} />
+                <input type="text" inputMode="decimal" step="0.01" name="tenthPercentage" className={`input ${missingFields.includes('tenthPercentage') || formatError?.field === 'tenthPercentage' ? 'border-red-500 ring-2 ring-red-200' : ''}`} placeholder="Percentage" value={form.tenthPercentage} onChange={e => { let v = e.target.value.replace(/[^0-9.]/g, ''); const firstDot = v.indexOf('.'); if (firstDot !== -1) v = v.slice(0, firstDot + 1) + v.slice(firstDot + 1).replace(/\./g, ''); if (v.length > 5) v = v.slice(0, 5); handleChange('tenthPercentage', v); }} onWheel={e => e.target.blur()} onKeyDown={e => { if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault(); }} />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Passing Year <span className="text-red-500">*</span></label>
-                <input type="number" className="input" placeholder="YYYY" value={form.tenthPassingYear} onChange={e => handleChange('tenthPassingYear', e.target.value)} min={2000} max={2030} />
+                <input type="text" inputMode="numeric" name="tenthPassingYear" className={`input ${missingFields.includes('tenthPassingYear') ? 'border-red-500 ring-2 ring-red-200' : ''}`} placeholder="YYYY" value={form.tenthPassingYear} onChange={e => { const v = e.target.value.replace(/\D/g, '').slice(0, 4); handleChange('tenthPassingYear', v); }} onWheel={e => e.target.blur()} onKeyDown={e => { if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault(); }} maxLength={4} />
               </div>
             </div>
           </div>
@@ -257,7 +511,7 @@ export default function Profile() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-1">Board <span className="text-red-500">*</span></label>
-                <select className="input" value={form.twelfthBoard} onChange={e => handleChange('twelfthBoard', e.target.value)}>
+                <select name="twelfthBoard" className={`input ${missingFields.includes('twelfthBoard') ? 'border-red-500 ring-2 ring-red-200' : ''}`} value={form.twelfthBoard} onChange={e => handleChange('twelfthBoard', e.target.value)}>
                   <option value="">Select Board</option>
                   <option value="CBSE">CBSE</option>
                   <option value="ISC">ISC</option>
@@ -276,11 +530,11 @@ export default function Profile() {
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Percentage<span className="text-red-500">*</span></label>
-                <input type="number" step="0.01" min="0" max="100" className="input" placeholder="Percentage" value={form.twelfthPercentage} onChange={e => handleChange('twelfthPercentage', e.target.value)} />
+                <input type="text" inputMode="decimal" step="0.01" name="twelfthPercentage" className={`input ${missingFields.includes('twelfthPercentage') || formatError?.field === 'twelfthPercentage' ? 'border-red-500 ring-2 ring-red-200' : ''}`} placeholder="Percentage" value={form.twelfthPercentage} onChange={e => { let v = e.target.value.replace(/[^0-9.]/g, ''); const firstDot = v.indexOf('.'); if (firstDot !== -1) v = v.slice(0, firstDot + 1) + v.slice(firstDot + 1).replace(/\./g, ''); if (v.length > 5) v = v.slice(0, 5); handleChange('twelfthPercentage', v); }} onWheel={e => e.target.blur()} onKeyDown={e => { if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault(); }} />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Passing Year <span className="text-red-500">*</span></label>
-                <input type="number" className="input" placeholder="YYYY" value={form.twelfthPassingYear} onChange={e => handleChange('twelfthPassingYear', e.target.value)} min={2000} max={2030} />
+                <input type="text" inputMode="numeric" name="twelfthPassingYear" className={`input ${missingFields.includes('twelfthPassingYear') ? 'border-red-500 ring-2 ring-red-200' : ''}`} placeholder="YYYY" value={form.twelfthPassingYear} onChange={e => { const v = e.target.value.replace(/\D/g, '').slice(0, 4); handleChange('twelfthPassingYear', v); }} onWheel={e => e.target.blur()} onKeyDown={e => { if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault(); }} maxLength={4} />
               </div>
             </div>
           </div>
@@ -295,27 +549,28 @@ export default function Profile() {
                   {hasBacklog && <span className="text-xs text-gray-400 ml-1">(N/A — has backlog)</span>}
                 </label>
                 <input
-                  type="number"
-                  step="0.01"
-                  className={`input ${hasBacklog ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  type="text"
+                  inputMode="decimal"
+                  name="currentCGPA"
+                  className={`input ${hasBacklog ? 'bg-gray-100 cursor-not-allowed' : ''} ${missingFields.includes('currentCGPA') || formatError?.field === 'currentCGPA' ? 'border-red-500 ring-2 ring-red-200' : ''}`}
                   placeholder={hasBacklog ? 'N/A' : '0.00'}
                   value={form.currentCGPA}
                   onChange={e => handleChange('currentCGPA', e.target.value)}
+                  onWheel={e => e.target.blur()}
+                  onKeyDown={e => { if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault(); }}
                   disabled={hasBacklog}
-                  min={0}
-                  max={10}
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Number of Backlog</label>
-                <select className="input" value={form.numberOfBacklog} onChange={e => handleChange('numberOfBacklog', e.target.value)}>
+                <select name="numberOfBacklog" className={`input ${missingFields.includes('numberOfBacklog') ? 'border-red-500 ring-2 ring-red-200' : ''}`} value={form.numberOfBacklog} onChange={e => handleChange('numberOfBacklog', e.target.value)}>
                   <option value="">Select</option>
                   {[...Array(11)].map((_, i) => <option key={i} value={i}>{i}</option>)}
                 </select>
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Graduation Passing Year</label>
-                <select className="input" value={form.graduationPassingYear} onChange={e => handleChange('graduationPassingYear', e.target.value)}>
+                <select name="graduationPassingYear" className={`input ${missingFields.includes('graduationPassingYear') ? 'border-red-500 ring-2 ring-red-200' : ''}`} value={form.graduationPassingYear} onChange={e => handleChange('graduationPassingYear', e.target.value)}>
                   <option value="">Select Year</option>
                   {YEAR_OPTIONS.map(year => (
                     <option key={year} value={year}>{year}</option>
@@ -329,17 +584,39 @@ export default function Profile() {
             </div>
           </div>
 
-          <button type="submit" disabled={loading || saved || !isModified} className={`btn-primary w-full py-3 flex items-center justify-center gap-2 transition-all duration-300 ${saved ? 'bg-green-500 hover:bg-green-500' : !isModified ? 'opacity-50 cursor-not-allowed' : ''}`}>
-            {loading ? (
-              'Saving...'
-            ) : saved ? (
-              <><span style={{ animation: 'bounceOnce 0.5s ease' }}>✓</span> Saved!</>
-            ) : !isModified ? (
-              <><Save className="w-5 h-5" /> No Changes</>
-            ) : (
-              <><Save className="w-5 h-5" /> Save Changes</>
-            )}
-          </button>
+          <div className="flex gap-2">
+            <button
+              type="submit"
+              disabled={loading || saved || !isModified}
+              className={`btn-primary w-[80%] py-3 flex items-center justify-center gap-2 transition-all duration-300 ${saved ? 'bg-green-500 hover:bg-green-500' : !isModified ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              {loading ? (
+                'Saving...'
+              ) : saved ? (
+                <><span style={{ animation: 'bounceOnce 0.5s ease' }}>✓</span> Saved!</>
+              ) : !isModified ? (
+                <><Save className="w-5 h-5" /> No Changes</>
+              ) : (
+                <><Save className="w-5 h-5" /> Save Changes</>
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                if (window.confirm('Clear all fields? This will reset every input in the form.')) {
+                  const cleared = {};
+                  Object.keys(form).forEach(k => { cleared[k] = ''; });
+                  setForm(cleared);
+                  setMissingFields([]);
+                  setSaved(false);
+                  setIsModified(false);
+                }
+              }}
+              className="w-[20%] py-3 flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg transition-all duration-300"
+            >
+              <X className="w-5 h-5" /> Clear
+            </button>
+          </div>
         </form>
       </div>
     </div>

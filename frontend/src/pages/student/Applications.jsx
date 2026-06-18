@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
-import { FileText, Clock, CheckCircle, XCircle, Briefcase, ChevronDown, ChevronUp, Calendar, Star, Users, Bell } from 'lucide-react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { FileText, Clock, CheckCircle, XCircle, Briefcase, ChevronDown, ChevronUp, Calendar, Star, Users, Bell, ArrowLeft } from 'lucide-react';
 import { useSocket } from '../../context/SocketContext';
 import { refId } from '../../lib/api';
 
@@ -11,6 +11,7 @@ export default function Applications() {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const urlFilter = searchParams.get('status');
   const urlJobId = searchParams.get('job');
   // Local state tracking the application id that should receive the
@@ -225,7 +226,16 @@ export default function Applications() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-6">My Applications</h1>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold">My Applications</h1>
+          <button
+            type="button"
+            onClick={() => navigate('/')}
+            className="flex items-center gap-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium rounded-lg transition-all duration-300"
+          >
+            <ArrowLeft className="w-4 h-4" /> Back to Dashboard
+          </button>
+        </div>
         <div className="flex gap-2 mb-6 flex-wrap">
           {VALID_FILTERS.map(f => (
             <button key={f} onClick={() => handleFilterChange(f)} className={`px-4 py-2 rounded-lg capitalize text-sm ${filter === f ? 'bg-blue-600 text-white' : 'bg-white border hover:bg-gray-50'}`}>{f}</button>

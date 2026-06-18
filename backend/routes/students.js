@@ -96,7 +96,7 @@ router.get('/pending', auth, async (req, res) => {
       return res.status(403).json({ success: false, message: 'Access denied' });
     }
     
-    const students = await User.find({ 
+    const students = await User.find({
       role: 'student',
       $or: [
         { 'studentProfile.verified': false },
@@ -105,8 +105,18 @@ router.get('/pending', auth, async (req, res) => {
       ],
       status: { $ne: 'rejected' }
     }).select('name email studentProfile status createdAt');
-    
-    res.json({ success: true, data: { students } });
+
+    // Decorate: prefer studentProfile.fullName / studentProfile.email over the
+    // top-level Gmail-derived fields. Officer UI should always show what the
+    // student typed into their profile, not what Firebase gave us at signup.
+    const decorated = students.map(s => {
+      const obj = s.toObject();
+      obj.name = obj.studentProfile?.fullName || obj.name;
+      obj.email = obj.studentProfile?.email || obj.email;
+      return obj;
+    });
+
+    res.json({ success: true, data: { students: decorated } });
   } catch (error) { res.status(500).json({ success: false, message: error.message }); }
 });
 

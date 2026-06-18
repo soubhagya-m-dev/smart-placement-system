@@ -74,8 +74,8 @@ export default function VerifyStudents() {
           <div className="space-y-4">{students.map(s => (
             <div key={s._id} className="card flex items-center justify-between">
               <div>
-                <h3 className="font-semibold">{s.name}</h3>
-                <p className="text-gray-500 text-sm">{s.email}</p>
+                <h3 className="font-semibold">{s.studentProfile?.fullName || s.name}</h3>
+                <p className="text-gray-500 text-sm">{s.studentProfile?.email || s.email}</p>
               </div>
               <div className="flex gap-2">
                 <button onClick={() => viewDetails(s)} className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center gap-2">
@@ -122,7 +122,7 @@ export default function VerifyStudents() {
                     </div>
                     <div>
                       <p className="text-xs text-gray-500">Full Name</p>
-                      <p className="font-medium">{selectedStudent.name}</p>
+                      <p className="font-medium">{selectedStudent.studentProfile?.fullName || selectedStudent.name}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
@@ -131,7 +131,7 @@ export default function VerifyStudents() {
                     </div>
                     <div>
                       <p className="text-xs text-gray-500">Email</p>
-                      <p className="font-medium">{selectedStudent.email}</p>
+                      <p className="font-medium">{selectedStudent.studentProfile?.email || selectedStudent.email}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">

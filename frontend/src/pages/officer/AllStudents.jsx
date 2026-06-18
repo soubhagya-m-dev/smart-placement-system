@@ -83,7 +83,10 @@ const flatten = (s) => {
   return {
     id: s._id,
     rollNumber: p.universityRollNumber || '—',
-    name: s.name || '—',
+    // Prefer profile fullName (what the student typed) over the Gmail-derived
+    // top-level name. Backend /api/students/all already decorates this, but
+    // we fall back here in case any other endpoint ever returns a raw doc.
+    name: p.fullName || s.name || '—',
     collegeId: p.collegeId || '—',
     // dateOfBirth is stored as a string (e.g. "2004-08-15"). Format to a
     // human-friendly "DD MMM YYYY" if it parses; otherwise show the raw value
@@ -98,7 +101,7 @@ const flatten = (s) => {
     })(),
     gender: p.gender || '—',
     phone: p.contactNumber || s.phone || '—',
-    email: s.email || '—',
+    email: p.email || s.email || '—',
     graduationPassingYear: p.graduationPassingYear ?? '—',
     stream: p.stream || '—',
     section: p.section || '—',

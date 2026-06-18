@@ -44,7 +44,15 @@ router.get('/pending-verifications', auth, async (req, res) => {
       ],
       status: { $ne: 'rejected' }
     }).select('name email studentProfile createdAt');
-    res.json({ success: true, data: { students } });
+
+    const decorated = students.map(s => {
+      const obj = s.toObject();
+      obj.name = obj.studentProfile?.fullName || obj.name;
+      obj.email = obj.studentProfile?.email || obj.email;
+      return obj;
+    });
+
+    res.json({ success: true, data: { students: decorated } });
   } catch (error) { res.status(500).json({ success: false, message: error.message }); }
 });
 
@@ -68,8 +76,8 @@ router.get('/job-applicants/:jobId', auth, async (req, res) => {
       appliedAt: app.appliedAt,
       student: {
         _id: app.student._id,
-        name: app.student.name,
-        email: app.student.email,
+        name: app.student.studentProfile?.fullName || app.student.name,
+        email: app.student.studentProfile?.email || app.student.email,
         phone: app.student.phone || app.student.studentProfile?.contactNumber || null,
         contactNumber: app.student.studentProfile?.contactNumber || null,
         universityRollNo: app.student.universityRollNo,

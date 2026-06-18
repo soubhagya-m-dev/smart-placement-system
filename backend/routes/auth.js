@@ -295,9 +295,12 @@ router.get('/me', async (req, res) => {
       data: {
         user: {
           ...user.toObject(),
-          // explicitly surface, since toObject() preserves the field
-          // but we want it cheap to read on the frontend
-          mustChangePassword: !!user.mustChangePassword
+          mustChangePassword: !!user.mustChangePassword,
+          // Decorate: prefer the profile values the student typed, fall back
+          // to the Gmail-derived top-level fields for accounts that haven't
+          // filled out their profile yet.
+          name: user.studentProfile?.fullName || user.name,
+          email: user.studentProfile?.email || user.email,
         }
       }
     });
@@ -319,14 +322,77 @@ router.patch('/profile', async (req, res) => {
     if (studentProfile) {
       const p = studentProfile;
       const requiredFields = [
-        p.universityRollNumber, p.universityRegistrationNumber, p.collegeId,
-        p.admissionType, p.fullName, p.stream, p.section, p.gender,
-        p.dateOfBirth, p.tenthBoard, p.tenthPercentage, p.tenthPassingYear,
-        p.twelfthBoard, p.twelfthPercentage, p.twelfthPassingYear,
-        p.contactNumber, p.currentCGPA, p.numberOfBacklog
+        'universityRollNumber', 'universityRegistrationNumber', 'collegeId',
+        'admissionType', 'fullName', 'stream', 'section', 'gender',
+        'dateOfBirth', 'tenthBoard', 'tenthPercentage', 'tenthPassingYear',
+        'twelfthBoard', 'twelfthPercentage', 'twelfthPassingYear',
+        'contactNumber', 'currentCGPA', 'numberOfBacklog',
+        'graduationPassingYear'
       ];
-      const isProfileComplete = requiredFields.every(f => f !== undefined && f !== null && f !== '');
-      
+      const missingFields = requiredFields.filter(
+        f => p[f] === undefined || p[f] === null || p[f] === ''
+      );
+      // Field-format checks (apply to all save paths, not just first-save)
+      const formatErrors = [];
+      if (p.universityRollNumber !== undefined && p.universityRollNumber !== null && p.universityRollNumber !== '') {
+        if (!/^\d{11}$/.test(String(p.universityRollNumber))) formatErrors.push('universityRollNumber must be exactly 11 digits');
+      }
+      if (p.universityRegistrationNumber !== undefined && p.universityRegistrationNumber !== null && p.universityRegistrationNumber !== '') {
+        if (!/^\d{12}$/.test(String(p.universityRegistrationNumber))) formatErrors.push('universityRegistrationNumber must be exactly 12 digits');
+      }
+      if (p.contactNumber !== undefined && p.contactNumber !== null && p.contactNumber !== '') {
+        if (!/^\d{10}$/.test(String(p.contactNumber))) formatErrors.push('contactNumber must be exactly 10 digits');
+      }
+      if (p.collegeId !== undefined && p.collegeId !== null && p.collegeId !== '') {
+        if (!/^DSC\d{8}$/i.test(String(p.collegeId))) formatErrors.push('collegeId must be DSC followed by 8 digits');
+      }
+      if (p.tenthPercentage !== undefined && p.tenthPercentage !== null && p.tenthPercentage !== '') {
+        const pct = Number(p.tenthPercentage);
+        if (isNaN(pct) || pct < 30 || pct > 100) formatErrors.push('tenthPercentage must be between 30 and 100');
+      }
+      if (p.twelfthPercentage !== undefined && p.twelfthPercentage !== null && p.twelfthPercentage !== '') {
+        const pct = Number(p.twelfthPercentage);
+        if (isNaN(pct) || pct < 30 || pct > 100) formatErrors.push('twelfthPercentage must be between 30 and 100');
+      }
+      // CGPA range check (skipped when a backlog is reported — backlog forces CGPA=0)
+      const hasBacklog = Number(p.numberOfBacklog) > 0;
+      if (!hasBacklog && p.currentCGPA !== undefined && p.currentCGPA !== null && p.currentCGPA !== '') {
+        const cgpa = Number(p.currentCGPA);
+        if (isNaN(cgpa) || cgpa < 4 || cgpa > 10) formatErrors.push('currentCGPA must be between 4 and 10');
+      }
+      const isProfileComplete = missingFields.length === 0 && formatErrors.length === 0;
+
+      // Decide hard-fail vs soft-fail:
+      //   First save  → studentProfile.isProfileComplete is false AND not yet verified.
+      //                 Block the save entirely if anything is missing — student must
+      //                 fill everything before officer review is even possible.
+      //   Edit        → already-complete profile, or rejected and resubmitting.
+      //                 Save as a draft so they don't lose their work.
+      const existing = await User.findById(decoded.id).select('studentProfile.isProfileComplete studentProfile.verified status');
+      const isFirstSave =
+        !existing?.studentProfile?.isProfileComplete &&
+        !existing?.studentProfile?.verified;
+
+      if (isFirstSave && !isProfileComplete) {
+        return res.status(400).json({
+          success: false,
+          code: 'PROFILE_INCOMPLETE',
+          message: 'Please fill all the required fields before saving your profile for verification.',
+          missingFields,
+          formatErrors
+        });
+      }
+
+      // Reject any save (first or edit) if format is wrong — no partial writes.
+      if (formatErrors.length > 0) {
+        return res.status(400).json({
+          success: false,
+          code: 'PROFILE_INVALID',
+          message: formatErrors[0],
+          formatErrors
+        });
+      }
+
       // Explicitly set each field including isProfileComplete
       // Also reset status to 'active' if student is updating their profile (allows re-verification after rejection)
       const updateFields = {
