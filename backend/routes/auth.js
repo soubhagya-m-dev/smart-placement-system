@@ -5,6 +5,11 @@ const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const admin = require('firebase-admin');
 
+// Normalize a name to uppercase on first signup so the name tied to the
+// email is stored consistently regardless of casing in the signup form
+// (Google, /register, or officer /create-student). Trims whitespace first.
+const normalizeName = (raw) => (raw || '').trim().toUpperCase();
+
 // Initialize Firebase Admin
 let firebaseInitialized = false;
 try {
@@ -99,7 +104,7 @@ router.post('/register', async (req, res) => {
     } else {
       // Create new user
       user = new User({
-        name: name || verifiedEmail.split('@')[0],
+        name: normalizeName(name) || verifiedEmail.split('@')[0],
         email: verifiedEmail,
         phone,
         role: role || 'student',
@@ -151,7 +156,7 @@ router.post('/google', async (req, res) => {
 
     if (!user) {
       user = new User({
-        name: name || verifiedEmail.split('@')[0],
+        name: normalizeName(name) || verifiedEmail.split('@')[0],
         email: verifiedEmail,
         photoUrl,
         firebaseUid,
@@ -321,6 +326,30 @@ router.patch('/profile', async (req, res) => {
     
     if (studentProfile) {
       const p = studentProfile;
+      // Duplicate-check roll / reg / collegeId across all OTHER students.
+      // Skip the check when the field is empty (handled by requiredFields below)
+      // or when the value matches the current student's own value (edit case).
+      const dupQueries = [];
+      if (p.universityRollNumber) dupQueries.push({ field: 'University Roll Number', value: p.universityRollNumber, key: 'studentProfile.universityRollNumber' });
+      if (p.universityRegistrationNumber) dupQueries.push({ field: 'University Registration Number', value: p.universityRegistrationNumber, key: 'studentProfile.universityRegistrationNumber' });
+      if (p.collegeId) dupQueries.push({ field: 'College ID', value: p.collegeId, key: 'studentProfile.collegeId' });
+
+      for (const { field, value, key } of dupQueries) {
+        const dup = await User.findOne({
+          [key]: value,
+          _id: { $ne: decoded.id }
+        }).select('_id name email');
+        if (dup) {
+          return res.status(409).json({
+            success: false,
+            code: 'DUPLICATE_PROFILE_FIELD',
+            message: `This ${field} is already used by another student. Please use your own details.`,
+            field,
+            duplicateOf: { id: dup._id, email: dup.email }
+          });
+        }
+      }
+
       const requiredFields = [
         'universityRollNumber', 'universityRegistrationNumber', 'collegeId',
         'admissionType', 'fullName', 'stream', 'section', 'gender',
@@ -521,7 +550,7 @@ router.post('/create-student', officerOrAdminAuth, async (req, res) => {
     const hashed = await bcrypt.hash(finalPassword, 10);
 
     const student = await User.create({
-      name: name.trim(),
+      name: normalizeName(name),
       email: email.toLowerCase().trim(),
       password: hashed,
       role: 'student',

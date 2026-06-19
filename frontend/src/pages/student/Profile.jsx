@@ -60,7 +60,6 @@ export default function Profile() {
     twelfthPercentage: '',
     twelfthPassingYear: '',
     contactNumber: '',
-    email: '',
     currentCGPA: '',
     numberOfBacklog: '',
     graduationPassingYear: '',
@@ -183,7 +182,7 @@ export default function Profile() {
       'fullName', 'stream', 'section', 'gender', 'dateOfBirth',
       'tenthBoard', 'tenthPercentage', 'tenthPassingYear',
       'twelfthBoard', 'twelfthPercentage', 'twelfthPassingYear',
-      'contactNumber', 'email', 'currentCGPA', 'numberOfBacklog', 'graduationPassingYear'
+      'contactNumber', 'currentCGPA', 'numberOfBacklog', 'graduationPassingYear'
     ];
     const absent = requiredFields.filter(f => {
       const v = form[f];
@@ -341,6 +340,21 @@ export default function Profile() {
           const el = document.querySelector(`[name="${firstField}"]`);
           if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.focus({ preventScroll: true }); }
         }
+      } else if (error.response?.status === 409 && error.response?.data?.code === 'DUPLICATE_PROFILE_FIELD') {
+        // Duplicate roll / reg / collegeId — highlight the conflicting field in red and show a clear message
+        const fieldRaw = error.response.data.field || '';
+        const fieldKey = fieldRaw === 'University Roll Number' ? 'universityRollNumber'
+          : fieldRaw === 'University Registration Number' ? 'universityRegistrationNumber'
+          : fieldRaw === 'College ID' ? 'collegeId'
+          : null;
+        const message = error.response.data.message || 'This field is already used by another student.';
+        if (fieldKey) {
+          setFormatError({ field: fieldKey, message });
+          scrollToErrorBanner();
+          const el = document.querySelector(`[name="${fieldKey}"]`);
+          if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.focus({ preventScroll: true }); }
+        }
+        toast.error(message, { autoClose: 6000 });
       } else {
         toast.error(error.response?.data?.message || 'Failed to update profile');
       }
@@ -354,7 +368,7 @@ export default function Profile() {
   // to the auth-user values (Gmail-derived) only when the student hasn't
   // filled their profile yet, so freshly-onboarded users still see something.
   const displayName = form.fullName || user?.name;
-  const displayEmail = form.email || user?.email;
+  const displayEmail = user?.email;
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">
@@ -465,8 +479,9 @@ export default function Profile() {
                 <input type="tel" name="contactNumber" className={`input ${missingFields.includes('contactNumber') ? 'border-red-500 ring-2 ring-red-200' : ''}`} placeholder="9876543210" value={form.contactNumber} onChange={e => handleChange('contactNumber', e.target.value)} maxLength={10} />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Email <span className="text-red-500">*</span></label>
-                <input type="email" className="input" placeholder="student@college.edu" value={form.email} onChange={e => handleChange('email', e.target.value)} />
+                <label className="block text-sm font-medium mb-1">Account Email</label>
+                <input type="email" className="input bg-gray-100 cursor-not-allowed" value={user?.email || ''} readOnly disabled />
+                <p className="text-xs text-gray-500 mt-1">Email is set during signup and cannot be changed here.</p>
               </div>
             </div>
           </div>
