@@ -5,6 +5,15 @@ const Job = require('../models/Job');
 const Application = require('../models/Application');
 const User = require('../models/User');
 
+// Trim a query string and escape regex metacharacters so leading/trailing
+// spaces and chars like C++ / Node.js don't break the $regex matcher.
+const safeRegex = (s) => {
+  if (s === undefined || s === null) return null;
+  const trimmed = String(s).trim();
+  if (!trimmed) return null;
+  return trimmed.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+};
+
 const auth = async (req, res, next) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
@@ -40,15 +49,30 @@ router.get('/', auth, checkStudentAccess, async (req, res) => {
     const { jobTitle, companyName, location, skills, jobType, salaryMin, page = 1, limit = 20 } = req.query;
     let query = { status: 'active' };
     
-    if (jobTitle) query.title = { $regex: jobTitle, $options: 'i' };
-    if (companyName) query.companyName = { $regex: companyName, $options: 'i' };
-    if (location) query.location = { $regex: location, $options: 'i' };
+    const jobTitleR = safeRegex(jobTitle);
+    const companyR = safeRegex(companyName);
+    const locationR = safeRegex(location);
+    if (jobTitleR) query.title = { $regex: jobTitleR, $options: 'i' };
+    if (companyR) query.companyName = { $regex: companyR, $options: 'i' };
+    if (locationR) query.location = { $regex: locationR, $options: 'i' };
     if (jobType) query.jobType = jobType;
     
     if (skills) {
-      const skillsArray = skills.split(',').map(s => s.trim()).filter(s => s);
-      if (skillsArray.length > 0) {
-        query.requiredSkills = { $elemMatch: { $regex: skillsArray.join('|'), $options: 'i' } };
+      // Skills are stored as an array of exact names on each job (e.g. ["java","javascript"]).
+      // Treat each user-typed skill as a *complete name* — "java" must match "java"
+      // and "java spring" but NOT be a substring of "javascript". Leading/trailing
+      // spaces and regex metacharacters are already neutralised by safeRegex().
+      // The job matches if AT LEAST ONE of the user's skills is present in the job's
+      // requiredSkills array as an exact (case-insensitive) full-string match.
+      // We wrap the $or in $and so it ANDs with the other query conditions.
+      const skillsArray = skills.split(',').map(s => safeRegex(s)).filter(Boolean);
+      if (skillsArray.length) {
+        const skillMatch = {
+          $or: skillsArray.map(s => ({
+            requiredSkills: { $elemMatch: { $regex: `^${s}$`, $options: 'i' } }
+          }))
+        };
+        query.$and = [skillMatch];
       }
     }
     
