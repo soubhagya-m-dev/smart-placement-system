@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Users, Briefcase, FileText, CheckCircle, Clock, TrendingUp, LogOut, Plus, Trash2, Shield } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import ThemeToggle from '../../components/ThemeToggle';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -82,19 +83,22 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm border-b">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-100 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Shield className="w-8 h-8 text-purple-600" />
+            <Shield className="w-8 h-8 text-purple-600 dark:text-purple-400" />
             <div>
-              <h1 className="text-2xl font-bold text-purple-600">Placement Hub</h1>
-              <p className="text-gray-500 text-sm">Admin Dashboard</p>
+              <h1 className="text-2xl font-bold text-purple-600 dark:text-purple-400">Placement Hub</h1>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">Admin Dashboard</p>
             </div>
           </div>
-          <button onClick={logout} className="flex items-center gap-2 text-gray-600 hover:text-red-600">
-            <LogOut className="w-5 h-5" /> Logout
-          </button>
+          <div className="flex items-center gap-4">
+            <ThemeToggle />
+            <button onClick={logout} className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-red-600 dark:text-gray-300 dark:hover:text-red-400">
+              <LogOut className="w-5 h-5" /> Logout
+            </button>
+          </div>
         </div>
       </header>
 
@@ -151,9 +155,9 @@ export default function AdminDashboard() {
           </div>
 
           {loading ? (
-            <div className="space-y-4">{[1, 2, 3].map(i => <div key={i} className="h-16 bg-gray-100 rounded-lg animate-pulse"></div>)}</div>
+            <div className="space-y-4">{[1, 2, 3].map(i => <div key={i} className="h-16 bg-gray-100 dark:bg-gray-700 rounded-lg animate-pulse"></div>)}</div>
           ) : officers.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">No officers found</p>
+            <p className="text-gray-500 dark:text-gray-400 text-center py-8">No officers found</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -168,13 +172,13 @@ export default function AdminDashboard() {
                 </thead>
                 <tbody>
                   {officers.map(officer => (
-                    <tr key={officer._id} className="border-b hover:bg-gray-50">
+                    <tr key={officer._id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-700/40">
                       <td className="py-3 px-4 font-medium">{officer.name}</td>
-                      <td className="py-3 px-4 text-gray-600">{officer.email}</td>
-                      <td className="py-3 px-4 text-gray-600">{officer.phone || '-'}</td>
-                      <td className="py-3 px-4 text-gray-600">{new Date(officer.createdAt).toLocaleDateString()}</td>
+                      <td className="py-3 px-4 text-gray-600 dark:text-gray-300">{officer.email}</td>
+                      <td className="py-3 px-4 text-gray-600 dark:text-gray-300">{officer.phone || '-'}</td>
+                      <td className="py-3 px-4 text-gray-600 dark:text-gray-300">{new Date(officer.createdAt).toLocaleDateString()}</td>
                       <td className="py-3 px-4 text-right">
-                        <button onClick={() => handleDeleteOfficer(officer._id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg">
+                        <button onClick={() => handleDeleteOfficer(officer._id)} className="p-2 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg">
                           <Trash2 className="w-5 h-5" />
                         </button>
                       </td>
@@ -190,7 +194,7 @@ export default function AdminDashboard() {
       {/* Create Officer Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md mx-4">
             <h3 className="text-lg font-semibold mb-4">Create New Officer</h3>
             <form onSubmit={handleCreateOfficer} className="space-y-4">
               <div>

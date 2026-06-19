@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Users, Briefcase, CheckCircle, IndianRupee, LogOut } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import ThemeToggle from '../../components/ThemeToggle';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -19,11 +20,14 @@ export default function OfficerDashboard() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm border-b">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-100 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div><h1 className="text-2xl font-bold text-blue-600">Placement Hub</h1><p className="text-gray-500 text-sm">Officer Dashboard</p></div>
-          <button onClick={logout} className="flex items-center gap-2 text-gray-600 hover:text-red-600"><LogOut className="w-5 h-5" /> Logout</button>
+          <div><h1 className="text-2xl font-bold text-blue-600 dark:text-blue-400">Placement Hub</h1><p className="text-gray-500 dark:text-gray-400 text-sm">Officer Dashboard</p></div>
+          <div className="flex items-center gap-4">
+            <ThemeToggle />
+            <button onClick={logout} className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-red-600 dark:text-gray-300 dark:hover:text-red-400"><LogOut className="w-5 h-5" /> Logout</button>
+          </div>
         </div>
       </header>
       <main className="max-w-7xl mx-auto px-4 py-8">
@@ -35,9 +39,9 @@ export default function OfficerDashboard() {
           <Link to="/officer/jobs" className="card bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:shadow-lg hover:opacity-95 transition cursor-pointer"><div className="flex items-center justify-between"><div><p className="text-purple-100">Active Jobs</p><p className="text-3xl font-bold mt-1">{stats.activeJobs}</p></div><Briefcase className="w-10 h-10 text-purple-200" /></div></Link>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Link to="/officer/jobs" className="card hover:shadow-lg transition"><h3 className="font-semibold mb-2">Manage Jobs</h3><p className="text-gray-500 text-sm">Post and manage job listings</p></Link>
-          <Link to="/officer/verify" className="card hover:shadow-lg transition"><h3 className="font-semibold mb-2">Verify Students</h3><p className="text-gray-500 text-sm">Approve pending registrations</p></Link>
-          <Link to="/officer/stats" className="card hover:shadow-lg transition"><h3 className="font-semibold mb-2">View Statistics</h3><p className="text-gray-500 text-sm">Analyze placement data</p></Link>
+          <Link to="/officer/jobs" className="card hover:shadow-lg transition"><h3 className="font-semibold mb-2">Manage Jobs</h3><p className="text-gray-500 dark:text-gray-400 text-sm">Post and manage job listings</p></Link>
+          <Link to="/officer/verify" className="card hover:shadow-lg transition"><h3 className="font-semibold mb-2">Verify Students</h3><p className="text-gray-500 dark:text-gray-400 text-sm">Approve pending registrations</p></Link>
+          <Link to="/officer/stats" className="card hover:shadow-lg transition"><h3 className="font-semibold mb-2">View Statistics</h3><p className="text-gray-500 dark:text-gray-400 text-sm">Analyze placement data</p></Link>
         </div>
       </main>
     </div>

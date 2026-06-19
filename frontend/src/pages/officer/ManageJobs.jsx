@@ -397,15 +397,15 @@ export default function ManageJobs() {
   const getStatusColor = (status) => {
     switch (status) {
       case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'shortlisted': return 'bg-blue-100 text-blue-800';
-      case 'accepted': return 'bg-green-100 text-green-800';
-      case 'rejected': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'shortlisted': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300';
+      case 'accepted': return 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300';
+      case 'rejected': return 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100';
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold">Manage Jobs</h1>
@@ -421,15 +421,15 @@ export default function ManageJobs() {
             <div key={job._id} className="card flex items-center justify-between">
               <div>
                 <h3 className="font-semibold text-lg">{job.title}</h3>
-                <p className="text-gray-500">{job.companyName} • {job.location}</p>
+                <p className="text-gray-500 dark:text-gray-400">{job.companyName} • {job.location}</p>
                 <span className="badge badge-blue mt-1">{job.jobType}</span>
               </div>
               <div className="flex items-center gap-2">
                 <button onClick={() => viewApplicants(job)} className="btn-secondary flex items-center gap-1 text-sm">
                   <Users className="w-4 h-4" /> Applicants
                 </button>
-                <button onClick={() => openEditModal(job)} className="p-2 text-blue-500 hover:bg-blue-50 rounded"><Edit className="w-5 h-5" /></button>
-                <button onClick={() => deleteJob(job._id)} className="p-2 text-red-500 hover:bg-red-50 rounded"><Trash2 className="w-5 h-5" /></button>
+                <button onClick={() => openEditModal(job)} className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded"><Edit className="w-5 h-5" /></button>
+                <button onClick={() => deleteJob(job._id)} className="p-2 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded"><Trash2 className="w-5 h-5" /></button>
               </div>
             </div>
           ))}
@@ -439,13 +439,13 @@ export default function ManageJobs() {
         {/* Applicants Modal */}
         {showApplicantsModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h2 className="text-xl font-bold">Applicants</h2>
-                  <p className="text-gray-500">{selectedJob?.title} - {selectedJob?.companyName}</p>
+                  <p className="text-gray-500 dark:text-gray-400">{selectedJob?.title} - {selectedJob?.companyName}</p>
                 </div>
-                <button onClick={() => { setShowApplicantsModal(false); setSelectedJob(null); setApplicants([]); setSearchRoll(''); setSelectedApplicants([]); setBulkMode(false); }} className="p-2 hover:bg-gray-100 rounded"><X className="w-5 h-5" /></button>
+                <button onClick={() => { setShowApplicantsModal(false); setSelectedJob(null); setApplicants([]); setSearchRoll(''); setSelectedApplicants([]); setBulkMode(false); }} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"><X className="w-5 h-5" /></button>
               </div>
 
               {applicantsLoading ? (
@@ -453,7 +453,7 @@ export default function ManageJobs() {
               ) : applicants.length === 0 ? (
                 <div className="text-center py-8">
                   <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500">No students have applied yet</p>
+                  <p className="text-gray-500 dark:text-gray-400">No students have applied yet</p>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -464,16 +464,16 @@ export default function ManageJobs() {
                         placeholder="Search by University Roll..."
                         value={searchRoll}
                         onChange={e => setSearchRoll(e.target.value)}
-                        className="input text-sm py-1.5 px-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-56"
+                        className="input text-sm py-1.5 px-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-56"
                       />
                       {searchRoll && (
-                        <button onClick={() => setSearchRoll('')} className="text-gray-400 hover:text-gray-600 text-sm">
+                        <button onClick={() => setSearchRoll('')} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 text-sm">
                           <X className="w-4 h-4" />
                         </button>
                       )}
                     </div>
                     <div className="flex items-center gap-3">
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
                         {searchRoll ? `${filteredApplicants.length} of ${applicants.length}` : `${filteredApplicants.length}`} applicant{filteredApplicants.length !== 1 ? 's' : ''}
                         {selectedApplicants.length > 0 && <span className="ml-1 text-purple-600 font-medium">({selectedApplicants.length} selected)</span>}
                       </p>
@@ -490,33 +490,33 @@ export default function ManageJobs() {
                               <svg className={`w-3 h-3 transition-transform duration-150 ${showSelectDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                             </button>
                             {showSelectDropdown && (
-                              <div className="absolute z-20 mt-1 right-0 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden w-44 animate-dropdown">
+                              <div className="absolute z-20 mt-1 right-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden w-44 animate-dropdown">
                                 <button
                                   type="button"
                                   onClick={() => { setSelectedApplicants(filteredApplicants.map(a => a.applicationId)); setShowSelectDropdown(false); }}
-                                  className="w-full text-left px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                                  className="w-full text-left px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/40 hover:text-gray-900 dark:text-gray-100"
                                 >
                                   Select All
                                 </button>
                                 <button
                                   type="button"
                                   onClick={() => { setSelectedApplicants(filteredApplicants.filter(a => isStudentEligible(a)).map(a => a.applicationId)); setShowSelectDropdown(false); }}
-                                  className="w-full text-left px-3 py-2 text-xs text-green-700 hover:bg-green-50"
+                                  className="w-full text-left px-3 py-2 text-xs text-green-700 dark:text-green-300 hover:bg-green-50"
                                 >
                                   Select All Eligible
                                 </button>
                                 <button
                                   type="button"
                                   onClick={() => { setSelectedApplicants(filteredApplicants.filter(a => !isStudentEligible(a)).map(a => a.applicationId)); setShowSelectDropdown(false); }}
-                                  className="w-full text-left px-3 py-2 text-xs text-red-700 hover:bg-red-50"
+                                  className="w-full text-left px-3 py-2 text-xs text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30"
                                 >
                                   Select All Not Eligible
                                 </button>
-                                <div className="border-t border-gray-100" />
+                                <div className="border-t border-gray-100 dark:border-gray-700" />
                                 <button
                                   type="button"
                                   onClick={() => { setSelectedApplicants([]); setBulkMode(false); setShowSelectDropdown(false); }}
-                                  className="w-full text-left px-3 py-2 text-xs text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+                                  className="w-full text-left px-3 py-2 text-xs text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/40 hover:text-gray-700 dark:text-gray-300"
                                 >
                                   Cancel
                                 </button>
@@ -556,7 +556,7 @@ export default function ManageJobs() {
                     </div>
                   )}
                   {filteredApplicants.length === 0 && searchRoll ? (
-                    <div className="text-center py-8 text-gray-500">No applicant found with roll: {searchRoll}</div>
+                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">No applicant found with roll: {searchRoll}</div>
                   ) : (
                     filteredApplicants.map((app) => {
                       const failures = getEligibilityFailure(app);
@@ -574,31 +574,31 @@ export default function ManageJobs() {
                                     setSelectedApplicants(prev => prev.filter(id => id !== app.applicationId));
                                   }
                                 }}
-                                className="mt-1 w-4 h-4 text-purple-600 rounded border-gray-300 focus:ring-purple-500 cursor-pointer"
+                                className="mt-1 w-4 h-4 text-purple-600 rounded border-gray-300 dark:border-gray-600 focus:ring-purple-500 cursor-pointer"
                               />
                             )}
                             <div className="flex-1">
                               <h3 className="font-semibold text-lg flex items-center gap-2">
                                 {app.student.name}
-                                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${isStudentEligible(app) ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${isStudentEligible(app) ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300' : 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300'}`}>
                                   {isStudentEligible(app) ? '✅ Eligible' : '❌ Not Eligible'}
                                 </span>
                               </h3>
-                              <p className="text-gray-500 text-sm">{app.student.email}</p>
-                              <p className="text-gray-500 text-sm">📱 {app.student.phone || app.student.contactNumber || 'N/A'}</p>
+                              <p className="text-gray-500 dark:text-gray-400 text-sm">{app.student.email}</p>
+                              <p className="text-gray-500 dark:text-gray-400 text-sm">📱 {app.student.phone || app.student.contactNumber || 'N/A'}</p>
                             </div>
                             <div className="flex flex-col items-end gap-2">
                               <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(app.status)}`}>
                                 {app.status}
                               </span>
-                              <span className="text-xs text-gray-400">
+                              <span className="text-xs text-gray-400 dark:text-gray-500">
                                 Applied: {new Date(app.appliedAt).toLocaleDateString()}
                               </span>
                             </div>
                           </div>
 
                           {/* All Student Fields */}
-                          <div className="bg-gray-50 rounded-lg p-3 mb-3">
+                          <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 mb-3">
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-1 text-xs">
                               {app.student.studentProfile?.universityRollNumber && <p><span className="font-medium">University Roll:</span> {app.student.studentProfile.universityRollNumber}</p>}
                               {app.student.studentProfile?.collegeId && <p><span className="font-medium">College ID:</span> {app.student.studentProfile.collegeId}</p>}
@@ -651,7 +651,7 @@ export default function ManageJobs() {
                             <button
                               onClick={() => updateApplicationStatus(app.applicationId, 'pending')}
                               disabled={app.status === 'pending'}
-                              className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 disabled:opacity-50"
+                              className="px-3 py-1 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-200 disabled:opacity-50"
                             >
                               Reset
                             </button>
@@ -668,7 +668,7 @@ export default function ManageJobs() {
 
         {showModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
               <h2 className="text-xl font-bold mb-4">{editingJob ? 'Edit Job' : 'Post New Job'}</h2>
               <form onSubmit={handleSubmit} className="space-y-4" noValidate>
                 <input type="text" className="input" placeholder="Job Title" value={form.title} onChange={e => setForm({...form, title: e.target.value})} />
@@ -683,26 +683,26 @@ export default function ManageJobs() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Eligibility Criteria</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Eligibility Criteria</label>
                   <div className="grid grid-cols-3 gap-3">
                     <div>
                       <input type="number" step="0.01" min="4" max="10" className="input [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]" placeholder="MinCGPA(4-10)" value={form.eligibility.minCGPA} onChange={e => setForm({...form, eligibility: {...form.eligibility, minCGPA: e.target.value}})} />
-                      <span className="text-xs text-gray-500">Min CGPA</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">Min CGPA</span>
                     </div>
                     <div>
                       <input type="number" step="0.01" min="0" max="100" className="input [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]" placeholder="Class12%" value={form.eligibility.class12Percentage} onChange={e => setForm({...form, eligibility: {...form.eligibility, class12Percentage: e.target.value}})} />
-                      <span className="text-xs text-gray-500">Class 12 %</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">Class 12 %</span>
                     </div>
                     <div>
                       <input type="number" step="0.01" min="0" max="100" className="input [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]" placeholder="Class10%" value={form.eligibility.class10Percentage} onChange={e => setForm({...form, eligibility: {...form.eligibility, class10Percentage: e.target.value}})} />
-                      <span className="text-xs text-gray-500">Class 10 %</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">Class 10 %</span>
                     </div>
                   </div>
                 </div>
                 
                 <input type="text" className="input" placeholder="Skills (comma-separated)" value={form.requiredSkills} onChange={e => setForm({...form, requiredSkills: e.target.value})} />
                 
-                <label className="block text-sm font-medium text-gray-700 mb-2">Application Deadline</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Application Deadline</label>
                 <input type="date" className="input" placeholder="Application Deadline" value={form.applicationDeadline} onChange={e => setForm({...form, applicationDeadline: e.target.value})} />
                 
                 <div className="flex gap-4">
@@ -717,18 +717,18 @@ export default function ManageJobs() {
         {/* Send Notification Modal */}
         {showNotificationModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold flex items-center gap-2">
                   <Bell className="w-5 h-5 text-purple-600" />
                   {notificationTarget.applicationIds ? 'Bulk Notification' : 'Send Notification'}
                   {notificationTarget.applicationIds && (
-                    <span className="text-sm font-normal text-gray-500">
+                    <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
                       ({notificationTarget.applicationIds.length} students)
                     </span>
                   )}
                 </h2>
-                <button onClick={() => { setShowNotificationModal(false); setSelectedApplicants([]); setBulkMode(false); }} className="p-2 hover:bg-gray-100 rounded">
+                <button onClick={() => { setShowNotificationModal(false); setSelectedApplicants([]); setBulkMode(false); }} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -736,7 +736,7 @@ export default function ManageJobs() {
               <form onSubmit={sendNotification} className="space-y-4">
                 {/* Notification Type */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Notification Type</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Notification Type</label>
                   <div className="grid grid-cols-3 gap-2">
                     {[
                       { value: 'interview', label: ' Interview', icon: Calendar },
@@ -753,7 +753,7 @@ export default function ManageJobs() {
                         className={`px-3 py-2 text-sm rounded-lg border-2 transition-all flex items-center justify-center gap-1 ${
                           notificationForm.type === value 
                             ? 'border-purple-500 bg-purple-50 text-purple-700' 
-                            : 'border-gray-200 hover:border-purple-300'
+                            : 'border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:border-gray-600 dark:hover:border-purple-500'
                         }`}
                       >
                         <Icon className="w-4 h-4" />
@@ -765,13 +765,13 @@ export default function ManageJobs() {
 
                 {/* Dynamic Fields Based on Type */}
                 {notificationForm.type === 'interview' && (
-                  <div className="space-y-3 p-4 bg-blue-50 rounded-lg">
-                    <h4 className="font-medium text-blue-800 flex items-center gap-2">
+                  <div className="space-y-3 p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
+                    <h4 className="font-medium text-blue-800 dark:text-blue-300 flex items-center gap-2">
                       <Calendar className="w-4 h-4" /> Interview Details
                     </h4>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="text-xs text-gray-600">Date</label>
+                        <label className="text-xs text-gray-600 dark:text-gray-300">Date</label>
                         <input
                           type="date"
                           className="input text-sm"
@@ -782,7 +782,7 @@ export default function ManageJobs() {
                         />
                       </div>
                       <div>
-                        <label className="text-xs text-gray-600">Time</label>
+                        <label className="text-xs text-gray-600 dark:text-gray-300">Time</label>
                         <input
                           type="time"
                           className="input text-sm"
@@ -794,7 +794,7 @@ export default function ManageJobs() {
                       </div>
                     </div>
                     <div>
-                      <label className="text-xs text-gray-600">Location / Link</label>
+                      <label className="text-xs text-gray-600 dark:text-gray-300">Location / Link</label>
                       <input
                         type="text"
                         className="input text-sm"
@@ -806,7 +806,7 @@ export default function ManageJobs() {
                       />
                     </div>
                     <div>
-                      <label className="text-xs text-gray-600">Mode</label>
+                      <label className="text-xs text-gray-600 dark:text-gray-300">Mode</label>
                       <select
                         className="input text-sm"
                         onChange={e => setNotificationForm(prev => ({
@@ -830,7 +830,7 @@ export default function ManageJobs() {
                     </h4>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="text-xs text-gray-600">Date</label>
+                        <label className="text-xs text-gray-600 dark:text-gray-300">Date</label>
                         <input
                           type="date"
                           className="input text-sm"
@@ -841,7 +841,7 @@ export default function ManageJobs() {
                         />
                       </div>
                       <div>
-                        <label className="text-xs text-gray-600">Time</label>
+                        <label className="text-xs text-gray-600 dark:text-gray-300">Time</label>
                         <input
                           type="time"
                           className="input text-sm"
@@ -854,7 +854,7 @@ export default function ManageJobs() {
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="text-xs text-gray-600">Duration</label>
+                        <label className="text-xs text-gray-600 dark:text-gray-300">Duration</label>
                         <input
                           type="text"
                           className="input text-sm"
@@ -866,7 +866,7 @@ export default function ManageJobs() {
                         />
                       </div>
                       <div>
-                        <label className="text-xs text-gray-600">Mode</label>
+                        <label className="text-xs text-gray-600 dark:text-gray-300">Mode</label>
                         <select
                           className="input text-sm"
                           onChange={e => setNotificationForm(prev => ({
@@ -881,7 +881,7 @@ export default function ManageJobs() {
                       </div>
                     </div>
                     <div>
-                      <label className="text-xs text-gray-600">Location (if offline)</label>
+                      <label className="text-xs text-gray-600 dark:text-gray-300">Location (if offline)</label>
                       <input
                         type="text"
                         className="input text-sm"
@@ -902,7 +902,7 @@ export default function ManageJobs() {
                     </h4>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="text-xs text-gray-600">CTC (₹)</label>
+                        <label className="text-xs text-gray-600 dark:text-gray-300">CTC (₹)</label>
                         <input
                           type="text"
                           className="input text-sm"
@@ -914,7 +914,7 @@ export default function ManageJobs() {
                         />
                       </div>
                       <div>
-                        <label className="text-xs text-gray-600">Role</label>
+                        <label className="text-xs text-gray-600 dark:text-gray-300">Role</label>
                         <input
                           type="text"
                           className="input text-sm"
@@ -932,12 +932,12 @@ export default function ManageJobs() {
                 )}
 
                 {notificationForm.type === 'rejection' && (
-                  <div className="space-y-3 p-4 bg-red-50 rounded-lg">
+                  <div className="space-y-3 p-4 bg-red-50 dark:bg-red-900/30 rounded-lg">
                     <h4 className="font-medium text-red-800 flex items-center gap-2">
                       <X className="w-4 h-4" /> Rejection Details
                     </h4>
                     <div>
-                      <label className="text-xs text-gray-600">Reason (Optional)</label>
+                      <label className="text-xs text-gray-600 dark:text-gray-300">Reason (Optional)</label>
                       <textarea
                         className="input text-sm"
                         rows={3}
@@ -955,7 +955,7 @@ export default function ManageJobs() {
 
                 {/* Common Fields: Title */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Title *</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Title *</label>
                   <input
                     type="text"
                     className="input"
@@ -968,19 +968,19 @@ export default function ManageJobs() {
 
                 {/* Event Date - for student timeline tracking */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">📅 Event Date</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">📅 Event Date</label>
                   <input
                     type="date"
                     className="input"
                     value={notificationForm.eventDate || ''}
                     onChange={e => setNotificationForm(prev => ({ ...prev, eventDate: e.target.value }))}
                   />
-                  <p className="text-xs text-gray-500 mt-1">This date will be shown in the student's application timeline</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">This date will be shown in the student's application timeline</p>
                 </div>
 
                 {/* Common Fields: Message */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Message (Optional)</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Message (Optional)</label>
                   <textarea
                     className="input"
                     rows={3}

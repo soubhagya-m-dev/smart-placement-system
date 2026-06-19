@@ -73,7 +73,7 @@ export default function AdminOfficerLogin() {
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="bg-white/10 backdrop-blur-xl rounded-2xl p-8 border border-white/20">
+        <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800/10 backdrop-blur-xl rounded-2xl p-8 border border-white/20">
           <div className="space-y-5">
             {/* Email */}
             <div>
@@ -85,7 +85,7 @@ export default function AdminOfficerLogin() {
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   placeholder="admin@placement.com"
-                  className="w-full bg-white/10 border border-white/20 rounded-xl py-3 pl-12 pr-4 text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full bg-white dark:bg-gray-800/10 border border-white/20 rounded-xl py-3 pl-12 pr-4 text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -100,7 +100,7 @@ export default function AdminOfficerLogin() {
                   value={form.password}
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
                   placeholder="Enter password"
-                  className="w-full bg-white/10 border border-white/20 rounded-xl py-3 pl-12 pr-4 text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full bg-white dark:bg-gray-800/10 border border-white/20 rounded-xl py-3 pl-12 pr-4 text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>

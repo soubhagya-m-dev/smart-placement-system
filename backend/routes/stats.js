@@ -104,15 +104,23 @@ router.get('/analytics', auth, async (req, res) => {
 
     const statusMap = Object.fromEntries(facet.statusCounts.map(s => [s._id, s.count]));
     const placed = statusMap.accepted || 0;
-    // "Trying" counts UNIQUE students with at least one active (pending/shortlisted) application,
-    // not application rows. This matches the convention used for `placed` and `notTrying`
-    // further down (a student with N shortlisted apps counts as 1, not N). A student with
-    // both pending AND shortlisted apps is also counted once.
+    // "Trying" (a.k.a. Active) counts UNIQUE students with at least one active
+    // (pending/shortlisted) application AND who are not already placed. A placed
+    // student is counted in `placed` only — highest-status-wins. Without this
+    // filter, a student with one `accepted` app and one `pending` app would be
+    // counted in BOTH buckets, inflating the sum above totalStudents.
+    // We compute placedStudentIds first (see further down) and exclude them here.
+    const placedStudentIdsForActive = new Set(
+      (await Application.aggregate([
+        { $match: { ...appMatch, status: 'accepted' } },
+        { $group: { _id: '$student' } }
+      ])).map(d => String(d._id))
+    );
     const tryingStudentIds = new Set(
       (await Application.aggregate([
         { $match: { ...appMatch, status: { $in: ['pending', 'shortlisted'] } } },
         { $group: { _id: '$student' } }
-      ])).map(d => String(d._id))
+      ])).map(d => String(d._id)).filter(id => !placedStudentIdsForActive.has(id))
     );
     const trying = tryingStudentIds.size;
     const totalApplications = facet.statusCounts.reduce((a, s) => a + s.count, 0);
@@ -149,13 +157,9 @@ router.get('/analytics', auth, async (req, res) => {
     ]);
     const pendingStudents = Math.max(0, totalStudents - verifiedStudents);
 
-    // Placement % = placed students / total students (a student with multiple accepts still counts as 1)
-    const placedStudentIds = new Set(
-      (await Application.aggregate([
-        { $match: { ...appMatch, status: 'accepted' } },
-        { $group: { _id: '$student' } }
-      ])).map(d => String(d._id))
-    );
+    // Placement % = placed students / total students (a student with multiple accepts still counts as 1).
+    // Reuses the placedStudentIdsForActive Set computed above for the "trying" filter.
+    const placedStudentIds = placedStudentIdsForActive;
     const placedStudents = placedStudentIds.size;
     const notTryingStudents = Math.max(0, zeroAppCount);
     const placementPct = totalStudents > 0 ? (placedStudents / totalStudents) * 100 : 0;

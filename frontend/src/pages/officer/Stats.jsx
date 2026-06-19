@@ -51,26 +51,26 @@ function useCountUp(target, ms = 700) {
 function KpiCard({ icon: Icon, label, value, suffix = '', sub, tone = 'default', delay = 0 }) {
   const animated = useCountUp(value);
   const toneClasses = {
-    default: 'border-gray-200',
+    default: 'border-gray-200 dark:border-gray-700',
     success: 'border-emerald-200',
-    warning: 'border-amber-200',
+    warning: 'border-amber-200 dark:border-amber-700',
     primary: 'border-indigo-200'
   };
   return (
     <div
-      className={`bg-white rounded-xl border ${toneClasses[tone]} shadow-sm p-4 transition hover:shadow-md`}
+      className={`bg-white dark:bg-gray-800 rounded-xl border ${toneClasses[tone]} shadow-sm p-4 transition hover:shadow-md`}
       style={{ animation: 'fadeUp 500ms ease-out both', animationDelay: `${delay}ms` }}
     >
       <div className="flex items-start justify-between mb-2">
-        <div className={`p-2 rounded-lg ${tone === 'success' ? 'bg-emerald-50' : tone === 'warning' ? 'bg-amber-50' : tone === 'primary' ? 'bg-indigo-50' : 'bg-gray-50'}`}>
-          <Icon size={18} className={tone === 'success' ? 'text-emerald-600' : tone === 'warning' ? 'text-amber-600' : tone === 'primary' ? 'text-indigo-600' : 'text-gray-600'} />
+        <div className={`p-2 rounded-lg ${tone === 'success' ? 'bg-emerald-50 dark:bg-emerald-900/30' : tone === 'warning' ? 'bg-amber-50 dark:bg-amber-900/30' : tone === 'primary' ? 'bg-indigo-50 dark:bg-indigo-900/30' : 'bg-gray-50 dark:bg-gray-800'}`}>
+          <Icon size={18} className={tone === 'success' ? 'text-emerald-600 dark:text-emerald-400' : tone === 'warning' ? 'text-amber-600 dark:text-amber-400' : tone === 'primary' ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-300'} />
         </div>
       </div>
-      <div className="text-2xl font-semibold text-gray-900 tabular-nums">
+      <div className="text-2xl font-semibold text-gray-900 dark:text-gray-100 tabular-nums">
         {animated}{suffix}
       </div>
-      <div className="text-xs text-gray-500 mt-1">{label}</div>
-      {sub && <div className="text-[11px] text-gray-400 mt-0.5">{sub}</div>}
+      <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{label}</div>
+      {sub && <div className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">{sub}</div>}
     </div>
   );
 }
@@ -79,15 +79,15 @@ function KpiCard({ icon: Icon, label, value, suffix = '', sub, tone = 'default',
 function Panel({ title, subtitle, icon: Icon, children, action, delay = 0 }) {
   return (
     <div
-      className="bg-white rounded-xl border border-gray-200 shadow-sm"
+      className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm"
       style={{ animation: 'fadeUp 500ms ease-out both', animationDelay: `${delay}ms` }}
     >
-      <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+      <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          {Icon && <Icon size={16} className="text-gray-500" />}
+          {Icon && <Icon size={16} className="text-gray-500 dark:text-gray-400" />}
           <div>
-            <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
-            {subtitle && <p className="text-xs text-gray-500 mt-0.5">{subtitle}</p>}
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">{title}</h3>
+            {subtitle && <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{subtitle}</p>}
           </div>
         </div>
         {action}
@@ -101,13 +101,13 @@ function Panel({ title, subtitle, icon: Icon, children, action, delay = 0 }) {
 function ChartTooltip({ active, payload, label, suffix = '' }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-white border border-gray-200 rounded-lg shadow-lg px-3 py-2 text-xs">
-      {label != null && <div className="font-medium text-gray-700 mb-1">{label}</div>}
+    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg px-3 py-2 text-xs">
+      {label != null && <div className="font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</div>}
       {payload.map((p, i) => (
-        <div key={i} className="flex items-center gap-2 text-gray-600">
+        <div key={i} className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
           <span className="w-2 h-2 rounded-full" style={{ background: p.color || p.fill }} />
           <span>{p.name}:</span>
-          <span className="font-semibold text-gray-900">{typeof p.value === 'number' ? p.value.toFixed(p.value % 1 === 0 ? 0 : 1) : p.value}{suffix}</span>
+          <span className="font-semibold text-gray-900 dark:text-gray-100">{typeof p.value === 'number' ? p.value.toFixed(p.value % 1 === 0 ? 0 : 1) : p.value}{suffix}</span>
         </div>
       ))}
     </div>
@@ -214,17 +214,17 @@ export default function Stats() {
 
   if (loading && !data) {
     return (
-      <div className="flex items-center justify-center py-20 text-gray-500">
+      <div className="flex items-center justify-center py-20 text-gray-500 dark:text-gray-400">
         <Loader2 className="animate-spin mr-2" size={20} /> Loading analytics…
       </div>
     );
   }
   if (error) {
     return (
-      <div className="max-w-2xl mx-auto mt-10 p-6 bg-red-50 border border-red-200 rounded-xl text-red-700">
+      <div className="max-w-2xl mx-auto mt-10 p-6 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-xl text-red-700 dark:text-red-300">
         <div className="font-semibold mb-1">Couldn't load analytics</div>
         <div className="text-sm">{error}</div>
-        <button onClick={() => setSearchParams(new URLSearchParams(searchParams))} className="mt-3 px-3 py-1.5 bg-white border border-red-200 rounded-md text-sm flex items-center gap-1">
+        <button onClick={() => setSearchParams(new URLSearchParams(searchParams))} className="mt-3 px-3 py-1.5 bg-white dark:bg-gray-800 border border-red-200 dark:border-red-800 rounded-md text-sm flex items-center gap-1">
           <RefreshCw size={14} /> Retry
         </button>
       </div>
@@ -239,14 +239,14 @@ export default function Stats() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Placement Analytics</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Branch-wise, batch-wise, and recruiter insights</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Placement Analytics</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Branch-wise, batch-wise, and recruiter insights</p>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={() => navigate('/officer')} className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900">← Dashboard</button>
+          <button onClick={() => navigate('/officer')} className="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:text-gray-100">← Dashboard</button>
           <button
             onClick={exportCsv}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 hover:bg-gray-50"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/40"
           >
             <Download size={14} /> Export CSV
           </button>
@@ -254,8 +254,8 @@ export default function Stats() {
       </div>
 
       {/* Filter chips */}
-      <div className="bg-white border border-gray-200 rounded-xl p-3 flex flex-wrap items-center gap-2">
-        <Filter size={14} className="text-gray-400 ml-1" />
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-3 flex flex-wrap items-center gap-2">
+        <Filter size={14} className="text-gray-400 dark:text-gray-500 ml-1" />
         {[
           { key: 'year',    label: 'Batch',  options: yearOptions },
           { key: 'branch',  label: 'Branch', options: branchOptions },
@@ -263,11 +263,11 @@ export default function Stats() {
           { key: 'gender',  label: 'Gender', options: genderOptions }
         ].map(({ key, label, options }) => (
           <div key={key} className="flex items-center gap-1.5">
-            <span className="text-xs text-gray-500">{label}:</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400">{label}:</span>
             <select
               value={filters[key]}
               onChange={e => setFilter(key, e.target.value)}
-              className="text-xs border border-gray-200 rounded-md px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-400"
+              className="text-xs border border-gray-200 dark:border-gray-700 rounded-md px-2 py-1 bg-white dark:bg-gray-800 focus:outline-none focus:ring-1 focus:ring-indigo-400"
             >
               <option value="all">All</option>
               {options.map(o => <option key={o} value={o}>{o}</option>)}
@@ -275,7 +275,7 @@ export default function Stats() {
           </div>
         ))}
         {hasFilter && (
-          <button onClick={clearAll} className="ml-auto inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-900">
+          <button onClick={clearAll} className="ml-auto inline-flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:text-gray-100">
             <X size={12} /> Clear filters
           </button>
         )}
@@ -298,7 +298,7 @@ export default function Stats() {
             icon={BarChart3}
             delay={240}
             action={filters.branch !== 'all' && (
-              <button onClick={() => setFilter('branch', 'all')} className="text-xs text-indigo-600 hover:underline">
+              <button onClick={() => setFilter('branch', 'all')} className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline dark:text-indigo-400">
                 Clear: {filters.branch}
               </button>
             )}
@@ -335,8 +335,8 @@ export default function Stats() {
                   <Pie
                     data={[
                       { name: 'Placed',     value: data.statusBreakdown.placed },
-                      { name: 'Trying',     value: data.statusBreakdown.trying },
-                      { name: 'Not Trying', value: data.statusBreakdown.notTrying }
+                      { name: 'Active',    value: data.statusBreakdown.trying },
+                      { name: 'Inactive',  value: data.statusBreakdown.notTrying }
                     ]}
                     cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={2} dataKey="value"
                   >
@@ -378,7 +378,7 @@ export default function Stats() {
                       <button
                         key={b}
                         onClick={() => toggleSeries(b)}
-                        className={`text-[11px] px-2 py-0.5 rounded-full border transition ${hidden ? 'border-gray-200 text-gray-400 line-through' : 'border-transparent text-gray-700'}`}
+                        className={`text-[11px] px-2 py-0.5 rounded-full border transition ${hidden ? 'border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-500 line-through' : 'border-transparent text-gray-700 dark:text-gray-300'}`}
                         style={{ background: hidden ? 'transparent' : COLORS.series[i % COLORS.series.length] + '1A' }}
                       >
                         {b}
@@ -418,12 +418,12 @@ export default function Stats() {
               <ul className="divide-y divide-gray-100">
                 {data.topRecruiters.map((r, i) => (
                   <li key={r.company} className="flex items-center gap-3 py-2.5">
-                    <div className="w-7 h-7 rounded-md bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs font-semibold">
+                    <div className="w-7 h-7 rounded-md bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xs font-semibold dark:bg-indigo-900/30 dark:text-indigo-400">
                       {i + 1}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium text-gray-900 truncate">{r.company}</div>
-                      <div className="text-xs text-gray-500">{r.offers} offer{r.offers !== 1 ? 's' : ''}{r.avgCtc ? ` · ~${r.avgCtc} LPA` : ''}</div>
+                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{r.company}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">{r.offers} offer{r.offers !== 1 ? 's' : ''}{r.avgCtc ? ` · ~${r.avgCtc} LPA` : ''}</div>
                     </div>
                   </li>
                 ))}
@@ -460,20 +460,20 @@ function BranchYearGrid({ data }) {
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="text-xs text-gray-500 border-b border-gray-200">
+          <tr className="text-xs text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
             <th className="text-left py-2 pr-4 font-medium">Branch</th>
             {years.map(y => <th key={y} className="text-center py-2 px-2 font-medium">{y}</th>)}
           </tr>
         </thead>
         <tbody>
           {branches.map(b => (
-            <tr key={b} className="border-b border-gray-100 last:border-0">
-              <td className="py-2.5 pr-4 font-medium text-gray-800">{b}</td>
+            <tr key={b} className="border-b border-gray-100 dark:border-gray-700 last:border-0">
+              <td className="py-2.5 pr-4 font-medium text-gray-800 dark:text-gray-100">{b}</td>
               {years.map(y => {
                 const cell = lookup[`${b}|${y}`];
                 if (!cell) return <td key={y} className="text-center py-2 px-2 text-gray-300">—</td>;
                 const pct = cell.placementPct;
-                const tone = pct >= 70 ? 'bg-emerald-50 text-emerald-700' : pct >= 30 ? 'bg-amber-50 text-amber-700' : 'bg-red-50 text-red-700';
+                const tone = pct >= 70 ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' : pct >= 30 ? 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' : 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300';
                 return (
                   <td key={y} className="text-center py-2 px-2">
                     <div className={`inline-block min-w-[64px] px-2 py-1 rounded-md text-xs font-medium ${tone}`}>
@@ -492,7 +492,7 @@ function BranchYearGrid({ data }) {
 
 function EmptyState({ message }) {
   return (
-    <div className="py-10 text-center text-sm text-gray-400">
+    <div className="py-10 text-center text-sm text-gray-400 dark:text-gray-500">
       <PieIcon size={28} className="mx-auto mb-2 text-gray-300" />
       {message}
     </div>

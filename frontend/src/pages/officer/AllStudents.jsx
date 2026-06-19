@@ -10,22 +10,22 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 // cell wide — keeps the whole table on screen without horizontal scroll.
 // Numeric/badge columns stay nowrap so they line up.
 const COLUMNS = [
-  { key: 'rollNumber',            label: 'Roll No',     className: 'text-gray-700 font-mono text-sm' },
-  { key: 'name',                  label: 'Name',        className: 'font-medium text-gray-900' },
-  { key: 'collegeId',             label: 'College ID',  className: 'text-gray-700 font-mono text-sm' },
-  { key: 'dateOfBirth',           label: 'DOB',         className: 'text-gray-700' },
-  { key: 'gender',                label: 'Gender',      className: 'text-gray-700', align: 'center' },
-  { key: 'phone',                 label: 'Phone',       className: 'text-gray-700 font-mono text-sm' },
-  { key: 'email',                 label: 'Email',       className: 'text-gray-600', wrap: true },
-  { key: 'graduationPassingYear', label: 'Grad. Year',  className: 'text-gray-700', align: 'right' },
-  { key: 'stream',                label: 'Stream',      className: 'text-gray-700', wrap: true, align: 'center' },
-  { key: 'section',               label: 'Section',     className: 'text-gray-700', align: 'center' },
-  { key: 'cgpa',                  label: 'CGPA',        className: 'text-gray-700', align: 'right' },
-  { key: 'tenthPercentage',       label: '10th %',      className: 'text-gray-700', align: 'right' },
-  { key: 'twelfthPercentage',     label: '12th %',      className: 'text-gray-700', align: 'right' },
+  { key: 'rollNumber',            label: 'Roll No',     className: 'text-gray-700 dark:text-gray-300 font-mono text-sm' },
+  { key: 'name',                  label: 'Name',        className: 'font-medium text-gray-900 dark:text-gray-100' },
+  { key: 'collegeId',             label: 'College ID',  className: 'text-gray-700 dark:text-gray-300 font-mono text-sm' },
+  { key: 'dateOfBirth',           label: 'DOB',         className: 'text-gray-700 dark:text-gray-300' },
+  { key: 'gender',                label: 'Gender',      className: 'text-gray-700 dark:text-gray-300', align: 'center' },
+  { key: 'phone',                 label: 'Phone',       className: 'text-gray-700 dark:text-gray-300 font-mono text-sm' },
+  { key: 'email',                 label: 'Email',       className: 'text-gray-600 dark:text-gray-300', wrap: true },
+  { key: 'graduationPassingYear', label: 'Grad. Year',  className: 'text-gray-700 dark:text-gray-300', align: 'right' },
+  { key: 'stream',                label: 'Stream',      className: 'text-gray-700 dark:text-gray-300', wrap: true, align: 'center' },
+  { key: 'section',               label: 'Section',     className: 'text-gray-700 dark:text-gray-300', align: 'center' },
+  { key: 'cgpa',                  label: 'CGPA',        className: 'text-gray-700 dark:text-gray-300', align: 'right' },
+  { key: 'tenthPercentage',       label: '10th %',      className: 'text-gray-700 dark:text-gray-300', align: 'right' },
+  { key: 'twelfthPercentage',     label: '12th %',      className: 'text-gray-700 dark:text-gray-300', align: 'right' },
   { key: 'verified',              label: 'Verified' },
   { key: 'placementStatus',       label: 'Status' },
-  { key: 'actions',               label: '',            className: 'text-gray-700', align: 'center' },
+  { key: 'actions',               label: '',            className: 'text-gray-700 dark:text-gray-300', align: 'center' },
 ];
 
 // Read nested studentProfile fields safely
@@ -33,11 +33,11 @@ const profile = (s) => s.studentProfile || {};
 
 const VerifiedBadge = ({ value }) =>
   value ? (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
       <CheckCircle className="w-3 h-3" /> Yes
     </span>
   ) : (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
       <XCircle className="w-3 h-3" /> No
     </span>
   );
@@ -51,7 +51,7 @@ const PlacementBadge = ({ status, total }) => {
     return (
       <span
         title={`Placed — ${total} application${total === 1 ? '' : 's'} on file`}
-        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700"
+        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300"
       >
         <Briefcase className="w-3 h-3" /> Placed
       </span>
@@ -61,18 +61,18 @@ const PlacementBadge = ({ status, total }) => {
     return (
       <span
         title="Actively in the placement pipeline (pending or shortlisted)"
-        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700"
+        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300"
       >
-        <Target className="w-3 h-3" /> Trying
+        <Target className="w-3 h-3" /> Active
       </span>
     );
   }
   return (
     <span
       title="No active applications"
-      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600"
+      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
     >
-      <Clock className="w-3 h-3" /> Not Trying
+        <Clock className="w-3 h-3" /> Inactive
     </span>
   );
 };
@@ -433,19 +433,19 @@ export default function AllStudents() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
+      <header className="bg-white dark:bg-gray-800 shadow-sm border-b">
         <div className="max-w-[1920px] mx-auto px-4 py-4 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <Link to="/" className="flex items-center gap-1 text-gray-600 hover:text-blue-600 transition text-sm">
+            <Link to="/" className="flex items-center gap-1 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition text-sm">
               <ArrowLeft className="w-4 h-4" /> Back
             </Link>
             <div>
-              <h1 className="text-2xl font-bold text-blue-600 flex items-center gap-2">
+              <h1 className="text-2xl font-bold text-blue-600 dark:text-blue-400 flex items-center gap-2">
                 <Users className="w-6 h-6" /> All Students
               </h1>
-              <p className="text-gray-500 text-sm">Verified student directory</p>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">Verified student directory</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -458,7 +458,7 @@ export default function AllStudents() {
             <button
               onClick={exportCSV}
               disabled={filtered.length === 0}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition text-sm disabled:opacity-50 disabled:cursor-not-allowed dark:bg-blue-600 dark:hover:bg-blue-500"
             >
               <Download className="w-4 h-4" /> Export CSV
             </button>
@@ -472,13 +472,13 @@ export default function AllStudents() {
           {/* Search bar — flex-1 to fill the available left space, min-w-0 so it
               can actually shrink if the right-side controls get wide. */}
           <div className="relative flex-1 min-w-0">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
             <input
               type="text"
               placeholder="Search..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
             />
           </div>
 
@@ -489,11 +489,11 @@ export default function AllStudents() {
             {/* Filter dropdowns — each ~32-44ch wide, content-driven. Filter icon
                 on the first one hints "these are filters". */}
             <div className="relative">
-              <Filter className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+              <Filter className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 dark:text-gray-500 pointer-events-none" />
               <select
                 value={yearFilter}
                 onChange={e => setYearFilter(e.target.value)}
-                className="w-36 pl-7 pr-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm appearance-none bg-white"
+                className="w-36 pl-7 pr-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm appearance-none bg-white dark:bg-gray-800"
                 aria-label="Filter by graduation year"
               >
                 <option value="all">All Years</option>
@@ -503,7 +503,7 @@ export default function AllStudents() {
             <select
               value={streamFilter}
               onChange={e => setStreamFilter(e.target.value)}
-              className="w-44 px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm appearance-none bg-white"
+              className="w-44 px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm appearance-none bg-white dark:bg-gray-800"
               aria-label="Filter by branch / stream"
             >
               <option value="all">All Branches</option>
@@ -512,49 +512,49 @@ export default function AllStudents() {
             <select
               value={sectionFilter}
               onChange={e => setSectionFilter(e.target.value)}
-              className="w-32 px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm appearance-none bg-white"
+              className="w-32 px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm appearance-none bg-white dark:bg-gray-800"
               aria-label="Filter by section"
             >
               <option value="all">All Sections</option>
               {sectionOptions.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
             <div className="relative">
-              <Briefcase className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+              <Briefcase className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 dark:text-gray-500 pointer-events-none" />
               <select
                 value={statusFilter}
                 onChange={e => setStatusFilter(e.target.value)}
-                className="w-36 pl-7 pr-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm appearance-none bg-white"
+                className="w-36 pl-7 pr-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm appearance-none bg-white dark:bg-gray-800"
                 aria-label="Filter by placement status"
               >
                 <option value="all">All Statuses</option>
                 <option value="placed">Placed</option>
-                <option value="trying">Trying</option>
-                <option value="not_trying">Not Trying</option>
+                <option value="trying">Active</option>
+                <option value="not_trying">Inactive</option>
               </select>
             </div>
             {(yearFilter !== 'all' || streamFilter !== 'all' || sectionFilter !== 'all' || statusFilter !== 'all' || search) && (
               <button
                 type="button"
                 onClick={() => { setYearFilter('all'); setStreamFilter('all'); setSectionFilter('all'); setStatusFilter('all'); setSearch(''); }}
-                className="text-xs text-blue-600 hover:text-blue-700 hover:underline whitespace-nowrap"
+                className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 hover:underline whitespace-nowrap"
               >
                 Clear filters
               </button>
             )}
-            <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none whitespace-nowrap">
+            <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 cursor-pointer select-none whitespace-nowrap">
               <span>Verified only</span>
               <button
                 type="button"
                 role="switch"
                 aria-checked={!showUnverified}
                 onClick={() => setShowUnverified(v => !v)}
-                className={`relative inline-flex h-5 w-9 items-center rounded-full transition ${!showUnverified ? 'bg-blue-500' : 'bg-gray-300'}`}
+                className={`relative inline-flex h-5 w-9 items-center rounded-full transition ${!showUnverified ? 'bg-blue-500 dark:bg-blue-400' : 'bg-gray-300 dark:bg-gray-600'}`}
               >
-                <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition ${!showUnverified ? 'translate-x-5' : 'translate-x-1'}`} />
+                <span className={`inline-block h-3 w-3 transform rounded-full bg-white dark:bg-gray-800 transition ${!showUnverified ? 'translate-x-5' : 'translate-x-1'}`} />
               </button>
             </label>
-            <div className="text-sm text-gray-500 whitespace-nowrap">
-              Showing <span className="font-semibold text-gray-700">{filtered.length}</span> of <span className="font-semibold text-gray-700">{rows.length}</span>
+            <div className="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
+              Showing <span className="font-semibold text-gray-700 dark:text-gray-300">{filtered.length}</span> of <span className="font-semibold text-gray-700 dark:text-gray-300">{rows.length}</span>
             </div>
           </div>
         </div>
@@ -563,13 +563,13 @@ export default function AllStudents() {
         {loading ? (
           <div className="card text-center py-16">
             <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-            <p className="text-gray-500 mt-3 text-sm">Loading students...</p>
+            <p className="text-gray-500 dark:text-gray-400 mt-3 text-sm">Loading students...</p>
           </div>
         ) : error ? (
           <div className="card text-center py-12">
             <XCircle className="w-12 h-12 text-red-400 mx-auto mb-3" />
-            <p className="text-gray-700 font-medium">Failed to load students</p>
-            <p className="text-gray-500 text-sm mt-1">{error}</p>
+            <p className="text-gray-700 dark:text-gray-300 font-medium">Failed to load students</p>
+            <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">{error}</p>
           </div>
         ) : (
           <div className="card p-0 overflow-hidden">
@@ -595,12 +595,12 @@ export default function AllStudents() {
                 <col style={{ width: '5%' }} /> {/* Status */}
                 <col style={{ width: '4%' }} /> {/* Actions (delete) */}
               </colgroup>
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr className="divide-x divide-gray-200">
+              <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+                <tr className="divide-x divide-gray-200 dark:divide-gray-700">
                   {COLUMNS.map(c => (
                     <th
                       key={c.key}
-                      className={`px-3 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider ${c.align === 'right' ? 'text-right' : c.align === 'center' ? 'text-center' : 'text-left'}`}
+                      className={`px-3 py-3 text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider ${c.align === 'right' ? 'text-right' : c.align === 'center' ? 'text-center' : 'text-left'}`}
                     >
                       {c.label}
                     </th>
@@ -610,14 +610,14 @@ export default function AllStudents() {
               <tbody className="divide-y divide-gray-100">
                 {filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={COLUMNS.length} className="px-4 py-12 text-center text-gray-500">
+                    <td colSpan={COLUMNS.length} className="px-4 py-12 text-center text-gray-500 dark:text-gray-400">
                       {search ? `No students match "${search}"` : 'No students found'}
                     </td>
                   </tr>
                 ) : filtered.map((r) => (
                   <tr
                     key={r.id}
-                    className="hover:bg-blue-50/40 transition-colors divide-x divide-gray-200"
+                    className="hover:bg-blue-50 dark:hover:bg-blue-900/30/40 transition-colors divide-x divide-gray-200 dark:divide-gray-700"
                   >
                     {COLUMNS.map(c => {
                       let content;
@@ -634,7 +634,7 @@ export default function AllStudents() {
                           onClick={(e) => { e.stopPropagation(); setDeleteTarget(r); }}
                           aria-label={`Delete student ${r.name}`}
                           title={`Delete ${r.name}`}
-                          className="inline-flex items-center justify-center w-7 h-7 rounded-md text-red-500 hover:bg-red-50 hover:text-red-700 transition"
+                          className="inline-flex items-center justify-center w-7 h-7 rounded-md text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 hover:text-red-700 dark:hover:text-red-300 transition"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -680,21 +680,21 @@ export default function AllStudents() {
               // Stop propagation so clicks inside the card don't close it.
               // max-w-md is plenty for 3 fields; the success view is also
               // narrow so the password gets the visual weight.
-              className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-[slideUp_200ms_ease-out]"
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-[slideUp_200ms_ease-out]"
               onClick={(e) => e.stopPropagation()}
             >
               {!addSuccess ? (
                 // ----- FORM VIEW -----
                 <form onSubmit={submitAddStudent}>
                   <div className="px-6 py-4 border-b flex items-center justify-between">
-                    <h2 id="add-student-title" className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                    <h2 id="add-student-title" className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
                       <UserPlus className="w-5 h-5 text-green-600" />
                       Add Student
                     </h2>
                     <button
                       type="button"
                       onClick={closeAddStudent}
-                      className="text-gray-400 hover:text-gray-600 transition"
+                      className="text-gray-400 dark:text-gray-500 hover:text-gray-600 transition"
                       aria-label="Close"
                     >
                       <XCircle className="w-5 h-5" />
@@ -702,14 +702,14 @@ export default function AllStudents() {
                   </div>
 
                   <div className="px-6 py-5 space-y-4">
-                    <p className="text-xs text-gray-500 -mt-1">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 -mt-1">
                       Create a student account without Firebase. The student will log in with the
                       password you set (or one we'll generate), then complete their own profile.
                     </p>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Full name <span className="text-red-500">*</span>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Full name <span className="text-red-500 dark:text-red-400">*</span>
                       </label>
                       <input
                         type="text"
@@ -718,13 +718,13 @@ export default function AllStudents() {
                         value={addForm.name}
                         onChange={(e) => setAddForm(f => ({ ...f, name: e.target.value }))}
                         placeholder="e.g. Souvagyo Mallick"
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
+                        className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Email <span className="text-red-500">*</span>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Email <span className="text-red-500 dark:text-red-400">*</span>
                       </label>
                       <input
                         type="email"
@@ -732,13 +732,13 @@ export default function AllStudents() {
                         value={addForm.email}
                         onChange={(e) => setAddForm(f => ({ ...f, email: e.target.value }))}
                         placeholder="student@college.edu"
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm font-mono"
+                        className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm font-mono"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Password <span className="text-gray-400 text-xs font-normal">(optional)</span>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Password <span className="text-gray-400 dark:text-gray-500 text-xs font-normal">(optional)</span>
                       </label>
                       <div className="relative">
                         <input
@@ -749,35 +749,35 @@ export default function AllStudents() {
                           value={addForm.password}
                           onChange={(e) => setAddForm(f => ({ ...f, password: e.target.value }))}
                           placeholder="Leave blank to auto-generate"
-                          className="w-full pl-3 pr-10 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
+                          className="w-full pl-3 pr-10 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
                         />
                         <button
                           type="button"
                           onClick={() => setAddShowPw(s => !s)}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600"
                           aria-label={addShowPw ? 'Hide password' : 'Show password'}
                         >
                           {addShowPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </button>
                       </div>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                         If blank, an 8-character temp password is generated and shown to you once.
                       </p>
                     </div>
 
                     {addError && (
-                      <div className="px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                      <div className="px-3 py-2 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-700 dark:text-red-300">
                         {addError}
                       </div>
                     )}
                   </div>
 
-                  <div className="px-6 py-3 bg-gray-50 border-t flex items-center justify-end gap-2">
+                  <div className="px-6 py-3 bg-gray-50 dark:bg-gray-900 border-t flex items-center justify-end gap-2">
                     <button
                       type="button"
                       onClick={closeAddStudent}
                       disabled={addSubmitting}
-                      className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition disabled:opacity-50"
+                      className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition disabled:opacity-50"
                     >
                       Cancel
                     </button>
@@ -799,8 +799,8 @@ export default function AllStudents() {
                 // /change-password call.
                 <div>
                   <div className="px-6 py-4 border-b flex items-center justify-between">
-                    <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                      <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-green-100">
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                      <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-green-100 dark:bg-green-900/40">
                         <Check className="w-4 h-4 text-green-600" />
                       </span>
                       Student created
@@ -808,7 +808,7 @@ export default function AllStudents() {
                     <button
                       type="button"
                       onClick={closeAddStudent}
-                      className="text-gray-400 hover:text-gray-600 transition"
+                      className="text-gray-400 dark:text-gray-500 hover:text-gray-600 transition"
                       aria-label="Close"
                     >
                       <XCircle className="w-5 h-5" />
@@ -817,27 +817,27 @@ export default function AllStudents() {
 
                   <div className="px-6 py-5 space-y-4">
                     <div>
-                      <div className="text-xs text-gray-500 mb-1">Name</div>
-                      <div className="text-sm font-medium text-gray-900">{addSuccess.student.name}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Name</div>
+                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{addSuccess.student.name}</div>
                     </div>
                     <div>
-                      <div className="text-xs text-gray-500 mb-1">Email</div>
-                      <div className="text-sm font-mono text-gray-900">{addSuccess.student.email}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Email</div>
+                      <div className="text-sm font-mono text-gray-900 dark:text-gray-100">{addSuccess.student.email}</div>
                     </div>
 
-                    <div className="px-4 py-3 bg-amber-50 border border-amber-200 rounded-lg">
+                    <div className="px-4 py-3 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700 rounded-lg dark:bg-amber-900/30 dark:border-amber-700">
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-xs font-semibold text-amber-800">
                           Temporary password
                         </span>
-                        <span className="text-xs text-amber-700">
+                        <span className="text-xs text-amber-700 dark:text-amber-300">
                           {addSuccess.passwordWasGenerated
                             ? 'auto-generated'
                             : 'officer-supplied'}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <code className="flex-1 px-3 py-2 bg-white border border-amber-200 rounded font-mono text-sm text-gray-900 select-all break-all">
+                        <code className="flex-1 px-3 py-2 bg-white dark:bg-gray-800 border border-amber-200 dark:border-amber-700 rounded font-mono text-sm text-gray-900 dark:text-gray-100 select-all break-all">
                           {addSuccess.temporaryPassword}
                         </code>
                         <button
@@ -856,14 +856,14 @@ export default function AllStudents() {
                           )}
                         </button>
                       </div>
-                      <p className="text-xs text-amber-700 mt-2">
+                      <p className="text-xs text-amber-700 dark:text-amber-300 mt-2">
                         Share this with the student. They'll be required to set a new
                         password on first login. This password is shown only once.
                       </p>
                     </div>
                   </div>
 
-                  <div className="px-6 py-3 bg-gray-50 border-t flex items-center justify-end gap-2">
+                  <div className="px-6 py-3 bg-gray-50 dark:bg-gray-900 border-t flex items-center justify-end gap-2">
                     <button
                       type="button"
                       onClick={() => {
@@ -876,14 +876,14 @@ export default function AllStudents() {
                         setAddShowPw(false);
                         setCopied(false);
                       }}
-                      className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition"
+                      className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition"
                     >
                       Add another
                     </button>
                     <button
                       type="button"
                       onClick={closeAddStudent}
-                      className="px-4 py-2 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+                      className="px-4 py-2 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition dark:bg-blue-600 dark:hover:bg-blue-500"
                     >
                       Done
                     </button>
@@ -916,18 +916,18 @@ export default function AllStudents() {
             aria-label="Pick a student to delete"
           >
             <div
-              className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden"
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+              <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Trash2 className="w-5 h-5 text-red-500" />
-                  <h2 className="text-lg font-semibold text-gray-900">Delete a student</h2>
+                  <Trash2 className="w-5 h-5 text-red-500 dark:text-red-400" />
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Delete a student</h2>
                 </div>
                 <button
                   type="button"
                   onClick={closePicker}
-                  className="p-1 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600"
+                  className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 dark:text-gray-500 hover:text-gray-600"
                   aria-label="Close"
                 >
                   <XCircle className="w-5 h-5" />
@@ -935,37 +935,37 @@ export default function AllStudents() {
               </div>
 
               <div className="px-6 pt-4">
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   Search by name, roll number, or email. Pick the student you want to delete —
                   you'll get one last chance to confirm.
                 </p>
                 <div className="mt-3 relative">
-                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
                   <input
                     autoFocus
                     type="text"
                     value={deletePickerQuery}
                     onChange={(e) => setDeletePickerQuery(e.target.value)}
                     placeholder="Type a name, roll, or email…"
-                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-300"
+                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-300"
                   />
                 </div>
               </div>
 
               <div className="max-h-72 overflow-y-auto px-3 py-2">
                 {deletePickerMatches.length === 0 ? (
-                  <p className="text-sm text-gray-400 text-center py-6">No students match your search.</p>
+                  <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-6">No students match your search.</p>
                 ) : (
                   deletePickerMatches.map((s) => (
                     <button
                       key={s._id}
                       type="button"
                       onClick={() => pickFromHeader(s)}
-                      className="w-full text-left px-3 py-2 rounded-lg hover:bg-red-50 transition flex items-center justify-between gap-3"
+                      className="w-full text-left px-3 py-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 transition flex items-center justify-between gap-3"
                     >
                       <div className="min-w-0">
-                        <div className="text-sm font-medium text-gray-900 truncate">{s.name}</div>
-                        <div className="text-xs text-gray-500 truncate">
+                        <div className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{s.name}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
                           {s.rollNumber || '—'} · {s.email}
                         </div>
                       </div>
@@ -975,14 +975,14 @@ export default function AllStudents() {
                 )}
               </div>
 
-              <div className="px-6 py-3 border-t border-gray-100 bg-gray-50 flex items-center justify-between">
-                <span className="text-xs text-gray-500">
+              <div className="px-6 py-3 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 flex items-center justify-between">
+                <span className="text-xs text-gray-500 dark:text-gray-400">
                   Showing {deletePickerMatches.length} of {students.length} students
                 </span>
                 <button
                   type="button"
                   onClick={closePicker}
-                  className="px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-200 rounded-lg"
+                  className="px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 rounded-lg"
                 >
                   Cancel
                 </button>
@@ -1011,12 +1011,12 @@ export default function AllStudents() {
             aria-labelledby="delete-student-title"
           >
             <div
-              className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-[slideUp_200ms_ease-out]"
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-[slideUp_200ms_ease-out]"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="px-6 py-4 border-b flex items-center justify-between">
-                <h2 id="delete-student-title" className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                  <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-red-100">
+                <h2 id="delete-student-title" className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                  <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-red-100 dark:bg-red-900/40">
                     <AlertTriangle className="w-4 h-4 text-red-600" />
                   </span>
                   Delete student?
@@ -1024,7 +1024,7 @@ export default function AllStudents() {
                 <button
                   type="button"
                   onClick={closeDelete}
-                  className="text-gray-400 hover:text-gray-600 transition"
+                  className="text-gray-400 dark:text-gray-500 hover:text-gray-600 transition"
                   aria-label="Close"
                 >
                   <XCircle className="w-5 h-5" />
@@ -1032,29 +1032,29 @@ export default function AllStudents() {
               </div>
 
               <div className="px-6 py-5 space-y-4">
-                <p className="text-sm text-gray-700">
+                <p className="text-sm text-gray-700 dark:text-gray-300">
                   You're about to permanently delete this student account and
                   all of their placement applications. This cannot be undone.
                 </p>
 
-                <div className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg space-y-1">
+                <div className="px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg space-y-1">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">Name</span>
-                    <span className="font-medium text-gray-900">{deleteTarget.name}</span>
+                    <span className="text-gray-500 dark:text-gray-400">Name</span>
+                    <span className="font-medium text-gray-900 dark:text-gray-100">{deleteTarget.name}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">Roll No</span>
-                    <span className="font-mono text-gray-900">{deleteTarget.rollNumber}</span>
+                    <span className="text-gray-500 dark:text-gray-400">Roll No</span>
+                    <span className="font-mono text-gray-900 dark:text-gray-100">{deleteTarget.rollNumber}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">Email</span>
-                    <span className="font-mono text-gray-900 truncate ml-2" title={deleteTarget.email}>
+                    <span className="text-gray-500 dark:text-gray-400">Email</span>
+                    <span className="font-mono text-gray-900 dark:text-gray-100 truncate ml-2" title={deleteTarget.email}>
                       {deleteTarget.email}
                     </span>
                   </div>
                   {deleteTarget.placementTotal > 0 && (
-                    <div className="flex justify-between text-sm pt-2 border-t border-gray-200 mt-2">
-                      <span className="text-gray-500">Applications on file</span>
+                    <div className="flex justify-between text-sm pt-2 border-t border-gray-200 dark:border-gray-700 mt-2">
+                      <span className="text-gray-500 dark:text-gray-400">Applications on file</span>
                       <span className="font-medium text-red-600">
                         {deleteTarget.placementTotal} will be deleted
                       </span>
@@ -1063,18 +1063,18 @@ export default function AllStudents() {
                 </div>
 
                 {deleteError && (
-                  <div className="px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                  <div className="px-3 py-2 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-700 dark:text-red-300">
                     {deleteError}
                   </div>
                 )}
               </div>
 
-              <div className="px-6 py-3 bg-gray-50 border-t flex items-center justify-end gap-2">
+              <div className="px-6 py-3 bg-gray-50 dark:bg-gray-900 border-t flex items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={closeDelete}
                   disabled={deleteSubmitting}
-                  className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition disabled:opacity-50"
+                  className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition disabled:opacity-50"
                 >
                   Cancel
                 </button>

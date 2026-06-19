@@ -100,10 +100,10 @@ export default function JobDetails() {
   if (isJobNotFound) return <div className="text-center py-16"><h2 className="text-xl font-semibold">Job not found</h2><Link to="/jobs" className="btn-primary mt-4">Back to Jobs</Link></div>;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="bg-white dark:bg-gray-800 border-b">
         <div className="max-w-4xl mx-auto px-4 py-4">
-          <Link to="/jobs" className="flex items-center gap-2 text-gray-600 hover:text-blue-600"><ArrowLeft className="w-5 h-5" /> Back to Jobs</Link>
+          <Link to="/jobs" className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"><ArrowLeft className="w-5 h-5" /> Back to Jobs</Link>
         </div>
       </div>
       <main className="max-w-4xl mx-auto px-4 py-8">
@@ -111,11 +111,11 @@ export default function JobDetails() {
           <div className="flex items-start justify-between">
             <div>
               <div className="flex items-center gap-3">
-                <h1 className="text-3xl font-bold text-gray-900">{job.title}</h1>
-                {isExpired && <span className="badge bg-red-100 text-red-700 border border-red-200">🔴 Expired</span>}
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{job.title}</h1>
+                {isExpired && <span className="badge bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800">🔴 Expired</span>}
               </div>
-              <p className="text-xl text-gray-600 mt-1">{job.companyName}</p>
-              <div className="flex items-center gap-6 mt-4 text-gray-500">
+              <p className="text-xl text-gray-600 dark:text-gray-300 mt-1">{job.companyName}</p>
+              <div className="flex items-center gap-6 mt-4 text-gray-500 dark:text-gray-400">
                 <span className="flex items-center gap-2"><MapPin className="w-5 h-5" />{job.location || 'Not specified'}</span>
                 <span className="flex items-center gap-2"><DollarSign className="w-5 h-5" />{job.salary?.min?.toFixed(2) || '0.00'} - {job.salary?.max?.toFixed(2) || '0.00'} LPA</span>
                 <span className="flex items-center gap-2"><Briefcase className="w-5 h-5" />{job.jobType}</span>
@@ -123,8 +123,8 @@ export default function JobDetails() {
               </div>
             </div>
             <div className="flex gap-2">
-              <button onClick={handleToggleSave} disabled={saving} className={`p-3 border rounded-lg transition ${isSaved ? 'bg-blue-50 border-blue-300' : 'hover:bg-gray-50'}`}>
-                <Bookmark className={`w-5 h-5 ${isSaved ? 'text-blue-600 fill-blue-600' : 'text-gray-600'}`} />
+              <button onClick={handleToggleSave} disabled={saving} className={`p-3 border rounded-lg transition ${isSaved ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700' : 'hover:bg-gray-50 dark:hover:bg-gray-700/40'}`}>
+                <Bookmark className={`w-5 h-5 ${isSaved ? 'text-blue-600 dark:text-blue-400 fill-blue-600 dark:fill-blue-400' : 'text-gray-600 dark:text-gray-300'}`} />
               </button>
             </div>
           </div>
@@ -134,12 +134,12 @@ export default function JobDetails() {
         </div>
         <div className="card mb-6">
           <h2 className="text-xl font-semibold mb-4">Job Description</h2>
-          <p className="text-gray-700 whitespace-pre-wrap">{job.description || 'No description provided.'}</p>
+          <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{job.description || 'No description provided.'}</p>
         </div>
         <div className="grid md:grid-cols-2 gap-6">
           <div className="card">
             <h2 className="text-xl font-semibold mb-4">Required Skills</h2>
-            <div className="flex flex-wrap gap-2">{job.requiredSkills?.map((skill, i) => <span key={i} className="badge badge-blue text-sm px-3 py-2">{skill}</span>) || <p className="text-gray-500">Not specified</p>}</div>
+            <div className="flex flex-wrap gap-2">{job.requiredSkills?.map((skill, i) => <span key={i} className="badge badge-blue text-sm px-3 py-2">{skill}</span>) || <p className="text-gray-500 dark:text-gray-400">Not specified</p>}</div>
           </div>
           <div className="card">
             <h2 className="text-lg font-semibold mb-4">Eligibility</h2>
@@ -151,10 +151,10 @@ export default function JobDetails() {
                       <span className={`text-lg ${studentProfile?.currentCGPA >= job.eligibility.minCGPA ? '✅' : '❌'}`}>
                         {studentProfile?.currentCGPA >= job.eligibility.minCGPA ? '✅' : '❌'}
                       </span>
-                      <span className="text-gray-600">CGPA</span>
+                      <span className="text-gray-600 dark:text-gray-300">CGPA</span>
                     </div>
                     <span className={`font-medium ${studentProfile?.currentCGPA >= job.eligibility.minCGPA ? 'text-green-600' : 'text-red-600'}`}>
-                      {studentProfile?.currentCGPA ?? '—'} <span className="text-gray-400 text-sm">/ {job.eligibility.minCGPA}</span>
+                      {studentProfile?.currentCGPA ?? '—'} <span className="text-gray-400 dark:text-gray-500 text-sm">/ {job.eligibility.minCGPA}</span>
                     </span>
                   </div>
                 )}
@@ -164,10 +164,10 @@ export default function JobDetails() {
                       <span className={`text-lg ${studentProfile?.twelfthPercentage >= job.eligibility.class12Percentage ? '✅' : '❌'}`}>
                         {studentProfile?.twelfthPercentage >= job.eligibility.class12Percentage ? '✅' : '❌'}
                       </span>
-                      <span className="text-gray-600">Class 12 %</span>
+                      <span className="text-gray-600 dark:text-gray-300">Class 12 %</span>
                     </div>
                     <span className={`font-medium ${studentProfile?.twelfthPercentage >= job.eligibility.class12Percentage ? 'text-green-600' : 'text-red-600'}`}>
-                      {studentProfile?.twelfthPercentage ?? '—'} <span className="text-gray-400 text-sm">/ {job.eligibility.class12Percentage}%</span>
+                      {studentProfile?.twelfthPercentage ?? '—'} <span className="text-gray-400 dark:text-gray-500 text-sm">/ {job.eligibility.class12Percentage}%</span>
                     </span>
                   </div>
                 )}
@@ -177,16 +177,16 @@ export default function JobDetails() {
                       <span className={`text-lg ${studentProfile?.tenthPercentage >= job.eligibility.class10Percentage ? '✅' : '❌'}`}>
                         {studentProfile?.tenthPercentage >= job.eligibility.class10Percentage ? '✅' : '❌'}
                       </span>
-                      <span className="text-gray-600">Class 10 %</span>
+                      <span className="text-gray-600 dark:text-gray-300">Class 10 %</span>
                     </div>
                     <span className={`font-medium ${studentProfile?.tenthPercentage >= job.eligibility.class10Percentage ? 'text-green-600' : 'text-red-600'}`}>
-                      {studentProfile?.tenthPercentage ?? '—'} <span className="text-gray-400 text-sm">/ {job.eligibility.class10Percentage}%</span>
+                      {studentProfile?.tenthPercentage ?? '—'} <span className="text-gray-400 dark:text-gray-500 text-sm">/ {job.eligibility.class10Percentage}%</span>
                     </span>
                   </div>
                 )}
               </div>
             ) : (
-              <p className="text-gray-500">No eligibility criteria defined.</p>
+              <p className="text-gray-500 dark:text-gray-400">No eligibility criteria defined.</p>
             )}
           </div>
         </div>

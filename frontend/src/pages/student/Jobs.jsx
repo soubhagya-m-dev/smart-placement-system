@@ -114,20 +114,20 @@ export default function Jobs() {
   const eligibleCount = jobs.filter(j => !isJobExpired(j) && isEligible(j)).length;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm border-b sticky top-0 z-10">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <header className="bg-white dark:bg-gray-800 shadow-sm border-b sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
           
           {/* Header with Filter and Saved Jobs Toggles - Side by Side */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link to="/" className="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition">
+              <Link to="/" className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition">
                 <ArrowLeft className="w-5 h-5" />
                 <span className="font-medium">Back to Dashboard</span>
               </Link>
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center gap-2 text-gray-700 hover:text-gray-900 transition"
+                className="flex items-center gap-2 text-gray-700 hover:text-gray-900 dark:text-gray-100 transition"
               >
                 <Filter className="w-5 h-5" />
                 <span className="font-medium">Filters</span>
@@ -137,7 +137,7 @@ export default function Jobs() {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setShowEligible(!showEligible)}
-                className="flex items-center gap-2 text-gray-700 hover:text-gray-900 transition"
+                className="flex items-center gap-2 text-gray-700 hover:text-gray-900 dark:text-gray-100 transition"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 <span className="font-medium">Eligible Jobs ({eligibleCount})</span>
@@ -146,7 +146,7 @@ export default function Jobs() {
 
               <button
                 onClick={() => setShowSaved(!showSaved)}
-                className="flex items-center gap-2 text-gray-700 hover:text-gray-900 transition"
+                className="flex items-center gap-2 text-gray-700 hover:text-gray-900 dark:text-gray-100 transition"
               >
                 <Bookmark className="w-5 h-5" />
                 <span className="font-medium">Saved Jobs ({savedJobs.length})</span>
@@ -161,8 +161,8 @@ export default function Jobs() {
               
               {/* Filters Section - Full Width */}
               {showFilters && (
-                <div className="bg-gray-50 rounded-xl p-4">
-                  <h3 className="font-medium text-gray-700 mb-3 flex items-center gap-2">
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-4">
+                  <h3 className="font-medium text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
                     <Filter className="w-4 h-4" /> Job Filters
                   </h3>
                   <form onSubmit={handleSearch} className="space-y-3">
@@ -193,23 +193,23 @@ export default function Jobs() {
 
               {/* Right: Saved Jobs Section */}
               {showSaved && (
-                <div className="bg-gray-50 rounded-xl p-4">
-                  <h3 className="font-medium text-gray-700 mb-3 flex items-center gap-2">
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-4">
+                  <h3 className="font-medium text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
                     <Bookmark className="w-4 h-4" /> Saved Jobs ({savedJobs.length})
                   </h3>
                   {savedJobs.length === 0 ? (
-                    <p className="text-gray-500 text-sm">No saved jobs yet. Click the bookmark icon on any job to save it.</p>
+                    <p className="text-gray-500 dark:text-gray-400 text-sm">No saved jobs yet. Click the bookmark icon on any job to save it.</p>
                   ) : (
                     <div className="space-y-2 max-h-20 overflow-y-auto">
                       {savedJobs.map(job => (
-                        <div key={job._id} className="flex items-center justify-between p-2 bg-white rounded-lg">
-                          <Link to={`/jobs/${job._id}`} className="flex-1 min-w-0 hover:text-blue-600" onClick={() => setShowSaved(false)}>
-                            <p className="font-medium text-gray-900 text-sm truncate">{job.title}</p>
-                            <p className="text-xs text-gray-500 truncate">{job.companyName}</p>
+                        <div key={job._id} className="flex items-center justify-between p-2 bg-white dark:bg-gray-800 rounded-lg">
+                          <Link to={`/jobs/${job._id}`} className="flex-1 min-w-0 hover:text-blue-600 dark:hover:text-blue-400" onClick={() => setShowSaved(false)}>
+                            <p className="font-medium text-gray-900 dark:text-gray-100 text-sm truncate">{job.title}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{job.companyName}</p>
                           </Link>
                           <button
                             onClick={() => toggleSaveJob(job._id)}
-                            className="p-1 text-gray-400 hover:text-red-500 transition ml-2"
+                            className="p-1 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition ml-2"
                             title="Remove from saved"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -223,20 +223,20 @@ export default function Jobs() {
 
               {/* Eligible Jobs Section */}
               {showEligible && (
-                <div className="bg-gray-50 rounded-xl p-4">
-                  <h3 className="font-medium text-gray-700 mb-3 flex items-center gap-2">
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-4">
+                  <h3 className="font-medium text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                     Eligible Jobs ({eligibleCount})
                   </h3>
                   {eligibleCount === 0 ? (
-                    <p className="text-gray-500 text-sm">No jobs match your eligibility criteria yet. Check back later!</p>
+                    <p className="text-gray-500 dark:text-gray-400 text-sm">No jobs match your eligibility criteria yet. Check back later!</p>
                   ) : (
                     <div className="space-y-2 max-h-60 overflow-y-auto">
                       {jobs.filter(j => !isJobExpired(j) && isEligible(j)).map(job => (
-                        <div key={job._id} className="flex items-center justify-between p-2 bg-white rounded-lg">
-                          <Link to={`/jobs/${job._id}`} className="flex-1 min-w-0 hover:text-blue-600" onClick={() => setShowEligible(false)}>
-                            <p className="font-medium text-gray-900 text-sm truncate">{job.title}</p>
-                            <p className="text-xs text-gray-500 truncate">{job.companyName}</p>
+                        <div key={job._id} className="flex items-center justify-between p-2 bg-white dark:bg-gray-800 rounded-lg">
+                          <Link to={`/jobs/${job._id}`} className="flex-1 min-w-0 hover:text-blue-600 dark:hover:text-blue-400" onClick={() => setShowEligible(false)}>
+                            <p className="font-medium text-gray-900 dark:text-gray-100 text-sm truncate">{job.title}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{job.companyName}</p>
                           </Link>
                           <span className="ml-2 text-green-600 text-xs font-medium">✅ Eligible</span>
                         </div>
@@ -254,9 +254,9 @@ export default function Jobs() {
       <main className="max-w-7xl mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold mb-6">Available Jobs</h1>
         {loading ? (
-          <div className="space-y-4">{[1,2,3,4,5].map(i => <div key={i} className="h-32 bg-white rounded-xl animate-pulse"></div>)}</div>
+          <div className="space-y-4">{[1,2,3,4,5].map(i => <div key={i} className="h-32 bg-white dark:bg-gray-800 rounded-xl animate-pulse"></div>)}</div>
         ) : jobs.length === 0 ? (
-          <div className="card text-center py-16"><Briefcase className="w-16 h-16 text-gray-300 mx-auto mb-4" /><h3 className="text-lg font-semibold">No jobs found</h3><p className="text-gray-500">Try adjusting your search filters</p></div>
+          <div className="card text-center py-16"><Briefcase className="w-16 h-16 text-gray-300 mx-auto mb-4" /><h3 className="text-lg font-semibold">No jobs found</h3><p className="text-gray-500 dark:text-gray-400">Try adjusting your search filters</p></div>
         ) : (
           <div className="grid gap-4">
             {(() => {
@@ -285,20 +285,20 @@ export default function Jobs() {
               return [...nonExpired, ...expired];
             })()
               .map(job => (
-              <div key={job._id} className={`card transition ${isJobSaved(job._id) ? 'ring-2 ring-blue-500 bg-blue-50' : isJobExpired(job) ? 'ring-2 ring-red-400 bg-red-50' : 'hover:shadow-lg'}`}>
+              <div key={job._id} className={`card transition ${isJobSaved(job._id) ? 'ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-900/30' : isJobExpired(job) ? 'ring-2 ring-red-400 bg-red-50 dark:bg-red-900/30' : 'hover:shadow-lg'}`}>
                 <div className="flex items-start justify-between">
                   <Link to={`/jobs/${job._id}`} className="flex-1">
                     <div className="flex items-center gap-3">
-                      <h3 className="text-xl font-semibold text-gray-900">{job.title}</h3>
+                      <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">{job.title}</h3>
                       <button
                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleSaveJob(job._id); }}
-                        className="p-1.5 rounded hover:bg-gray-100 transition"
+                        className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition"
                       >
-                        <Bookmark className={`w-5 h-5 ${isJobSaved(job._id) ? 'text-blue-600 fill-blue-600' : 'text-gray-400'}`} />
+                        <Bookmark className={`w-5 h-5 ${isJobSaved(job._id) ? 'text-blue-600 dark:text-blue-400 fill-blue-600 dark:fill-blue-400' : 'text-gray-400 dark:text-gray-500'}`} />
                       </button>
                     </div>
-                    <p className="text-gray-600 mt-1">{job.companyName}</p>
-                    <div className="flex items-center gap-4 mt-3 text-gray-500 text-sm">
+                    <p className="text-gray-600 dark:text-gray-300 mt-1">{job.companyName}</p>
+                    <div className="flex items-center gap-4 mt-3 text-gray-500 dark:text-gray-400 text-sm">
                       <span className="flex items-center gap-1"><MapPin className="w-4 h-4" />{job.location || 'Not specified'}</span>
                       <span className="flex items-center gap-1"><DollarSign className="w-4 h-4" />{job.salary?.min?.toFixed(2) || '0.00'} - {job.salary?.max?.toFixed(2) || '0.00'} LPA</span>
                     </div>
@@ -306,11 +306,11 @@ export default function Jobs() {
                   </Link>
                   <div className="text-right ml-4">
                     {new Date(job.applicationDeadline) < new Date() ? (
-                      <span className="badge bg-red-100 text-red-700 border border-red-200">🔴 Expired</span>
+                      <span className="badge bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800">🔴 Expired</span>
                     ) : (
                       <span className="badge badge-green">{job.jobType}</span>
                     )}
-                    <p className="text-sm text-gray-500 mt-2 flex items-center justify-end gap-1"><span>📅</span> Apply by {job.applicationDeadline ? new Date(job.applicationDeadline).toLocaleDateString('en-GB') : 'No deadline'}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 flex items-center justify-end gap-1"><span>📅</span> Apply by {job.applicationDeadline ? new Date(job.applicationDeadline).toLocaleDateString('en-GB') : 'No deadline'}</p>
                   </div>
                 </div>
               </div>

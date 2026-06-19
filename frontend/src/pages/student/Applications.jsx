@@ -179,9 +179,9 @@ export default function Applications() {
     switch(status) {
       case 'pending': return <Clock className="w-5 h-5 text-yellow-500" />;
       case 'accepted': return <CheckCircle className="w-5 h-5 text-green-500" />;
-      case 'rejected': return <XCircle className="w-5 h-5 text-red-500" />;
+      case 'rejected': return <XCircle className="w-5 h-5 text-red-500 dark:text-red-400" />;
       case 'shortlisted': return <CheckCircle className="w-5 h-5 text-blue-500" />;
-      default: return <Clock className="w-5 h-5 text-gray-500" />;
+      default: return <Clock className="w-5 h-5 text-gray-500 dark:text-gray-400" />;
     }
   };
   const statusColor = (status) => {
@@ -208,12 +208,12 @@ export default function Applications() {
 
   const getTimelineColor = (type) => {
     switch(type) {
-      case 'interview': return 'border-blue-500 bg-blue-50';
+      case 'interview': return 'border-blue-500 bg-blue-50 dark:border-blue-400 dark:bg-blue-900/30';
       case 'exam': return 'border-green-500 bg-green-50';
       case 'offer_letter': return 'border-yellow-500 bg-yellow-50';
-      case 'rejection': return 'border-red-500 bg-red-50';
+      case 'rejection': return 'border-red-500 bg-red-50 dark:border-red-400 dark:bg-red-900/30';
       case 'status_update': return 'border-purple-500 bg-purple-50';
-      default: return 'border-gray-400 bg-gray-50';
+      default: return 'border-gray-400 bg-gray-50 dark:border-gray-500 dark:bg-gray-800';
     }
   };
 
@@ -224,25 +224,25 @@ export default function Applications() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold">My Applications</h1>
           <button
             type="button"
             onClick={() => navigate('/')}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium rounded-lg transition-all duration-300"
+            className="flex items-center gap-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 dark:text-gray-100 font-medium rounded-lg transition-all duration-300"
           >
             <ArrowLeft className="w-4 h-4" /> Back to Dashboard
           </button>
         </div>
         <div className="flex gap-2 mb-6 flex-wrap">
           {VALID_FILTERS.map(f => (
-            <button key={f} onClick={() => handleFilterChange(f)} className={`px-4 py-2 rounded-lg capitalize text-sm ${filter === f ? 'bg-blue-600 text-white' : 'bg-white border hover:bg-gray-50'}`}>{f}</button>
+            <button key={f} onClick={() => handleFilterChange(f)} className={`px-4 py-2 rounded-lg capitalize text-sm ${filter === f ? 'bg-blue-600 text-white dark:bg-blue-500' : 'bg-white dark:bg-gray-800 border hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700'}`}>{f}</button>
           ))}
         </div>
         {loading ? (
-          <div className="space-y-4">{[1,2,3].map(i => <div key={i} className="h-24 bg-white rounded-xl animate-pulse"></div>)}</div>
+          <div className="space-y-4">{[1,2,3].map(i => <div key={i} className="h-24 bg-white dark:bg-gray-800 rounded-xl animate-pulse"></div>)}</div>
         ) : filteredApps.length === 0 ? (
           <div className="card text-center py-16"><FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" /><h3 className="text-lg font-semibold">No applications yet</h3><Link to="/jobs" className="btn-primary mt-4">Browse Jobs</Link></div>
         ) : (
@@ -255,24 +255,24 @@ export default function Applications() {
               >
                 {/* Application Header */}
                 <div
-                  className="flex items-center justify-between cursor-pointer hover:bg-gray-50 p-2 -m-2 rounded-lg transition-colors"
+                  className="flex items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/40 p-2 -m-2 rounded-lg transition-colors"
                   onClick={() => toggleExpand(app)}
                 >
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><Briefcase className="w-6 h-6 text-blue-600" /></div>
+                    <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/40 rounded-lg flex items-center justify-center"><Briefcase className="w-6 h-6 text-blue-600 dark:text-blue-400" /></div>
                     <div>
                       <h3 className="font-semibold text-lg">{app.job?.title || 'Job Deleted'}</h3>
-                      <p className="text-gray-500">{app.job?.companyName}</p>
-                      <p className="text-sm text-gray-400">Applied: {new Date(app.appliedAt).toLocaleDateString()}</p>
+                      <p className="text-gray-500 dark:text-gray-400">{app.job?.companyName}</p>
+                      <p className="text-sm text-gray-400 dark:text-gray-500">Applied: {new Date(app.appliedAt).toLocaleDateString()}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     {statusIcon(app.status)}
                     <span className={`badge ${statusColor(app.status)}`}>{app.status}</span>
                     {expandedApp === app._id ? (
-                      <ChevronUp className="w-5 h-5 text-gray-400" />
+                      <ChevronUp className="w-5 h-5 text-gray-400 dark:text-gray-500" />
                     ) : (
-                      <ChevronDown className="w-5 h-5 text-gray-400" />
+                      <ChevronDown className="w-5 h-5 text-gray-400 dark:text-gray-500" />
                     )}
                   </div>
                 </div>
@@ -280,27 +280,27 @@ export default function Applications() {
                 {/* Timeline Section */}
                 {expandedApp === app._id && (
                   <div className="mt-4 pt-4 border-t">
-                    <h4 className="text-sm font-semibold text-gray-600 mb-3 flex items-center gap-2">
+                    <h4 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-3 flex items-center gap-2">
                       <Calendar className="w-4 h-4" /> Application Timeline
                     </h4>
 
                     {/* Applied event - always first */}
                     <div className="flex gap-3 mb-4">
                       <div className="flex flex-col items-center">
-                        <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                        <div className="w-8 h-8 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center">
                           <Star className="w-4 h-4 text-green-600" />
                         </div>
                         <div className="w-0.5 h-full bg-gray-200"></div>
                       </div>
                       <div className="flex-1 pb-4">
-                        <p className="font-medium text-gray-800">Applied for job</p>
-                        <p className="text-xs text-gray-500">{new Date(app.appliedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
-                        <p className="text-xs text-gray-400 mt-1">{app.job?.companyName} - {app.job?.title}</p>
+                        <p className="font-medium text-gray-800 dark:text-gray-100">Applied for job</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{new Date(app.appliedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{app.job?.companyName} - {app.job?.title}</p>
                       </div>
                     </div>
 
                     {timelineLoading ? (
-                      <div className="text-center py-4 text-gray-500 text-sm">Loading timeline...</div>
+                      <div className="text-center py-4 text-gray-500 dark:text-gray-400 text-sm">Loading timeline...</div>
                     ) : timeline[app._id]?.length > 0 ? (
                       <div className="relative">
                         {timeline[app._id]
@@ -318,38 +318,38 @@ export default function Applications() {
                               </div>
                               <div className={`flex-1 rounded-lg p-3 mb-2 ${getTimelineColor(notif.type)}`}>
                                 <div className="flex items-center justify-between">
-                                  <p className="font-medium text-sm text-gray-800">{notif.title}</p>
-                                  <span className="text-xs text-gray-500">{formatEventDate(notif.eventDate)}</span>
+                                  <p className="font-medium text-sm text-gray-800 dark:text-gray-100">{notif.title}</p>
+                                  <span className="text-xs text-gray-500 dark:text-gray-400">{formatEventDate(notif.eventDate)}</span>
                                 </div>
                                 {notif.message && (
-                                  <p className="text-xs text-gray-600 mt-1">{notif.message}</p>
+                                  <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">{notif.message}</p>
                                 )}
                                 {/* Metadata details */}
                                 {notif.metadata && (
                                   <div className="mt-2 flex flex-wrap gap-1">
                                     {notif.metadata.interviewDate && (
-                                      <span className="text-xs bg-white/70 px-2 py-0.5 rounded">📅 {formatEventDate(notif.metadata.interviewDate)}</span>
+                                      <span className="text-xs bg-white dark:bg-gray-800/70 px-2 py-0.5 rounded">📅 {formatEventDate(notif.metadata.interviewDate)}</span>
                                     )}
                                     {notif.metadata.interviewTime && (
-                                      <span className="text-xs bg-white/70 px-2 py-0.5 rounded">🕐 {notif.metadata.interviewTime}</span>
+                                      <span className="text-xs bg-white dark:bg-gray-800/70 px-2 py-0.5 rounded">🕐 {notif.metadata.interviewTime}</span>
                                     )}
                                     {notif.metadata.interviewLocation && (
-                                      <span className="text-xs bg-white/70 px-2 py-0.5 rounded">📍 {notif.metadata.interviewLocation}</span>
+                                      <span className="text-xs bg-white dark:bg-gray-800/70 px-2 py-0.5 rounded">📍 {notif.metadata.interviewLocation}</span>
                                     )}
                                     {notif.metadata.examDate && (
-                                      <span className="text-xs bg-white/70 px-2 py-0.5 rounded">📝 {formatEventDate(notif.metadata.examDate)}</span>
+                                      <span className="text-xs bg-white dark:bg-gray-800/70 px-2 py-0.5 rounded">📝 {formatEventDate(notif.metadata.examDate)}</span>
                                     )}
                                     {notif.metadata.examTime && (
-                                      <span className="text-xs bg-white/70 px-2 py-0.5 rounded">🕐 {notif.metadata.examTime}</span>
+                                      <span className="text-xs bg-white dark:bg-gray-800/70 px-2 py-0.5 rounded">🕐 {notif.metadata.examTime}</span>
                                     )}
                                     {notif.metadata.ctc && (
-                                      <span className="text-xs bg-white/70 px-2 py-0.5 rounded">💰 {notif.metadata.ctc}</span>
+                                      <span className="text-xs bg-white dark:bg-gray-800/70 px-2 py-0.5 rounded">💰 {notif.metadata.ctc}</span>
                                     )}
                                     {notif.metadata.joiningDate && (
-                                      <span className="text-xs bg-white/70 px-2 py-0.5 rounded">📆 Join: {formatEventDate(notif.metadata.joiningDate)}</span>
+                                      <span className="text-xs bg-white dark:bg-gray-800/70 px-2 py-0.5 rounded">📆 Join: {formatEventDate(notif.metadata.joiningDate)}</span>
                                     )}
                                     {notif.metadata.newStatus && (
-                                      <span className="text-xs bg-white/70 px-2 py-0.5 rounded">🔄 {notif.metadata.newStatus}</span>
+                                      <span className="text-xs bg-white dark:bg-gray-800/70 px-2 py-0.5 rounded">🔄 {notif.metadata.newStatus}</span>
                                     )}
                                   </div>
                                 )}
@@ -359,7 +359,7 @@ export default function Applications() {
                         }
                       </div>
                     ) : (
-                      <div className="text-center py-4 text-gray-400 text-sm">
+                      <div className="text-center py-4 text-gray-400 dark:text-gray-500 text-sm">
                         <Bell className="w-8 h-8 mx-auto mb-2 opacity-50" />
                         No timeline events yet. The TPO will send updates as your application progresses.
                       </div>

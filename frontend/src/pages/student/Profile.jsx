@@ -371,26 +371,26 @@ export default function Profile() {
   const displayEmail = user?.email;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
       <div className="max-w-3xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold">My Profile</h1>
           <button
             type="button"
             onClick={() => navigate('/')}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium rounded-lg transition-all duration-300"
+            className="flex items-center gap-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 dark:text-gray-100 font-medium rounded-lg transition-all duration-300"
           >
             <ArrowLeft className="w-4 h-4" /> Back to Dashboard
           </button>
         </div>
         <div className="card mb-6">
           <div className="flex items-center gap-4 pb-6 border-b">
-            <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center">
-              <span className="text-2xl font-bold text-blue-600">{displayName?.[0]}</span>
+            <div className="w-20 h-20 bg-blue-100 dark:bg-blue-900/40 rounded-full flex items-center justify-center dark:bg-blue-900/40">
+              <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">{displayName?.[0]}</span>
             </div>
             <div>
               <h2 className="text-xl font-semibold">{displayName}</h2>
-              <p className="text-gray-500">{displayEmail}</p>
+              <p className="text-gray-500 dark:text-gray-400">{displayEmail}</p>
               <span className="badge badge-blue mt-1">{user?.role}</span>
             </div>
           </div>
@@ -408,7 +408,7 @@ export default function Profile() {
                 </div>
               )}
               {missingFields.length > 0 && (
-                <div className="bg-red-50 border border-red-300 text-red-800 px-4 py-3 rounded-lg flex items-start gap-3">
+                <div className="bg-red-50 dark:bg-red-900/30 border border-red-300 text-red-800 px-4 py-3 rounded-lg flex items-start gap-3">
                   <span className="text-xl">⚠️</span>
                   <div>
                     <p className="font-semibold">Please fill all required fields before saving for verification.</p>
@@ -425,63 +425,63 @@ export default function Profile() {
             <h2 className="text-lg font-semibold mb-4">Personal Information</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-1">University Roll Number <span className="text-red-500">*</span></label>
-                <input type="text" inputMode="numeric" name="universityRollNumber" className={`input ${missingFields.includes('universityRollNumber') || formatError?.field === 'universityRollNumber' ? 'border-red-500 ring-2 ring-red-200' : ''}`} placeholder="Roll Number" value={form.universityRollNumber} onChange={e => { const v = e.target.value.replace(/\D/g, '').slice(0, 11); handleChange('universityRollNumber', v); }} onWheel={e => e.target.blur()} onKeyDown={e => { if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault(); }} maxLength={11} pattern="\d{11}" />
+                <label className="block text-sm font-medium mb-1">University Roll Number <span className="text-red-500 dark:text-red-400">*</span></label>
+                <input type="text" inputMode="numeric" name="universityRollNumber" className={`input ${missingFields.includes('universityRollNumber') || formatError?.field === 'universityRollNumber' ? 'border-red-500 ring-2 ring-red-200 dark:border-red-500 dark:ring-red-900/40' : ''}`} placeholder="Roll Number" value={form.universityRollNumber} onChange={e => { const v = e.target.value.replace(/\D/g, '').slice(0, 11); handleChange('universityRollNumber', v); }} onWheel={e => e.target.blur()} onKeyDown={e => { if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault(); }} maxLength={11} pattern="\d{11}" />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">University Registration Number <span className="text-red-500">*</span></label>
-                <input type="text" inputMode="numeric" name="universityRegistrationNumber" className={`input ${missingFields.includes('universityRegistrationNumber') || formatError?.field === 'universityRegistrationNumber' ? 'border-red-500 ring-2 ring-red-200' : ''}`} placeholder="Registration Number" value={form.universityRegistrationNumber} onChange={e => { const v = e.target.value.replace(/\D/g, '').slice(0, 12); handleChange('universityRegistrationNumber', v); }} onWheel={e => e.target.blur()} onKeyDown={e => { if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault(); }} maxLength={12} />
+                <label className="block text-sm font-medium mb-1">University Registration Number <span className="text-red-500 dark:text-red-400">*</span></label>
+                <input type="text" inputMode="numeric" name="universityRegistrationNumber" className={`input ${missingFields.includes('universityRegistrationNumber') || formatError?.field === 'universityRegistrationNumber' ? 'border-red-500 ring-2 ring-red-200 dark:border-red-500 dark:ring-red-900/40' : ''}`} placeholder="Registration Number" value={form.universityRegistrationNumber} onChange={e => { const v = e.target.value.replace(/\D/g, '').slice(0, 12); handleChange('universityRegistrationNumber', v); }} onWheel={e => e.target.blur()} onKeyDown={e => { if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault(); }} maxLength={12} />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">College ID <span className="text-red-500">*</span></label>
-                <input type="text" name="collegeId" className={`input ${missingFields.includes('collegeId') || formatError?.field === 'collegeId' ? 'border-red-500 ring-2 ring-red-200' : ''}`} placeholder="DSC12345678" value={form.collegeId} onChange={e => handleChange('collegeId', e.target.value)} maxLength={11} />
+                <label className="block text-sm font-medium mb-1">College ID <span className="text-red-500 dark:text-red-400">*</span></label>
+                <input type="text" name="collegeId" className={`input ${missingFields.includes('collegeId') || formatError?.field === 'collegeId' ? 'border-red-500 ring-2 ring-red-200 dark:border-red-500 dark:ring-red-900/40' : ''}`} placeholder="DSC12345678" value={form.collegeId} onChange={e => handleChange('collegeId', e.target.value)} maxLength={11} />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Admission Type <span className="text-red-500">*</span></label>
-                <select name="admissionType" className={`input ${missingFields.includes('admissionType') ? 'border-red-500 ring-2 ring-red-200' : ''}`} value={form.admissionType} onChange={e => handleChange('admissionType', e.target.value)}>
+                <label className="block text-sm font-medium mb-1">Admission Type <span className="text-red-500 dark:text-red-400">*</span></label>
+                <select name="admissionType" className={`input ${missingFields.includes('admissionType') ? 'border-red-500 ring-2 ring-red-200 dark:border-red-500 dark:ring-red-900/40' : ''}`} value={form.admissionType} onChange={e => handleChange('admissionType', e.target.value)}>
                   <option value="">Select</option>
                   <option value="Regular 4-year">Regular 4-year</option>
                   <option value="Lateral 3-year">Lateral 3-year</option>
                 </select>
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium mb-1">Full Name (Block Letters) <span className="text-red-500">*</span></label>
-                <input type="text" name="fullName" className={`input ${missingFields.includes('fullName') ? 'border-red-500 ring-2 ring-red-200' : ''}`} placeholder="Enter your full name" value={form.fullName} onChange={e => handleChange('fullName', e.target.value)} />
+                <label className="block text-sm font-medium mb-1">Full Name (Block Letters) <span className="text-red-500 dark:text-red-400">*</span></label>
+                <input type="text" name="fullName" className={`input ${missingFields.includes('fullName') ? 'border-red-500 ring-2 ring-red-200 dark:border-red-500 dark:ring-red-900/40' : ''}`} placeholder="Enter your full name" value={form.fullName} onChange={e => handleChange('fullName', e.target.value)} />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Stream <span className="text-red-500">*</span></label>
-                <select name="stream" className={`input ${missingFields.includes('stream') ? 'border-red-500 ring-2 ring-red-200' : ''}`} value={form.stream} onChange={e => handleChange('stream', e.target.value)}>
+                <label className="block text-sm font-medium mb-1">Stream <span className="text-red-500 dark:text-red-400">*</span></label>
+                <select name="stream" className={`input ${missingFields.includes('stream') ? 'border-red-500 ring-2 ring-red-200 dark:border-red-500 dark:ring-red-900/40' : ''}`} value={form.stream} onChange={e => handleChange('stream', e.target.value)}>
                   <option value="">Select Stream</option>
                   {STREAM_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Section <span className="text-red-500">*</span></label>
-                <select name="section" className={`input ${missingFields.includes('section') ? 'border-red-500 ring-2 ring-red-200' : ''}`} value={form.section} onChange={e => handleChange('section', e.target.value)}>
+                <label className="block text-sm font-medium mb-1">Section <span className="text-red-500 dark:text-red-400">*</span></label>
+                <select name="section" className={`input ${missingFields.includes('section') ? 'border-red-500 ring-2 ring-red-200 dark:border-red-500 dark:ring-red-900/40' : ''}`} value={form.section} onChange={e => handleChange('section', e.target.value)}>
                   <option value="">Select Section</option>
                   {SECTION_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Gender <span className="text-red-500">*</span></label>
-                <select name="gender" className={`input ${missingFields.includes('gender') ? 'border-red-500 ring-2 ring-red-200' : ''}`} value={form.gender} onChange={e => handleChange('gender', e.target.value)}>
+                <label className="block text-sm font-medium mb-1">Gender <span className="text-red-500 dark:text-red-400">*</span></label>
+                <select name="gender" className={`input ${missingFields.includes('gender') ? 'border-red-500 ring-2 ring-red-200 dark:border-red-500 dark:ring-red-900/40' : ''}`} value={form.gender} onChange={e => handleChange('gender', e.target.value)}>
                   <option value="">Select Gender</option>
                   <option value="Male">Male</option>
                   <option value="Female">Female</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Date of Birth <span className="text-red-500">*</span></label>
-                <input type="date" name="dateOfBirth" className={`input ${missingFields.includes('dateOfBirth') ? 'border-red-500 ring-2 ring-red-200' : ''}`} value={form.dateOfBirth} onChange={e => handleChange('dateOfBirth', e.target.value)} />
+                <label className="block text-sm font-medium mb-1">Date of Birth <span className="text-red-500 dark:text-red-400">*</span></label>
+                <input type="date" name="dateOfBirth" className={`input ${missingFields.includes('dateOfBirth') ? 'border-red-500 ring-2 ring-red-200 dark:border-red-500 dark:ring-red-900/40' : ''}`} value={form.dateOfBirth} onChange={e => handleChange('dateOfBirth', e.target.value)} />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Contact Number <span className="text-red-500">*</span></label>
-                <input type="tel" name="contactNumber" className={`input ${missingFields.includes('contactNumber') ? 'border-red-500 ring-2 ring-red-200' : ''}`} placeholder="9876543210" value={form.contactNumber} onChange={e => handleChange('contactNumber', e.target.value)} maxLength={10} />
+                <label className="block text-sm font-medium mb-1">Contact Number <span className="text-red-500 dark:text-red-400">*</span></label>
+                <input type="tel" name="contactNumber" className={`input ${missingFields.includes('contactNumber') ? 'border-red-500 ring-2 ring-red-200 dark:border-red-500 dark:ring-red-900/40' : ''}`} placeholder="9876543210" value={form.contactNumber} onChange={e => handleChange('contactNumber', e.target.value)} maxLength={10} />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Account Email</label>
-                <input type="email" className="input bg-gray-100 cursor-not-allowed" value={user?.email || ''} readOnly disabled />
-                <p className="text-xs text-gray-500 mt-1">Email is set during signup and cannot be changed here.</p>
+                <input type="email" className="input bg-gray-100 dark:bg-gray-700 cursor-not-allowed" value={user?.email || ''} readOnly disabled />
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Email is set during signup and cannot be changed here.</p>
               </div>
             </div>
           </div>
@@ -491,8 +491,8 @@ export default function Profile() {
             <h2 className="text-lg font-semibold mb-4">10th Details</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Board <span className="text-red-500">*</span></label>
-                <select name="tenthBoard" className={`input ${missingFields.includes('tenthBoard') ? 'border-red-500 ring-2 ring-red-200' : ''}`} value={form.tenthBoard} onChange={e => handleChange('tenthBoard', e.target.value)}>
+                <label className="block text-sm font-medium mb-1">Board <span className="text-red-500 dark:text-red-400">*</span></label>
+                <select name="tenthBoard" className={`input ${missingFields.includes('tenthBoard') ? 'border-red-500 ring-2 ring-red-200 dark:border-red-500 dark:ring-red-900/40' : ''}`} value={form.tenthBoard} onChange={e => handleChange('tenthBoard', e.target.value)}>
                   <option value="">Select Board</option>
                   <option value="CBSE">CBSE</option>
                   <option value="ICSE">ICSE</option>
@@ -500,7 +500,7 @@ export default function Profile() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Medium <span className="text-red-500">*</span></label>
+                <label className="block text-sm font-medium mb-1">Medium <span className="text-red-500 dark:text-red-400">*</span></label>
                 <select className="input" value={form.tenthMedium} onChange={e => handleChange('tenthMedium', e.target.value)}>
                   <option value="">Select Medium</option>
                   <option value="bengali">Bengali</option>
@@ -510,12 +510,12 @@ export default function Profile() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Percentage<span className="text-red-500">*</span></label>
-                <input type="text" inputMode="decimal" step="0.01" name="tenthPercentage" className={`input ${missingFields.includes('tenthPercentage') || formatError?.field === 'tenthPercentage' ? 'border-red-500 ring-2 ring-red-200' : ''}`} placeholder="Percentage" value={form.tenthPercentage} onChange={e => { let v = e.target.value.replace(/[^0-9.]/g, ''); const firstDot = v.indexOf('.'); if (firstDot !== -1) v = v.slice(0, firstDot + 1) + v.slice(firstDot + 1).replace(/\./g, ''); if (v.length > 5) v = v.slice(0, 5); handleChange('tenthPercentage', v); }} onWheel={e => e.target.blur()} onKeyDown={e => { if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault(); }} />
+                <label className="block text-sm font-medium mb-1">Percentage<span className="text-red-500 dark:text-red-400">*</span></label>
+                <input type="text" inputMode="decimal" step="0.01" name="tenthPercentage" className={`input ${missingFields.includes('tenthPercentage') || formatError?.field === 'tenthPercentage' ? 'border-red-500 ring-2 ring-red-200 dark:border-red-500 dark:ring-red-900/40' : ''}`} placeholder="Percentage" value={form.tenthPercentage} onChange={e => { let v = e.target.value.replace(/[^0-9.]/g, ''); const firstDot = v.indexOf('.'); if (firstDot !== -1) v = v.slice(0, firstDot + 1) + v.slice(firstDot + 1).replace(/\./g, ''); if (v.length > 5) v = v.slice(0, 5); handleChange('tenthPercentage', v); }} onWheel={e => e.target.blur()} onKeyDown={e => { if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault(); }} />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Passing Year <span className="text-red-500">*</span></label>
-                <input type="text" inputMode="numeric" name="tenthPassingYear" className={`input ${missingFields.includes('tenthPassingYear') ? 'border-red-500 ring-2 ring-red-200' : ''}`} placeholder="YYYY" value={form.tenthPassingYear} onChange={e => { const v = e.target.value.replace(/\D/g, '').slice(0, 4); handleChange('tenthPassingYear', v); }} onWheel={e => e.target.blur()} onKeyDown={e => { if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault(); }} maxLength={4} />
+                <label className="block text-sm font-medium mb-1">Passing Year <span className="text-red-500 dark:text-red-400">*</span></label>
+                <input type="text" inputMode="numeric" name="tenthPassingYear" className={`input ${missingFields.includes('tenthPassingYear') ? 'border-red-500 ring-2 ring-red-200 dark:border-red-500 dark:ring-red-900/40' : ''}`} placeholder="YYYY" value={form.tenthPassingYear} onChange={e => { const v = e.target.value.replace(/\D/g, '').slice(0, 4); handleChange('tenthPassingYear', v); }} onWheel={e => e.target.blur()} onKeyDown={e => { if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault(); }} maxLength={4} />
               </div>
             </div>
           </div>
@@ -525,8 +525,8 @@ export default function Profile() {
             <h2 className="text-lg font-semibold mb-4">12th Details</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Board <span className="text-red-500">*</span></label>
-                <select name="twelfthBoard" className={`input ${missingFields.includes('twelfthBoard') ? 'border-red-500 ring-2 ring-red-200' : ''}`} value={form.twelfthBoard} onChange={e => handleChange('twelfthBoard', e.target.value)}>
+                <label className="block text-sm font-medium mb-1">Board <span className="text-red-500 dark:text-red-400">*</span></label>
+                <select name="twelfthBoard" className={`input ${missingFields.includes('twelfthBoard') ? 'border-red-500 ring-2 ring-red-200 dark:border-red-500 dark:ring-red-900/40' : ''}`} value={form.twelfthBoard} onChange={e => handleChange('twelfthBoard', e.target.value)}>
                   <option value="">Select Board</option>
                   <option value="CBSE">CBSE</option>
                   <option value="ISC">ISC</option>
@@ -534,7 +534,7 @@ export default function Profile() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Medium <span className="text-red-500">*</span></label>
+                <label className="block text-sm font-medium mb-1">Medium <span className="text-red-500 dark:text-red-400">*</span></label>
                 <select className="input" value={form.twelfthMedium} onChange={e => handleChange('twelfthMedium', e.target.value)}>
                   <option value="">Select Medium</option>
                   <option value="bengali">Bengali</option>
@@ -544,12 +544,12 @@ export default function Profile() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Percentage<span className="text-red-500">*</span></label>
-                <input type="text" inputMode="decimal" step="0.01" name="twelfthPercentage" className={`input ${missingFields.includes('twelfthPercentage') || formatError?.field === 'twelfthPercentage' ? 'border-red-500 ring-2 ring-red-200' : ''}`} placeholder="Percentage" value={form.twelfthPercentage} onChange={e => { let v = e.target.value.replace(/[^0-9.]/g, ''); const firstDot = v.indexOf('.'); if (firstDot !== -1) v = v.slice(0, firstDot + 1) + v.slice(firstDot + 1).replace(/\./g, ''); if (v.length > 5) v = v.slice(0, 5); handleChange('twelfthPercentage', v); }} onWheel={e => e.target.blur()} onKeyDown={e => { if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault(); }} />
+                <label className="block text-sm font-medium mb-1">Percentage<span className="text-red-500 dark:text-red-400">*</span></label>
+                <input type="text" inputMode="decimal" step="0.01" name="twelfthPercentage" className={`input ${missingFields.includes('twelfthPercentage') || formatError?.field === 'twelfthPercentage' ? 'border-red-500 ring-2 ring-red-200 dark:border-red-500 dark:ring-red-900/40' : ''}`} placeholder="Percentage" value={form.twelfthPercentage} onChange={e => { let v = e.target.value.replace(/[^0-9.]/g, ''); const firstDot = v.indexOf('.'); if (firstDot !== -1) v = v.slice(0, firstDot + 1) + v.slice(firstDot + 1).replace(/\./g, ''); if (v.length > 5) v = v.slice(0, 5); handleChange('twelfthPercentage', v); }} onWheel={e => e.target.blur()} onKeyDown={e => { if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault(); }} />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Passing Year <span className="text-red-500">*</span></label>
-                <input type="text" inputMode="numeric" name="twelfthPassingYear" className={`input ${missingFields.includes('twelfthPassingYear') ? 'border-red-500 ring-2 ring-red-200' : ''}`} placeholder="YYYY" value={form.twelfthPassingYear} onChange={e => { const v = e.target.value.replace(/\D/g, '').slice(0, 4); handleChange('twelfthPassingYear', v); }} onWheel={e => e.target.blur()} onKeyDown={e => { if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault(); }} maxLength={4} />
+                <label className="block text-sm font-medium mb-1">Passing Year <span className="text-red-500 dark:text-red-400">*</span></label>
+                <input type="text" inputMode="numeric" name="twelfthPassingYear" className={`input ${missingFields.includes('twelfthPassingYear') ? 'border-red-500 ring-2 ring-red-200 dark:border-red-500 dark:ring-red-900/40' : ''}`} placeholder="YYYY" value={form.twelfthPassingYear} onChange={e => { const v = e.target.value.replace(/\D/g, '').slice(0, 4); handleChange('twelfthPassingYear', v); }} onWheel={e => e.target.blur()} onKeyDown={e => { if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault(); }} maxLength={4} />
               </div>
             </div>
           </div>
@@ -561,13 +561,13 @@ export default function Profile() {
               <div>
                 <label className="block text-sm font-medium mb-1">
                   Current CGPA
-                  {hasBacklog && <span className="text-xs text-gray-400 ml-1">(N/A — has backlog)</span>}
+                  {hasBacklog && <span className="text-xs text-gray-400 dark:text-gray-500 ml-1">(N/A — has backlog)</span>}
                 </label>
                 <input
                   type="text"
                   inputMode="decimal"
                   name="currentCGPA"
-                  className={`input ${hasBacklog ? 'bg-gray-100 cursor-not-allowed' : ''} ${missingFields.includes('currentCGPA') || formatError?.field === 'currentCGPA' ? 'border-red-500 ring-2 ring-red-200' : ''}`}
+                  className={`input ${hasBacklog ? 'bg-gray-100 dark:bg-gray-700 cursor-not-allowed' : ''} ${missingFields.includes('currentCGPA') || formatError?.field === 'currentCGPA' ? 'border-red-500 ring-2 ring-red-200 dark:border-red-500 dark:ring-red-900/40' : ''}`}
                   placeholder={hasBacklog ? 'N/A' : '0.00'}
                   value={form.currentCGPA}
                   onChange={e => handleChange('currentCGPA', e.target.value)}
@@ -578,14 +578,14 @@ export default function Profile() {
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Number of Backlog</label>
-                <select name="numberOfBacklog" className={`input ${missingFields.includes('numberOfBacklog') ? 'border-red-500 ring-2 ring-red-200' : ''}`} value={form.numberOfBacklog} onChange={e => handleChange('numberOfBacklog', e.target.value)}>
+                <select name="numberOfBacklog" className={`input ${missingFields.includes('numberOfBacklog') ? 'border-red-500 ring-2 ring-red-200 dark:border-red-500 dark:ring-red-900/40' : ''}`} value={form.numberOfBacklog} onChange={e => handleChange('numberOfBacklog', e.target.value)}>
                   <option value="">Select</option>
                   {[...Array(11)].map((_, i) => <option key={i} value={i}>{i}</option>)}
                 </select>
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Graduation Passing Year</label>
-                <select name="graduationPassingYear" className={`input ${missingFields.includes('graduationPassingYear') ? 'border-red-500 ring-2 ring-red-200' : ''}`} value={form.graduationPassingYear} onChange={e => handleChange('graduationPassingYear', e.target.value)}>
+                <select name="graduationPassingYear" className={`input ${missingFields.includes('graduationPassingYear') ? 'border-red-500 ring-2 ring-red-200 dark:border-red-500 dark:ring-red-900/40' : ''}`} value={form.graduationPassingYear} onChange={e => handleChange('graduationPassingYear', e.target.value)}>
                   <option value="">Select Year</option>
                   {YEAR_OPTIONS.map(year => (
                     <option key={year} value={year}>{year}</option>

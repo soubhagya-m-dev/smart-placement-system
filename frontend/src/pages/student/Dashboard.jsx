@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Briefcase, FileText, CheckCircle, Clock, TrendingUp, LogOut, Bell, AlertCircle, Award, KeyRound, Eye, EyeOff, Check, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
+import ThemeToggle from '../../components/ThemeToggle';
 import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
@@ -93,14 +94,14 @@ export default function StudentDashboard() {
   const isRestricted = accessStatus && (!accessStatus.isProfileComplete || !accessStatus.isVerified || accessStatus.status === 'rejected');
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm border-b">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-100 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div><h1 className="text-2xl font-bold text-blue-600">Placement Hub</h1><p className="text-gray-500 text-sm">Welcome, {user?.name}</p></div>
+          <div><h1 className="text-2xl font-bold text-blue-600 dark:text-blue-400">Placement Hub</h1><p className="text-gray-500 dark:text-gray-400 text-sm">Welcome, {user?.name}</p></div>
           <div className="flex items-center gap-4">
-            <Link to="/notifications" className="relative p-2 hover:bg-gray-100 rounded-full">
+            <Link to="/notifications" className="relative p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
               <div className="relative">
-                <Bell className={`w-6 h-6 text-gray-600 ${bellPing ? 'animate-bellPing' : ''}`} />
+                <Bell className={`w-6 h-6 text-gray-600 dark:text-gray-300 ${bellPing ? 'animate-bellPing' : ''}`} />
                 {/* Always render the badge so the number is visible; the count itself is
                     the source of truth (synced on socket connect + on every new notif). */}
                 {unreadCount > 0 && (
@@ -113,7 +114,8 @@ export default function StudentDashboard() {
                 )}
               </div>
             </Link>
-            <button onClick={logout} className="flex items-center gap-2 text-gray-600 hover:text-red-600"><LogOut className="w-5 h-5" /></button>
+            <ThemeToggle />
+            <button onClick={logout} className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-red-600 dark:text-gray-300 dark:hover:text-red-400"><LogOut className="w-5 h-5" /></button>
           </div>
         </div>
       </header>
@@ -152,33 +154,33 @@ export default function StudentDashboard() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <Link to={isRestricted ? '/profile' : '/jobs'} className={`card hover:shadow-lg transition flex items-center gap-4 ${isRestricted ? 'opacity-60' : ''}`}>
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><Briefcase className="w-6 h-6 text-blue-600" /></div>
+            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/40 rounded-lg flex items-center justify-center"><Briefcase className="w-6 h-6 text-blue-600 dark:text-blue-400" /></div>
             <div>
               <h3 className="font-semibold">Browse Jobs</h3>
-              <p className="text-gray-500 text-sm">{isRestricted ? 'Complete profile to access' : 'Find your dream job'}</p>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">{isRestricted ? 'Complete profile to access' : 'Find your dream job'}</p>
             </div>
           </Link>
           <Link to={isRestricted ? '/profile' : '/applications'} className={`card hover:shadow-lg transition flex items-center gap-4 ${isRestricted ? 'opacity-60' : ''}`}>
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"><FileText className="w-6 h-6 text-green-600" /></div>
+            <div className="w-12 h-12 bg-green-100 dark:bg-green-900/40 rounded-lg flex items-center justify-center"><FileText className="w-6 h-6 text-green-600" /></div>
             <div>
               <h3 className="font-semibold">My Applications</h3>
-              <p className="text-gray-500 text-sm">{isRestricted ? 'Complete profile to access' : 'Track your progress'}</p>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">{isRestricted ? 'Complete profile to access' : 'Track your progress'}</p>
             </div>
           </Link>
           <Link to="/profile" className="card hover:shadow-lg transition flex items-center gap-4">
             <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center"><TrendingUp className="w-6 h-6 text-purple-600" /></div>
-            <div><h3 className="font-semibold">My Profile</h3><p className="text-gray-500 text-sm">Update your details</p></div>
+            <div><h3 className="font-semibold">My Profile</h3><p className="text-gray-500 dark:text-gray-400 text-sm">Update your details</p></div>
           </Link>
         </div>
 
         <div className="card">
-          <div className="flex items-center justify-between mb-4"><h2 className="text-lg font-semibold">Recent Job Openings</h2><Link to={isRestricted ? '/profile' : '/jobs'} className="text-blue-600 hover:underline text-sm">View All</Link></div>
-          {loading ? <div className="space-y-4">{[1,2,3].map(i => <div key={i} className="h-16 bg-gray-100 rounded-lg animate-pulse"></div>)}</div> : recentJobs.length === 0 ? <p className="text-gray-500 text-center py-8">No jobs available</p> : (
+          <div className="flex items-center justify-between mb-4"><h2 className="text-lg font-semibold">Recent Job Openings</h2><Link to={isRestricted ? '/profile' : '/jobs'} className="text-blue-600 dark:text-blue-400 hover:underline text-sm">View All</Link></div>
+          {loading ? <div className="space-y-4">{[1,2,3].map(i => <div key={i} className="h-16 bg-gray-100 dark:bg-gray-700 rounded-lg animate-pulse"></div>)}</div> : recentJobs.length === 0 ? <p className="text-gray-500 dark:text-gray-400 text-center py-8">No jobs available</p> : (
             <div className="space-y-4">
               {recentJobs.map(job => (
-                <Link key={job._id} to={isRestricted ? '/profile' : `/jobs/${job._id}`} className={`block p-4 border rounded-lg hover:bg-gray-50 transition ${isRestricted ? 'opacity-60 pointer-events-none' : ''}`}>
+                <Link key={job._id} to={isRestricted ? '/profile' : `/jobs/${job._id}`} className={`block p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/40 transition ${isRestricted ? 'opacity-60 pointer-events-none' : ''}`}>
                   <div className="flex items-center justify-between">
-                    <div><h3 className="font-semibold text-gray-900">{job.title}</h3><p className="text-gray-500 text-sm">{job.companyName} • {job.location}</p></div>
+                    <div><h3 className="font-semibold text-gray-900 dark:text-gray-100">{job.title}</h3><p className="text-gray-500 dark:text-gray-400 text-sm">{job.companyName} • {job.location}</p></div>
                     <div className="text-right"><p className="font-semibold text-green-600">₹{job.salary?.min?.toFixed(2) || '0.00'} - ₹{job.salary?.max?.toFixed(2) || '0.00'} LPA</p><span className="badge badge-blue">{job.jobType}</span></div>
                   </div>
                 </Link>
@@ -202,17 +204,17 @@ export default function StudentDashboard() {
           aria-labelledby="force-pw-title"
           data-testid="force-pw-modal"
         >
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-[slideUp_200ms_ease-out]">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-[slideUp_200ms_ease-out]">
             <form onSubmit={submitChangePassword}>
               <div className="px-6 py-5 border-b flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
-                  <KeyRound className="w-5 h-5 text-amber-600" />
+                <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center flex-shrink-0">
+                  <KeyRound className="w-5 h-5 text-amber-600 dark:text-amber-400" />
                 </div>
                 <div className="flex-1">
-                  <h2 id="force-pw-title" className="text-lg font-semibold text-gray-900">
+                  <h2 id="force-pw-title" className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                     Set your password
                   </h2>
-                  <p className="text-xs text-gray-500 mt-0.5">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                     Welcome, {user?.name?.split(' ')[0] || 'student'} — the placement officer created
                     your account. Please choose a password to continue.
                   </p>
@@ -222,7 +224,7 @@ export default function StudentDashboard() {
               <div className="px-6 py-5 space-y-4">
                 {/* Current (temp) password */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Temporary password
                   </label>
                   <div className="relative">
@@ -233,12 +235,12 @@ export default function StudentDashboard() {
                       value={pwForm.current}
                       onChange={(e) => setPwForm(f => ({ ...f, current: e.target.value }))}
                       placeholder="Paste the password the officer shared"
-                      className="w-full pl-3 pr-10 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm"
+                      className="w-full pl-3 pr-10 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm"
                     />
                     <button
                       type="button"
                       onClick={() => setPwShow(s => ({ ...s, current: !s.current }))}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600"
                       aria-label={pwShow.current ? 'Hide password' : 'Show password'}
                     >
                       {pwShow.current ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -248,7 +250,7 @@ export default function StudentDashboard() {
 
                 {/* New password */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     New password
                   </label>
                   <div className="relative">
@@ -258,12 +260,12 @@ export default function StudentDashboard() {
                       value={pwForm.next}
                       onChange={(e) => setPwForm(f => ({ ...f, next: e.target.value }))}
                       placeholder="At least 6 characters"
-                      className="w-full pl-3 pr-10 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm"
+                      className="w-full pl-3 pr-10 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm"
                     />
                     <button
                       type="button"
                       onClick={() => setPwShow(s => ({ ...s, next: !s.next }))}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600"
                       aria-label={pwShow.next ? 'Hide password' : 'Show password'}
                     >
                       {pwShow.next ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -273,7 +275,7 @@ export default function StudentDashboard() {
 
                 {/* Confirm new password */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Confirm new password
                   </label>
                   <div className="relative">
@@ -282,12 +284,12 @@ export default function StudentDashboard() {
                       required
                       value={pwForm.confirm}
                       onChange={(e) => setPwForm(f => ({ ...f, confirm: e.target.value }))}
-                      className="w-full pl-3 pr-10 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm"
+                      className="w-full pl-3 pr-10 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm"
                     />
                     <button
                       type="button"
                       onClick={() => setPwShow(s => ({ ...s, confirm: !s.confirm }))}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600"
                       aria-label={pwShow.confirm ? 'Hide password' : 'Show password'}
                     >
                       {pwShow.confirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -296,23 +298,23 @@ export default function StudentDashboard() {
                 </div>
 
                 {pwErr && (
-                  <div className="px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 flex items-start gap-2">
+                  <div className="px-3 py-2 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-700 dark:text-red-300 flex items-start gap-2">
                     <X className="w-4 h-4 flex-shrink-0 mt-0.5" />
                     <span>{pwErr}</span>
                   </div>
                 )}
 
-                <div className="text-xs text-gray-500 flex items-start gap-1.5">
+                <div className="text-xs text-gray-500 dark:text-gray-400 flex items-start gap-1.5">
                   <Check className="w-3.5 h-3.5 text-green-500 flex-shrink-0 mt-0.5" />
                   <span>After this step you'll be taken to your profile to fill in roll number, branch, etc.</span>
                 </div>
               </div>
 
-              <div className="px-6 py-3 bg-gray-50 border-t flex items-center justify-between">
+              <div className="px-6 py-3 bg-gray-50 dark:bg-gray-900 border-t flex items-center justify-between">
                 <button
                   type="button"
                   onClick={logout}
-                  className="text-sm text-gray-600 hover:text-red-600 transition flex items-center gap-1.5"
+                  className="text-sm text-gray-600 dark:text-gray-300 hover:text-red-600 transition flex items-center gap-1.5"
                 >
                   <LogOut className="w-4 h-4" />
                   Log out

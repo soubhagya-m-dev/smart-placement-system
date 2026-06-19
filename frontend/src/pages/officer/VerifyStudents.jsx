@@ -59,7 +59,7 @@ export default function VerifyStudents() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold">Verify Students</h1>
@@ -71,17 +71,17 @@ export default function VerifyStudents() {
           <div className="card text-center py-12">
             <CheckCircle className="w-16 h-16 text-green-300 mx-auto mb-4" />
             <h3 className="text-lg font-semibold">All verified!</h3>
-            <p className="text-gray-500 text-sm mt-2">No pending students to verify</p>
+            <p className="text-gray-500 dark:text-gray-400 text-sm mt-2">No pending students to verify</p>
           </div>
         ) : (
           <div className="space-y-4">{students.map(s => (
             <div key={s._id} className="card flex items-center justify-between">
               <div>
                 <h3 className="font-semibold">{s.studentProfile?.fullName || s.name}</h3>
-                <p className="text-gray-500 text-sm">{s.studentProfile?.email || s.email}</p>
+                <p className="text-gray-500 dark:text-gray-400 text-sm">{s.studentProfile?.email || s.email}</p>
               </div>
               <div className="flex gap-2">
-                <button onClick={() => viewDetails(s)} className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center gap-2">
+                <button onClick={() => viewDetails(s)} className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center gap-2 dark:bg-blue-600 dark:hover:bg-blue-500">
                   <Eye className="w-4 h-4" /> View Details
                 </button>
                 <button onClick={() => verify(s._id)} className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 flex items-center gap-2">
@@ -99,14 +99,14 @@ export default function VerifyStudents() {
       {/* Student Details Modal */}
       {showModal && selectedStudent && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
             {/* Modal Header */}
             <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <User className="w-6 h-6" />
                 <h2 className="text-xl font-bold">Student Details</h2>
               </div>
-              <button onClick={() => setShowModal(false)} className="hover:bg-white/20 p-2 rounded-full transition">
+              <button onClick={() => setShowModal(false)} className="__SKIP_WHITE20__ p-2 rounded-full transition">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -115,43 +115,43 @@ export default function VerifyStudents() {
             <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
               {/* Basic Info Section */}
               <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
                   <User className="w-5 h-5 text-blue-500" /> Personal Information
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                      <User className="w-5 h-5 text-blue-600" />
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                    <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/40 rounded-full flex items-center justify-center dark:bg-blue-900/40">
+                      <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500">Full Name</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Full Name</p>
                       <p className="font-medium">{selectedStudent.studentProfile?.fullName || selectedStudent.name}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                      <Mail className="w-5 h-5 text-blue-600" />
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                    <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/40 rounded-full flex items-center justify-center dark:bg-blue-900/40">
+                      <Mail className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500">Email</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Email</p>
                       <p className="font-medium">{selectedStudent.studentProfile?.email || selectedStudent.email}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                      <Phone className="w-5 h-5 text-blue-600" />
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                    <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/40 rounded-full flex items-center justify-center dark:bg-blue-900/40">
+                      <Phone className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500">Phone</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Phone</p>
                       <p className="font-medium">{selectedStudent.studentProfile.contactNumber || 'Not provided'}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                      <FileText className="w-5 h-5 text-blue-600" />
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                    <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/40 rounded-full flex items-center justify-center dark:bg-blue-900/40">
+                      <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500">Gender</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Gender</p>
                       <p className="font-medium capitalize">{selectedStudent.studentProfile.gender || 'Not provided'}</p>
                     </div>
                   </div>
@@ -161,155 +161,155 @@ export default function VerifyStudents() {
               {/* Academic Info Section */}
               {selectedStudent.studentProfile && (
                 <div className="mb-6">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                  <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
                     <Book className="w-5 h-5 text-green-500" /> Academic Information
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                      <div className="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center">
                         <Hash className="w-5 h-5 text-green-600" />
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500">University Roll Number</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">University Roll Number</p>
                         <p className="font-medium">{selectedStudent.studentProfile.universityRollNumber || 'Not provided'}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                      <div className="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center">
                         <Hash className="w-5 h-5 text-green-600" />
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500">Registration Number</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Registration Number</p>
                         <p className="font-medium">{selectedStudent.studentProfile.universityRegistrationNumber || 'Not provided'}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                      <div className="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center">
                         <Book className="w-5 h-5 text-green-600" />
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500">College ID</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">College ID</p>
                         <p className="font-medium">{selectedStudent.studentProfile.collegeId || 'Not provided'}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                      <div className="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center">
                         <Calendar className="w-5 h-5 text-green-600" />
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500">Graduation Passing Year</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Graduation Passing Year</p>
                         <p className="font-medium">
                           {selectedStudent.studentProfile.graduationPassingYear
                             ? selectedStudent.studentProfile.graduationPassingYear
-                            : <span className="text-amber-600 text-sm">⚠ Not set — ask student to update</span>}
+                            : <span className="text-amber-600 dark:text-amber-400 text-sm">⚠ Not set — ask student to update</span>}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                      <div className="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center">
                         <Book className="w-5 h-5 text-green-600" />
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500">Stream</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Stream</p>
                         <p className="font-medium">{selectedStudent.studentProfile.stream || 'Not provided'}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                      <div className="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center">
                         <Calendar className="w-5 h-5 text-green-600" />
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500">Section</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Section</p>
                         <p className="font-medium">{selectedStudent.studentProfile.section || 'Not provided'}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                      <div className="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center">
                         <FileText className="w-5 h-5 text-green-600" />
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500">Current CGPA</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Current CGPA</p>
                         <p className="font-medium">{selectedStudent.studentProfile.currentCGPA || 'Not provided'}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                      <div className="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center">
                         <Book className="w-5 h-5 text-green-600" />
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500">10th %</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">10th %</p>
                         <p className="font-medium">{selectedStudent.studentProfile.tenthPercentage || 'Not provided'}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                      <div className="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center">
                         <Book className="w-5 h-5 text-green-600" />
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500">12th %</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">12th %</p>
                         <p className="font-medium">{selectedStudent.studentProfile.twelfthPercentage || 'Not provided'}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                      <div className="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center">
                         <Book className="w-5 h-5 text-green-600" />
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500">Backlogs</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Backlogs</p>
                         <p className="font-medium">{selectedStudent.studentProfile.numberOfBacklog ?? 'Not provided'}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                      <div className="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center">
                         <FileText className="w-5 h-5 text-green-600" />
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500">Admission Type</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Admission Type</p>
                         <p className="font-medium">{selectedStudent.studentProfile.admissionType || 'Not provided'}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                      <div className="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center">
                         <Calendar className="w-5 h-5 text-green-600" />
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500">Date of Birth</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Date of Birth</p>
                         <p className="font-medium">{selectedStudent.studentProfile.dateOfBirth || 'Not provided'}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                      <div className="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center">
                         <Book className="w-5 h-5 text-green-600" />
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500">10th Board</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">10th Board</p>
                         <p className="font-medium">{selectedStudent.studentProfile.tenthBoard || 'Not provided'}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                      <div className="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center">
                         <Calendar className="w-5 h-5 text-green-600" />
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500">10th Passing Year</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">10th Passing Year</p>
                         <p className="font-medium">{selectedStudent.studentProfile.tenthPassingYear || 'Not provided'}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                      <div className="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center">
                         <Book className="w-5 h-5 text-green-600" />
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500">12th Board</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">12th Board</p>
                         <p className="font-medium">{selectedStudent.studentProfile.twelfthBoard || 'Not provided'}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                      <div className="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center">
                         <Calendar className="w-5 h-5 text-green-600" />
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500">12th Passing Year</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">12th Passing Year</p>
                         <p className="font-medium">{selectedStudent.studentProfile.twelfthPassingYear || 'Not provided'}</p>
                       </div>
                     </div>
@@ -318,7 +318,7 @@ export default function VerifyStudents() {
                   {/* Skills */}
                   {selectedStudent.studentProfile.skills && selectedStudent.studentProfile.skills.length > 0 && (
                     <div className="mt-4">
-                      <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                      <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
                         <Code className="w-4 h-4" /> Skills
                       </h4>
                       <div className="flex flex-wrap gap-2">
@@ -334,10 +334,10 @@ export default function VerifyStudents() {
                   {/* Bio */}
                   {selectedStudent.studentProfile.bio && (
                     <div className="mt-4">
-                      <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                      <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
                         <FileText className="w-4 h-4" /> Bio
                       </h4>
-                      <p className="text-gray-600 bg-gray-50 p-3 rounded-lg">{selectedStudent.studentProfile.bio}</p>
+                      <p className="text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-900 p-3 rounded-lg">{selectedStudent.studentProfile.bio}</p>
                     </div>
                   )}
                 </div>
@@ -345,7 +345,7 @@ export default function VerifyStudents() {
 
               {/* Action Buttons */}
               <div className="flex justify-end gap-3 pt-4 border-t mt-6">
-                <button onClick={() => setShowModal(false)} className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">
+                <button onClick={() => setShowModal(false)} className="px-4 py-2 bg-gray-200 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300">
                   Close
                 </button>
                 <button onClick={() => { reject(selectedStudent._id); setShowModal(false); }} className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 flex items-center gap-2">
