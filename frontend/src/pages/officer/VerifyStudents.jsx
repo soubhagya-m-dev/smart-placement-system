@@ -165,7 +165,7 @@ export default function VerifyStudents() {
                     <Book className="w-5 h-5 text-green-500" /> Academic Information
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+                    <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/25 rounded-lg">
                       <div className="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center">
                         <Hash className="w-5 h-5 text-green-600" />
                       </div>
@@ -174,7 +174,7 @@ export default function VerifyStudents() {
                         <p className="font-medium">{selectedStudent.studentProfile.universityRollNumber || 'Not provided'}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+                    <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/25 rounded-lg">
                       <div className="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center">
                         <Hash className="w-5 h-5 text-green-600" />
                       </div>
@@ -183,7 +183,7 @@ export default function VerifyStudents() {
                         <p className="font-medium">{selectedStudent.studentProfile.universityRegistrationNumber || 'Not provided'}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+                    <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/25 rounded-lg">
                       <div className="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center">
                         <Book className="w-5 h-5 text-green-600" />
                       </div>
@@ -192,7 +192,7 @@ export default function VerifyStudents() {
                         <p className="font-medium">{selectedStudent.studentProfile.collegeId || 'Not provided'}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+                    <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/25 rounded-lg">
                       <div className="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center">
                         <Calendar className="w-5 h-5 text-green-600" />
                       </div>
@@ -205,7 +205,7 @@ export default function VerifyStudents() {
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+                    <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/25 rounded-lg">
                       <div className="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center">
                         <Book className="w-5 h-5 text-green-600" />
                       </div>
@@ -214,7 +214,7 @@ export default function VerifyStudents() {
                         <p className="font-medium">{selectedStudent.studentProfile.stream || 'Not provided'}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+                    <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/25 rounded-lg">
                       <div className="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center">
                         <Calendar className="w-5 h-5 text-green-600" />
                       </div>
@@ -223,7 +223,7 @@ export default function VerifyStudents() {
                         <p className="font-medium">{selectedStudent.studentProfile.section || 'Not provided'}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+                    <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/25 rounded-lg">
                       <div className="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center">
                         <FileText className="w-5 h-5 text-green-600" />
                       </div>
@@ -232,7 +232,7 @@ export default function VerifyStudents() {
                         <p className="font-medium">{selectedStudent.studentProfile.currentCGPA || 'Not provided'}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+                    <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/25 rounded-lg">
                       <div className="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center">
                         <Book className="w-5 h-5 text-green-600" />
                       </div>
@@ -241,7 +241,7 @@ export default function VerifyStudents() {
                         <p className="font-medium">{selectedStudent.studentProfile.tenthPercentage || 'Not provided'}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+                    <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/25 rounded-lg">
                       <div className="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center">
                         <Book className="w-5 h-5 text-green-600" />
                       </div>
@@ -250,7 +250,7 @@ export default function VerifyStudents() {
                         <p className="font-medium">{selectedStudent.studentProfile.twelfthPercentage || 'Not provided'}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+                    <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/25 rounded-lg">
                       <div className="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center">
                         <Book className="w-5 h-5 text-green-600" />
                       </div>
@@ -259,7 +259,7 @@ export default function VerifyStudents() {
                         <p className="font-medium">{selectedStudent.studentProfile.numberOfBacklog ?? 'Not provided'}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+                    <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/25 rounded-lg">
                       <div className="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center">
                         <FileText className="w-5 h-5 text-green-600" />
                       </div>
@@ -268,7 +268,7 @@ export default function VerifyStudents() {
                         <p className="font-medium">{selectedStudent.studentProfile.admissionType || 'Not provided'}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+                    <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/25 rounded-lg">
                       <div className="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center">
                         <Calendar className="w-5 h-5 text-green-600" />
                       </div>
@@ -277,7 +277,7 @@ export default function VerifyStudents() {
                         <p className="font-medium">{selectedStudent.studentProfile.dateOfBirth || 'Not provided'}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+                    <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/25 rounded-lg">
                       <div className="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center">
                         <Book className="w-5 h-5 text-green-600" />
                       </div>
@@ -286,7 +286,7 @@ export default function VerifyStudents() {
                         <p className="font-medium">{selectedStudent.studentProfile.tenthBoard || 'Not provided'}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+                    <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/25 rounded-lg">
                       <div className="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center">
                         <Calendar className="w-5 h-5 text-green-600" />
                       </div>
@@ -295,7 +295,7 @@ export default function VerifyStudents() {
                         <p className="font-medium">{selectedStudent.studentProfile.tenthPassingYear || 'Not provided'}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+                    <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/25 rounded-lg">
                       <div className="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center">
                         <Book className="w-5 h-5 text-green-600" />
                       </div>
@@ -304,7 +304,7 @@ export default function VerifyStudents() {
                         <p className="font-medium">{selectedStudent.studentProfile.twelfthBoard || 'Not provided'}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+                    <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/25 rounded-lg">
                       <div className="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center">
                         <Calendar className="w-5 h-5 text-green-600" />
                       </div>
@@ -345,7 +345,7 @@ export default function VerifyStudents() {
 
               {/* Action Buttons */}
               <div className="flex justify-end gap-3 pt-4 border-t mt-6">
-                <button onClick={() => setShowModal(false)} className="px-4 py-2 bg-gray-200 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300">
+                <button onClick={() => setShowModal(false)} className="px-4 py-2 bg-gray-200 text-gray-700 dark:text-black rounded-lg hover:bg-gray-300">
                   Close
                 </button>
                 <button onClick={() => { reject(selectedStudent._id); setShowModal(false); }} className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 flex items-center gap-2">

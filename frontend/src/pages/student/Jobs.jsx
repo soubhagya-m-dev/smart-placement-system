@@ -173,7 +173,7 @@ export default function Jobs() {
                       <input type="text" className="input" placeholder="Skills" value={filters.skills} onChange={e => setFilters({...filters, skills: e.target.value})} />
                     </div>
                     <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
-                      <input type="number" className="input" placeholder="Min Salary (LPA)" value={filters.salaryMin} onChange={e => setFilters({...filters, salaryMin: e.target.value})} />
+                      <input type="number" className="input [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]" placeholder="Min Salary (LPA)" value={filters.salaryMin} onChange={e => setFilters({...filters, salaryMin: e.target.value})} />
                       <select className="input" value={filters.jobType} onChange={e => setFilters({...filters, jobType: e.target.value})}>
                         <option value="">Job Type</option>
                         <option value="full-time">Full Time</option>

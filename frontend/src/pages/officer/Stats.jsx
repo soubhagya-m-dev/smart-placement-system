@@ -9,6 +9,7 @@ import {
   PieChart, Pie, Cell, Legend, LineChart, Line
 } from 'recharts';
 import { STREAM_OPTIONS, SECTION_OPTIONS, YEAR_OPTIONS } from '../../lib/profileOptions';
+import { useTheme } from '../../context/ThemeContext';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -117,6 +118,8 @@ function ChartTooltip({ active, payload, label, suffix = '' }) {
 export default function Stats() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { theme } = useTheme();
+  const cursorFill = theme === 'dark' ? 'rgba(255,255,255,0.06)' : '#f9fafb';
 
   // Filter state is read from / synced to the URL so deep-links and refreshes work.
   const filters = {
@@ -311,7 +314,7 @@ export default function Stats() {
                   <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
                   <XAxis dataKey="branch" tick={{ fontSize: 11, fill: '#6b7280' }} />
                   <YAxis tick={{ fontSize: 11, fill: '#6b7280' }} domain={[0, 100]} tickFormatter={v => `${v}%`} />
-                  <Tooltip content={<ChartTooltip suffix="%" />} cursor={{ fill: '#f9fafb' }} />
+                  <Tooltip content={<ChartTooltip suffix="%" />} cursor={{ fill: cursorFill }} />
                   <Bar dataKey="placementPct" name="Placement %" radius={[6, 6, 0, 0]} cursor="pointer">
                     {data.byBranch.map((b, i) => (
                       <Cell
@@ -349,7 +352,7 @@ export default function Stats() {
                     formatter={(v, e) => `${v}: ${e.payload.value}`}
                   />
                   {/* Center label showing the overall placement % */}
-                  <text x="50%" y="48%" textAnchor="middle" className="fill-gray-900" style={{ fontSize: 24, fontWeight: 600 }}>{kpis.placementPct}%</text>
+                  <text x="50%" y="48%" textAnchor="middle" className="fill-gray-900 dark:fill-white" style={{ fontSize: 24, fontWeight: 600 }}>{kpis.placementPct}%</text>
                   <text x="50%" y="62%" textAnchor="middle" className="fill-gray-500" style={{ fontSize: 11 }}>placed</text>
                 </PieChart>
               </ResponsiveContainer>

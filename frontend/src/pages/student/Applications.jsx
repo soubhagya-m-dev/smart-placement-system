@@ -209,10 +209,10 @@ export default function Applications() {
   const getTimelineColor = (type) => {
     switch(type) {
       case 'interview': return 'border-blue-500 bg-blue-50 dark:border-blue-400 dark:bg-blue-900/30';
-      case 'exam': return 'border-green-500 bg-green-50';
-      case 'offer_letter': return 'border-yellow-500 bg-yellow-50';
+      case 'exam': return 'border-green-500 bg-green-50 dark:border-green-400 dark:bg-green-900/30';
+      case 'offer_letter': return 'border-yellow-500 bg-yellow-50 dark:border-yellow-400 dark:bg-yellow-900/30';
       case 'rejection': return 'border-red-500 bg-red-50 dark:border-red-400 dark:bg-red-900/30';
-      case 'status_update': return 'border-purple-500 bg-purple-50';
+      case 'status_update': return 'border-purple-500 bg-purple-50 dark:border-purple-400 dark:bg-purple-900/30';
       default: return 'border-gray-400 bg-gray-50 dark:border-gray-500 dark:bg-gray-800';
     }
   };
@@ -231,7 +231,7 @@ export default function Applications() {
           <button
             type="button"
             onClick={() => navigate('/')}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 dark:text-gray-100 font-medium rounded-lg transition-all duration-300"
+            className="flex items-center gap-2 px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-medium rounded-lg transition-all duration-300"
           >
             <ArrowLeft className="w-4 h-4" /> Back to Dashboard
           </button>

@@ -478,7 +478,7 @@ export default function AllStudents() {
               placeholder="Search..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-gray-50 dark:bg-gray-800/60"
             />
           </div>
 
@@ -617,7 +617,7 @@ export default function AllStudents() {
                 ) : filtered.map((r) => (
                   <tr
                     key={r.id}
-                    className="hover:bg-blue-50 dark:hover:bg-blue-900/30/40 transition-colors divide-x divide-gray-200 dark:divide-gray-700"
+                    className="hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors divide-x divide-gray-200 dark:divide-gray-700"
                   >
                     {COLUMNS.map(c => {
                       let content;
@@ -648,7 +648,7 @@ export default function AllStudents() {
                       return (
                         <td
                           key={c.key}
-                          className={`px-3 py-3 align-top ${wrapClass} ${c.className || ''} ${c.align === 'right' ? 'text-right' : c.align === 'center' ? 'text-center' : 'text-left'}`}
+                          className={`px-3 py-3 align-top ${wrapClass} ${c.className || ''} ${c.align === 'right' ? 'text-right' : c.align === 'center' ? 'text-center' : 'text-left'} hover:text-gray-900 dark:hover:text-white`}
                           title={typeof content === 'string' ? content : undefined}
                         >
                           {content}
@@ -718,7 +718,7 @@ export default function AllStudents() {
                         value={addForm.name}
                         onChange={(e) => setAddForm(f => ({ ...f, name: e.target.value }))}
                         placeholder="e.g. Souvagyo Mallick"
-                        className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
+                        className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm bg-gray-50 dark:bg-gray-800/60"
                       />
                     </div>
 
@@ -732,7 +732,7 @@ export default function AllStudents() {
                         value={addForm.email}
                         onChange={(e) => setAddForm(f => ({ ...f, email: e.target.value }))}
                         placeholder="student@college.edu"
-                        className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm font-mono"
+                        className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm font-mono bg-gray-50 dark:bg-gray-800/60"
                       />
                     </div>
 
@@ -749,7 +749,7 @@ export default function AllStudents() {
                           value={addForm.password}
                           onChange={(e) => setAddForm(f => ({ ...f, password: e.target.value }))}
                           placeholder="Leave blank to auto-generate"
-                          className="w-full pl-3 pr-10 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
+                          className="w-full pl-3 pr-10 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm bg-gray-50 dark:bg-gray-800/60"
                         />
                         <button
                           type="button"
