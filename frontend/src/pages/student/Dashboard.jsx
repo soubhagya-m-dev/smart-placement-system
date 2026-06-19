@@ -115,7 +115,7 @@ export default function StudentDashboard() {
               </div>
             </Link>
             <ThemeToggle />
-            <button onClick={logout} className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-red-600 dark:text-gray-300 dark:hover:text-red-400"><LogOut className="w-5 h-5" /></button>
+            <button onClick={logout} className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-red-600 dark:text-gray-300 dark:hover:text-red-400"><LogOut className="w-5 h-5" /> Logout</button>
           </div>
         </div>
       </header>

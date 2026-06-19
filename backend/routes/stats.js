@@ -167,6 +167,7 @@ router.get('/analytics', auth, async (req, res) => {
     // ----- Branch breakdown (uses students' stream, joins to apps) -----
     const branchAgg = await User.aggregate([
       { $match: studentMatch },
+      { $match: { 'studentProfile.stream': { $exists: true, $nin: [null, ''] } } },
       { $lookup: { from: 'applications', localField: '_id', foreignField: 'student', as: 'apps' } },
       { $project: { stream: '$studentProfile.stream', placed: { $cond: [{ $in: ['accepted', '$apps.status'] }, 1, 0] } } },
       { $group: { _id: '$stream', total: { $sum: 1 }, placed: { $sum: '$placed' } } },
@@ -197,6 +198,7 @@ router.get('/analytics', auth, async (req, res) => {
     // ----- Branch × Year grid -----
     const gridAgg = await User.aggregate([
       { $match: studentMatch },
+      { $match: { 'studentProfile.stream': { $exists: true, $nin: [null, ''] } } },
       { $lookup: { from: 'applications', localField: '_id', foreignField: 'student', as: 'apps' } },
       { $project: { branch: '$studentProfile.stream', year: '$studentProfile.graduationPassingYear', placed: { $cond: [{ $in: ['accepted', '$apps.status'] }, 1, 0] } } },
       { $group: { _id: { branch: '$branch', year: '$year' }, total: { $sum: 1 }, placed: { $sum: '$placed' } } },
@@ -213,6 +215,7 @@ router.get('/analytics', auth, async (req, res) => {
     // ----- Trend (per year, per branch) for the line chart -----
     const trendAgg = await User.aggregate([
       { $match: studentMatch },
+      { $match: { 'studentProfile.stream': { $exists: true, $nin: [null, ''] } } },
       { $lookup: { from: 'applications', localField: '_id', foreignField: 'student', as: 'apps' } },
       { $project: { branch: '$studentProfile.stream', year: '$studentProfile.graduationPassingYear', placed: { $cond: [{ $in: ['accepted', '$apps.status'] }, 1, 0] } } },
       { $group: { _id: { branch: '$branch', year: '$year' }, total: { $sum: 1 }, placed: { $sum: '$placed' } } },
