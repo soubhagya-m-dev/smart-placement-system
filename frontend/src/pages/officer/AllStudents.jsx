@@ -11,9 +11,9 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 // Numeric/badge columns stay nowrap so they line up.
 const COLUMNS = [
   { key: 'rollNumber',            label: 'Roll No',     className: 'text-gray-700 dark:text-gray-300 font-mono text-sm' },
-  { key: 'name',                  label: 'Name',        className: 'font-medium text-gray-900 dark:text-gray-100' },
-  { key: 'collegeId',             label: 'College ID',  className: 'text-gray-700 dark:text-gray-300 font-mono text-sm' },
-  { key: 'dateOfBirth',           label: 'DOB',         className: 'text-gray-700 dark:text-gray-300' },
+  { key: 'name',                  label: 'Name',        className: 'font-medium text-gray-900 dark:text-gray-100', wrap: true },
+  { key: 'collegeId',             label: 'College ID',  className: 'text-gray-700 dark:text-gray-300 font-mono text-sm', wrap: true },
+  { key: 'dateOfBirth',           label: 'DOB',         className: 'text-gray-700 dark:text-gray-300', wrap: true },
   { key: 'gender',                label: 'Gender',      className: 'text-gray-700 dark:text-gray-300', align: 'center' },
   { key: 'phone',                 label: 'Phone',       className: 'text-gray-700 dark:text-gray-300 font-mono text-sm' },
   { key: 'email',                 label: 'Email',       className: 'text-gray-600 dark:text-gray-300', wrap: true },
