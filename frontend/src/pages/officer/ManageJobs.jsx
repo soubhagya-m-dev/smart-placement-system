@@ -87,12 +87,35 @@ export default function ManageJobs() {
     setShowModal(true);
   };
 
+  const [submitBtn, setSubmitBtn] = useState({ label: 'Post', error: false });
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // Validate all 12 fields are filled
+    const missingFields = [];
+    if (!form.title.trim()) missingFields.push('Job Title');
+    if (!form.companyName.trim()) missingFields.push('Company Name');
+    if (!form.location.trim()) missingFields.push('Location');
+    if (!form.jobType.trim()) missingFields.push('Job Type');
+    if (!form.description.trim()) missingFields.push('Description');
+    if (!form.salaryMin.trim()) missingFields.push('Min Salary (LPA)');
+    if (!form.salaryMax.trim()) missingFields.push('Max Salary (LPA)');
+    if (!form.eligibility.minCGPA.trim()) missingFields.push('Min CGPA');
+    if (!form.eligibility.class12Percentage.trim()) missingFields.push('Class 12 %');
+    if (!form.eligibility.class10Percentage.trim()) missingFields.push('Class 10 %');
+    if (!form.requiredSkills.trim()) missingFields.push('Required Skills');
+    if (!form.applicationDeadline.trim()) missingFields.push('Application Deadline');
+
+    if (missingFields.length > 0) {
+      setSubmitBtn({ label: 'Fill All Fields', error: true });
+      setTimeout(() => setSubmitBtn({ label: editingJob ? 'Update' : 'Post', error: false }), 1500);
+      return;
+    }
+
     try {
-      const payload = { 
-        ...form, 
-        salary: { min: parseFloat(form.salaryMin) || 0, max: parseFloat(form.salaryMax) || 0 }, 
+      const payload = {
+        ...form,
+        salary: { min: parseFloat(form.salaryMin) || 0, max: parseFloat(form.salaryMax) || 0 },
         requiredSkills: form.requiredSkills.split(',').map(s => s.trim()).filter(Boolean),
         eligibility: {
           minCGPA: parseFloat(form.eligibility.minCGPA) || null,
@@ -386,7 +409,10 @@ export default function ManageJobs() {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold">Manage Jobs</h1>
-          <button onClick={openCreateModal} className="btn-primary flex items-center gap-2"><Plus className="w-5 h-5" /> Post Job</button>
+          <div className="flex items-center gap-3">
+            <button onClick={() => window.location.href = '/officer/dashboard'} className="btn-secondary flex items-center gap-2"><Briefcase className="w-5 h-5" /> Back to Dashboard</button>
+            <button onClick={openCreateModal} className="btn-primary flex items-center gap-2"><Plus className="w-5 h-5" /> Post Job</button>
+          </div>
         </div>
         {loading ? <div className="space-y-4">{[1,2].map(i => <div key={i} className="card h-20 animate-pulse"></div>)}</div> : jobs.length === 0 ? (
           <div className="card text-center py-12"><Briefcase className="w-16 h-16 text-gray-300 mx-auto mb-4" /><h3 className="text-lg font-semibold">No jobs posted</h3></div>
@@ -644,31 +670,31 @@ export default function ManageJobs() {
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
               <h2 className="text-xl font-bold mb-4">{editingJob ? 'Edit Job' : 'Post New Job'}</h2>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <input type="text" className="input" placeholder="Job Title" required value={form.title} onChange={e => setForm({...form, title: e.target.value})} />
-                <input type="text" className="input" placeholder="Company Name" required value={form.companyName} onChange={e => setForm({...form, companyName: e.target.value})} />
+              <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+                <input type="text" className="input" placeholder="Job Title" value={form.title} onChange={e => setForm({...form, title: e.target.value})} />
+                <input type="text" className="input" placeholder="Company Name" value={form.companyName} onChange={e => setForm({...form, companyName: e.target.value})} />
                 <input type="text" className="input" placeholder="Location" value={form.location} onChange={e => setForm({...form, location: e.target.value})} />
                 <select className="input" value={form.jobType} onChange={e => setForm({...form, jobType: e.target.value})}><option value="full-time">Full Time</option><option value="internship">Internship</option><option value="part-time">Part Time</option></select>
                 <textarea className="input" placeholder="Description" rows={3} value={form.description} onChange={e => setForm({...form, description: e.target.value})} />
                 
                 <div className="grid grid-cols-2 gap-4">
-                  <input type="number" step="0.01" className="input" placeholder="Min Salary (LPA)" value={form.salaryMin} onChange={e => setForm({...form, salaryMin: e.target.value})} />
-                  <input type="number" step="0.01" className="input" placeholder="Max Salary (LPA)" value={form.salaryMax} onChange={e => setForm({...form, salaryMax: e.target.value})} />
+                  <input type="number" step="0.01" className="input [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]" placeholder="Min Salary (LPA)" value={form.salaryMin} onChange={e => setForm({...form, salaryMin: e.target.value})} />
+                  <input type="number" step="0.01" className="input [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]" placeholder="Max Salary (LPA)" value={form.salaryMax} onChange={e => setForm({...form, salaryMax: e.target.value})} />
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Eligibility Criteria</label>
                   <div className="grid grid-cols-3 gap-3">
                     <div>
-                      <input type="number" step="0.01" min="4" max="10" className="input" placeholder="MinCGPA(4-10)" value={form.eligibility.minCGPA} onChange={e => setForm({...form, eligibility: {...form.eligibility, minCGPA: e.target.value}})} />
+                      <input type="number" step="0.01" min="4" max="10" className="input [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]" placeholder="MinCGPA(4-10)" value={form.eligibility.minCGPA} onChange={e => setForm({...form, eligibility: {...form.eligibility, minCGPA: e.target.value}})} />
                       <span className="text-xs text-gray-500">Min CGPA</span>
                     </div>
                     <div>
-                      <input type="number" step="0.01" min="0" max="100" className="input" placeholder="Class12%" value={form.eligibility.class12Percentage} onChange={e => setForm({...form, eligibility: {...form.eligibility, class12Percentage: e.target.value}})} />
+                      <input type="number" step="0.01" min="0" max="100" className="input [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]" placeholder="Class12%" value={form.eligibility.class12Percentage} onChange={e => setForm({...form, eligibility: {...form.eligibility, class12Percentage: e.target.value}})} />
                       <span className="text-xs text-gray-500">Class 12 %</span>
                     </div>
                     <div>
-                      <input type="number" step="0.01" min="0" max="100" className="input" placeholder="Class10%" value={form.eligibility.class10Percentage} onChange={e => setForm({...form, eligibility: {...form.eligibility, class10Percentage: e.target.value}})} />
+                      <input type="number" step="0.01" min="0" max="100" className="input [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]" placeholder="Class10%" value={form.eligibility.class10Percentage} onChange={e => setForm({...form, eligibility: {...form.eligibility, class10Percentage: e.target.value}})} />
                       <span className="text-xs text-gray-500">Class 10 %</span>
                     </div>
                   </div>
@@ -680,7 +706,7 @@ export default function ManageJobs() {
                 <input type="date" className="input" placeholder="Application Deadline" value={form.applicationDeadline} onChange={e => setForm({...form, applicationDeadline: e.target.value})} />
                 
                 <div className="flex gap-4">
-                  <button type="submit" className="btn-primary flex-1">{editingJob ? 'Update' : 'Post'}</button>
+                  <button type="submit" className={`flex-1 ${submitBtn.error ? 'bg-red-500 text-white' : 'btn-primary'}`}>{submitBtn.label}</button>
                   <button type="button" onClick={closeModal} className="btn-secondary">Cancel</button>
                 </div>
               </form>

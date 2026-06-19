@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { CheckCircle, XCircle, Eye, X, User, Mail, Phone, Hash, Book, Calendar, Code, FileText } from 'lucide-react';
+import { CheckCircle, XCircle, Eye, X, User, Mail, Phone, Hash, Book, Calendar, Code, FileText, ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
@@ -61,7 +61,10 @@ export default function VerifyStudents() {
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6">Verify Students</h1>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold">Verify Students</h1>
+          <button onClick={() => window.location.href = '/officer/dashboard'} className="btn-secondary flex items-center gap-2"><ArrowLeft className="w-5 h-5" /> Back to Dashboard</button>
+        </div>
         {loading ? (
           <div className="space-y-4">{[1,2,3].map(i => <div key={i} className="card h-20 animate-pulse"></div>)}</div>
         ) : students.length === 0 ? (
