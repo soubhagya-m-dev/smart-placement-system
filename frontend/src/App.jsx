@@ -121,7 +121,7 @@ function AppRoutes() {
         </ProtectedRoute>
       } />
       <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
-      <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+      <Route path="/profile" element={<ProtectedRoute roles={['student']}><Profile /></ProtectedRoute>} />
       <Route path="/officer/jobs" element={<ProtectedRoute roles={['officer']}><ManageJobs /></ProtectedRoute>} />
       <Route path="/officer/verify" element={<ProtectedRoute roles={['officer']}><VerifyStudents /></ProtectedRoute>} />
       <Route path="/officer/stats" element={<ProtectedRoute roles={['officer']}><Stats /></ProtectedRoute>} />
