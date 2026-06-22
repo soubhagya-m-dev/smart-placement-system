@@ -19,7 +19,10 @@ const createTransporter = () => {
       auth: {
         user: 'apikey',
         pass: process.env.SENDGRID_API_KEY
-      }
+      },
+      connectionTimeout: 5000,  // 5s — fail fast instead of hanging
+      greetingTimeout: 5000,
+      socketTimeout: 8000
     });
   }
 

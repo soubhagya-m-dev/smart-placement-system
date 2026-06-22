@@ -335,8 +335,10 @@ router.post('/signup', async (req, res) => {
       studentProfile: { isProfileComplete: false }
     });
 
-    // Send OTP (console in local, email in cloud)
-    await sendVerificationEmail(normalizedEmail, otp, user.name);
+    // Send OTP — fire-and-forget (don't block the response)
+    sendVerificationEmail(normalizedEmail, otp, user.name).catch(err => {
+      console.error('[signup] background email failed:', err.message);
+    });
 
     res.status(201).json({
       success: true,
