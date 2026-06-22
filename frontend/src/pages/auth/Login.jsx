@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
-import { FaGoogle, FaEye, FaEyeSlash, FaUserShield } from 'react-icons/fa';
+import { FaGoogle, FaEye, FaEyeSlash, FaUserShield, FaUserPlus } from 'react-icons/fa';
 
 export default function Login() {
   const { login, googleLogin } = useAuth();
@@ -26,20 +26,12 @@ export default function Login() {
   };
 
   const handleGoogleLogin = async () => {
-    // Redirect flow: signInWithRedirect navigates the whole page to Google.
-    // The result is picked up on the next page load (see AuthContext useEffect).
-    // We don't await a user here — googleLogin() resolves once the redirect
-    // has been initiated, and the rest of the login (token + redirect to /)
-    // happens after the user comes back from Google.
     setLoading(true);
     try {
       await googleLogin();
-      // On success the page navigates away — code below never runs.
     } catch (err) {
       toast.error(err.message || 'Google login failed');
     } finally {
-      // If we're still on this page (redirect didn't fire — e.g. unauthorized
-      // domain), reset loading so the button isn't stuck disabled.
       setLoading(false);
     }
   };
@@ -51,6 +43,7 @@ export default function Login() {
           <h1 className="text-3xl font-bold text-blue-600 dark:text-blue-400">Placement Hub</h1>
           <p className="text-gray-500 dark:text-gray-400 mt-2">College Placement Management System</p>
         </div>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
@@ -59,15 +52,17 @@ export default function Login() {
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
             <div className="relative">
-              <input type={showPassword ? "text" : "password"} className="input pr-10" placeholder="••••••••" required value={form.password} onChange={e => setForm({...form, password: e.target.value})} />
-              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300">
+              <input type={showPassword ? 'text' : 'password'} className="input pr-10" placeholder="••••••••" required value={form.password} onChange={e => setForm({...form, password: e.target.value})} />
+              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
                 {showPassword ? <FaEyeSlash /> : <FaEye />}
               </button>
             </div>
           </div>
-          <button type="submit" disabled={loading} className="btn-primary w-full py-3">{loading ? 'Signing in...' : 'Sign In'}</button>
+          <button type="submit" disabled={loading} className="btn-primary w-full py-3">
+            {loading ? 'Signing in...' : 'Sign In'}
+          </button>
         </form>
-        
+
         <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
@@ -76,17 +71,21 @@ export default function Login() {
             <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">Or continue with</span>
           </div>
         </div>
-        
-        <button 
-          onClick={handleGoogleLogin} 
-          disabled={loading}
+
+        <button onClick={handleGoogleLogin} disabled={loading}
           className="w-full py-3 px-4 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-700/40 flex items-center justify-center gap-2 transition-colors"
         >
-          <FaGoogle className="text-red-500 dark:text-red-400" />
+          <FaGoogle className="text-red-500" />
           Sign in with Google
         </button>
-        
-        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 text-center">
+
+        <div className="mt-6 text-center space-y-2">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Don't have an account?{' '}
+            <Link to="/signup" className="text-blue-600 dark:text-blue-400 hover:underline font-medium inline-flex items-center gap-1">
+              <FaUserPlus className="text-xs" /> Sign up
+            </Link>
+          </p>
           <Link to="/admin-login" className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center justify-center gap-1">
             <FaUserShield className="text-xs" /> Admin / Placement Officer Login
           </Link>

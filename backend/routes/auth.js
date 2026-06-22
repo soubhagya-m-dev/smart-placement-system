@@ -3,6 +3,7 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
+const { sendVerificationEmail } = require('../services/emailService');
 const admin = require('firebase-admin');
 
 // Normalize a name to uppercase on first signup so the name tied to the
@@ -278,6 +279,137 @@ router.post('/login', async (req, res) => {
     });
   } catch (error) {
     console.error('Login error:', error.message);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// ============================================
+// SIGNUP — create account + send OTP
+// Accepts name, email, password. Validates input,
+// checks for duplicate email, creates user with
+// hashed password, sends 6-digit OTP to email.
+// ============================================
+router.post('/signup', async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+
+    // Validate required fields
+    if (!name || !name.trim()) {
+      return res.status(400).json({ success: false, message: 'Full name is required' });
+    }
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email is required' });
+    }
+    if (!password || password.length < 6) {
+      return res.status(400).json({ success: false, message: 'Password must be at least 6 characters' });
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ success: false, message: 'Invalid email format' });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+
+    // Check for duplicate
+    const existing = await User.findOne({ email: normalizedEmail });
+    if (existing) {
+      return res.status(409).json({ success: false, message: 'An account with this email already exists. Please sign in instead.' });
+    }
+
+    // Hash password and generate 6-digit OTP
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const hashedOtp = await bcrypt.hash(otp, 10);
+
+    // Create user (unverified until OTP is confirmed)
+    const user = await User.create({
+      name: name.trim(),
+      email: normalizedEmail,
+      password: hashedPassword,
+      role: 'student',
+      isVerified: false,
+      verificationOTP: {
+        code: hashedOtp,
+        expiresAt: new Date(Date.now() + 10 * 60 * 1000) // 10 min
+      },
+      studentProfile: { isProfileComplete: false }
+    });
+
+    // Send OTP (console in local, email in cloud)
+    await sendVerificationEmail(normalizedEmail, otp, user.name);
+
+    res.status(201).json({
+      success: true,
+      message: 'OTP sent to your email. Please verify to complete registration.',
+    });
+  } catch (error) {
+    console.error('signup error:', error.message);
+    if (error.code === 11000) {
+      return res.status(409).json({ success: false, message: 'An account with this email already exists.' });
+    }
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// ============================================
+// VERIFY OTP & COMPLETE SIGNUP
+// Verifies the 6-digit OTP, marks the account as
+// verified, and returns a JWT + user data.
+// ============================================
+router.post('/verify-otp', async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    if (!email || !otp) {
+      return res.status(400).json({ success: false, message: 'Email and OTP are required' });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+    const user = await User.findOne({ email: normalizedEmail }).select('+password +verificationOTP');
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'No account found with this email.' });
+    }
+
+    if (!user.verificationOTP?.code) {
+      return res.status(400).json({ success: false, message: 'No OTP has been sent. Please sign up again.' });
+    }
+
+    if (new Date() > new Date(user.verificationOTP.expiresAt)) {
+      // Clean up expired OTP
+      user.verificationOTP = undefined;
+      await user.save();
+      return res.status(400).json({ success: false, message: 'OTP has expired. Please sign up again.' });
+    }
+
+    const isValid = await bcrypt.compare(otp, user.verificationOTP.code);
+    if (!isValid) {
+      return res.status(401).json({ success: false, message: 'Incorrect OTP. Please try again.' });
+    }
+
+    // OTP verified — mark user as verified, clear OTP
+    user.verificationOTP = undefined;
+    user.isVerified = true;
+    await user.save();
+
+    // Generate JWT
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    // Trigger deadline reminder scan (same pattern as login)
+    triggerReminderScanForUser(user._id);
+
+    res.json({
+      success: true,
+      message: 'Account verified successfully',
+      data: {
+        token,
+        user: { id: user._id, name: user.name, email: user.email, role: user.role }
+      }
+    });
+  } catch (error) {
+    console.error('verify-otp error:', error.message);
     res.status(500).json({ success: false, message: error.message });
   }
 });

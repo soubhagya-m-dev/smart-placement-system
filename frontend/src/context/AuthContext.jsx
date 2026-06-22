@@ -105,6 +105,27 @@ export function AuthProvider({ children }) {
     return meRes.data.data.user;
   };
 
+  // ============================================
+  // SIGNUP — create account, sends OTP to email
+  // ============================================
+  const signup = async (name, email, password) => {
+    const res = await axios.post(`${API_URL}/api/auth/signup`, { name, email, password });
+    return res.data;
+  };
+
+  // ============================================
+  // VERIFY OTP & AUTO-LOGIN
+  // ============================================
+  const verifyOtp = async (email, otp) => {
+    const res = await axios.post(`${API_URL}/api/auth/verify-otp`, { email, otp });
+    const { token, user: userData } = res.data.data;
+    localStorage.setItem('token', token);
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    const meRes = await axios.get(`${API_URL}/api/auth/me`);
+    setUser(meRes.data.data.user);
+    return meRes.data.data.user;
+  };
+
   const logout = () => {
     localStorage.removeItem('token');
     delete axios.defaults.headers.common['Authorization'];
@@ -132,7 +153,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, googleLogin, logout, updateProfile, changePassword, setUser }}>
+    <AuthContext.Provider value={{ user, loading, login, googleLogin, signup, verifyOtp, logout, updateProfile, changePassword, setUser }}>
       {children}
     </AuthContext.Provider>
   );

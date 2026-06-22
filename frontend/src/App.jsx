@@ -6,6 +6,7 @@ import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 import Login from './pages/auth/Login';
+import Signup from './pages/auth/Signup';
 import AdminOfficerLogin from './pages/auth/AdminOfficerLogin';
 import StudentDashboard from './pages/student/Dashboard';
 import Jobs from './pages/student/Jobs';
@@ -99,6 +100,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />
+      <Route path="/signup" element={user ? <Navigate to="/" /> : <Signup />} />
       <Route path="/admin-login" element={user ? <Navigate to="/" /> : <AdminOfficerLogin />} />
       <Route path="/" element={<ProtectedRoute>{
         user?.role === 'admin' ? <AdminDashboard /> : 
